@@ -20,6 +20,9 @@ const GROUP := &"enemies"
 @export var model: Node3D
 @export var death_effect: PackedScene
 @export var pickup_scene: PackedScene
+## Elites implode their core first (visual only; the kill is already counted).
+@export var collapse_effect: PackedScene = preload("res://vfx/core_collapse.tscn")
+@export var muzzle_effect: PackedScene = preload("res://vfx/muzzle_flash.tscn")
 
 @export_group("Movement")
 @export var movement: Movement = Movement.SINE
@@ -93,6 +96,8 @@ func tick(delta: float) -> void:
 	_phase_time += delta
 	_move(delta)
 	_update_firing(delta)
+	if model and &"targetable" in model:
+		model.targetable = _is_on_screen()
 
 
 func is_alive() -> bool:
@@ -186,6 +191,8 @@ func _update_firing(delta: float) -> void:
 		var charge := 1.0 - clampf(_telegraph_left / telegraph_time, 0.0, 1.0)
 		if telegraph:
 			telegraph.scale = Vector3.ONE * (0.4 + charge * 0.9)
+		if model and model.has_method(&"set_charge"):
+			model.set_charge(charge)
 		if _telegraph_left <= 0.0:
 			_show_telegraph(false)
 			_telegraph_left = -1.0
@@ -227,6 +234,9 @@ func _fire_volley() -> void:
 			_ring_offset = PI / float(ring_count) - _ring_offset
 	if model and model.has_method(&"recoil"):
 		model.recoil()
+	if model and model.has_method(&"set_charge"):
+		model.set_charge(0.0)
+	Vfx.spawn(get_tree(), muzzle_effect, muzzle_position(), 1.0 if not is_elite() else 1.5)
 
 
 func _aim_at_player() -> Vector3:
@@ -256,11 +266,22 @@ func _on_damaged(_payload: DamagePayload, _source: Node) -> void:
 
 func _on_depleted(_source: Node) -> void:
 	RunSession.add_score(score_value)
-	Vfx.spawn(get_tree(), death_effect, global_position, death_size)
 	if is_elite():
+		Vfx.spawn(get_tree(), collapse_effect, global_position, death_size)
 		_drop_pickup()
+	else:
+		Vfx.spawn(get_tree(), death_effect, global_position, death_size)
+	_spawn_fragments()
 	defeated.emit(self)
 	queue_free()
+
+
+func _spawn_fragments() -> void:
+	var root := get_tree().get_first_node_in_group(Vfx.ROOT_GROUP)
+	if root == null or model == null or not model.has_method(&"make_fragments"):
+		return
+	var pieces: Array[Node3D] = model.make_fragments(5 if is_elite() else 3)
+	root.add_child(FragmentBurst.create(pieces, global_position, 6.0 if is_elite() else 5.0))
 
 
 func _drop_pickup() -> void:

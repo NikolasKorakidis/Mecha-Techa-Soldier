@@ -33,7 +33,7 @@ static func toon(color: Color, rim: float = 0.5, roughness: float = 0.55, metall
 	m.metallic = metallic
 	m.rim_enabled = rim > 0.0
 	m.rim = rim
-	m.rim_tint = 0.6
+	m.rim_tint = 0.75
 	return m
 
 

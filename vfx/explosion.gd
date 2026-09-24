@@ -7,8 +7,8 @@ extends Node3D
 @export var fire_color: Color = Color(1.0, 0.55, 0.15)
 @export var spark_color: Color = Color(1.0, 0.85, 0.5)
 @export var debris_color: Color = Color("3b1726")
-## Camera trauma added on spawn (0 = none).
-@export var trauma: float = 0.25
+## Camera trauma on spawn; negative = derive from size (see docs/art-direction.md).
+@export var trauma: float = -1.0
 @export var lifetime: float = 1.6
 
 
@@ -19,14 +19,25 @@ func _ready() -> void:
 	_debris()
 	_shockwave()
 	var camera := GameplayCamera.find(get_tree())
-	if camera and trauma > 0.0:
-		camera.add_trauma(trauma * size)
+	var impulse := trauma if trauma >= 0.0 else _trauma_for_size(size)
+	if camera and impulse > 0.0:
+		camera.add_trauma(impulse)
 	get_tree().create_timer(lifetime, false).timeout.connect(queue_free)
+
+
+static func _trauma_for_size(s: float) -> float:
+	if s <= 1.3:
+		return ArtStyle.SHAKE_ENEMY_DEATH
+	if s <= 2.3:
+		return ArtStyle.SHAKE_ELITE_DEATH
+	if s < 3.5:
+		return ArtStyle.SHAKE_MAJOR
+	return ArtStyle.SHAKE_BOSS_DEATH
 
 
 func _flash() -> void:
 	var flash := ModelKit.quad(self, Vector2.ONE * 4.0 * size, Vector3(0, 0, 0.5),
-			ModelKit.glow(Color(1.0, 0.9, 0.7), 3.5))
+			ModelKit.glow(Color(1.0, 0.9, 0.7), 3.5 * ArtStyle.flash_scale()))
 	flash.scale = Vector3.ONE * 0.5
 	var tween := create_tween().set_parallel()
 	tween.tween_property(flash, "scale", Vector3.ONE * 1.4, 0.18).set_ease(Tween.EASE_OUT)

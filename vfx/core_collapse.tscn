@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://vfx/core_collapse.gd" id="1_cc"]
+[ext_resource type="PackedScene" path="res://vfx/explosion.tscn" id="2_boom"]
+
+[node name="CoreCollapse" type="Node3D"]
+script = ExtResource("1_cc")
+explosion = ExtResource("2_boom")
