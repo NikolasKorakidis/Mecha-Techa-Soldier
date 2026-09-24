@@ -118,6 +118,7 @@ max_health = 5
 [node name="Flash" type="Node" parent="." node_paths=PackedStringArray("target")]
 script = ExtResource("7_flash")
 target = NodePath("../Model")
+mode = 2
 
 [node name="Movement" type="Node" parent="."]
 script = ExtResource("3_move")

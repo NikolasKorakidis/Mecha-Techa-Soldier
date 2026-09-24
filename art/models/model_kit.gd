@@ -8,6 +8,22 @@ const GLOW_SHADER := preload("res://art/shaders/additive_glow.gdshader")
 enum GlowShape { RADIAL, STREAK, RING, FLAME }
 
 
+const OUTLINE_META := &"outline_thickness"
+
+static var _outline_material: StandardMaterial3D
+
+
+## Marks a material so every mesh built with it gets a dark outline shell.
+static func with_outline(mat: Material, thickness: float = ArtStyle.OUTLINE_THICK) -> Material:
+	mat.set_meta(OUTLINE_META, thickness)
+	return mat
+
+
+## Toon hull with an outline shell.
+static func hull(color: Color, thickness: float = ArtStyle.OUTLINE_THICK, rim: float = 0.55) -> StandardMaterial3D:
+	return with_outline(toon(color, rim, 0.5, 0.15), thickness) as StandardMaterial3D
+
+
 static func toon(color: Color, rim: float = 0.5, roughness: float = 0.55, metallic: float = 0.1) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = color
@@ -72,6 +88,25 @@ static func cylinder(parent: Node3D, top_radius: float, bottom_radius: float, he
 	return _add(parent, mesh, pos, mat, rot_deg)
 
 
+## Cone along +X (tip forward) — noses and prongs. `sides` 6 gives a faceted, beveled read.
+static func cone_x(parent: Node3D, radius: float, length: float, pos: Vector3, mat: Material, sides: int = 6, flip: bool = false) -> MeshInstance3D:
+	return cylinder(parent, 0.0, radius, length, pos, mat, Vector3(0, 0, 90 if flip else -90), sides)
+
+
+## Faceted rod along X — fuselages, nacelles, pipes.
+static func hex_x(parent: Node3D, radius: float, length: float, pos: Vector3, mat: Material, sides: int = 6, taper: float = 1.0) -> MeshInstance3D:
+	return cylinder(parent, radius * taper, radius, length, pos, mat, Vector3(0, 0, -90), sides)
+
+
+## Empty grouping node (model part), so parts can be animated or broken off together.
+static func group(parent: Node3D, part_name: String, pos := Vector3.ZERO) -> Node3D:
+	var node := Node3D.new()
+	node.name = part_name
+	node.position = pos
+	parent.add_child(node)
+	return node
+
+
 static func sphere(parent: Node3D, radius: float, pos: Vector3, mat: Material, scale := Vector3.ONE) -> MeshInstance3D:
 	var mesh := SphereMesh.new()
 	mesh.radius = radius
@@ -105,4 +140,28 @@ static func _add(parent: Node3D, mesh: Mesh, pos: Vector3, mat: Material, rot_de
 	node.position = pos
 	node.rotation_degrees = rot_deg
 	parent.add_child(node)
+	if mat and mat.has_meta(OUTLINE_META):
+		_add_outline_shell(node, float(mat.get_meta(OUTLINE_META)))
 	return node
+
+
+## Inverted-hull outline: a dark copy scaled out by `thickness` on every axis, drawing only
+## its back faces, so it shows as a rim around the silhouette and never covers the hull.
+## (Normal-grow shells vanish on flat box faces seen head-on by the ortho camera.)
+static func _add_outline_shell(node: MeshInstance3D, thickness: float) -> void:
+	if _outline_material == null:
+		_outline_material = StandardMaterial3D.new()
+		_outline_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_outline_material.albedo_color = ArtStyle.OUTLINE_COLOR
+		_outline_material.cull_mode = BaseMaterial3D.CULL_FRONT
+	var size := node.mesh.get_aabb().size
+	var shell := MeshInstance3D.new()
+	shell.name = "Outline"
+	shell.mesh = node.mesh
+	shell.material_override = _outline_material
+	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	shell.scale = Vector3(
+		(size.x + thickness * 2.0) / maxf(size.x, 0.001),
+		(size.y + thickness * 2.0) / maxf(size.y, 0.001),
+		(size.z + thickness * 2.0) / maxf(size.z, 0.001))
+	node.add_child(shell)

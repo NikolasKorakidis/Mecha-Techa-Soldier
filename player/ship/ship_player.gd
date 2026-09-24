@@ -34,6 +34,7 @@ var _invulnerable_left: float = 0.0
 var _hit_left: float = 0.0
 var _dash_meter_material: StandardMaterial3D
 var _muzzle_flash_left: float = 0.0
+var _afterimage_left: float = 0.0
 
 # Telemetry (F3 debug panel).
 var _accel_timer: float = -1.0
@@ -181,6 +182,14 @@ func _update_visuals(delta: float) -> void:
 		model.scale = Vector3(1.25, 0.8, 1.0) if movement.is_dashing else Vector3.ONE
 		model.set_thrust(2.0 if movement.is_dashing else 0.6 + movement.velocity.x / tuning.max_speed * 0.5)
 		model.set_dashing(movement.is_dashing)
+		model.set_health_ratio(float(health.current) / float(health.max_health))
+		if movement.is_dashing:
+			_afterimage_left -= delta
+			if _afterimage_left <= 0.0:
+				_afterimage_left = 0.06
+				_spawn_afterimage()
+		else:
+			_afterimage_left = 0.0
 	if muzzle_flash:
 		_muzzle_flash_left -= delta
 		muzzle_flash.visible = _muzzle_flash_left > 0.0
@@ -204,6 +213,9 @@ func _update_accel_telemetry(delta: float, move: Vector2) -> void:
 
 
 func _on_weapon_fired() -> void:
+	# Strong (echo) shots kick the hull back; the base gun stays steady.
+	if model and RunSession.selected_echo != RunSession.NO_ECHO:
+		model.recoil(0.45)
 	if muzzle_flash:
 		_muzzle_flash_left = 0.045
 		muzzle_flash.scale = Vector3.ONE * randf_range(0.8, 1.2)
@@ -242,4 +254,17 @@ func _on_depleted(_source: Node) -> void:
 	hurtbox.set_deferred(&"monitorable", false)
 	_update_invulnerability()
 	Vfx.spawn(get_tree(), death_effect, global_position, 1.8)
+	_break_apart()
 	died.emit()
+
+
+func _spawn_afterimage() -> void:
+	var root := get_tree().get_first_node_in_group(Vfx.ROOT_GROUP)
+	if root and model:
+		root.add_child(Afterimage.from_model(model, Palette.PLAYER_ENERGY))
+
+
+func _break_apart() -> void:
+	var root := get_tree().get_first_node_in_group(Vfx.ROOT_GROUP)
+	if root and model:
+		root.add_child(FragmentBurst.create(model.make_fragments(), global_position))
