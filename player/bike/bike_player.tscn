@@ -1,0 +1,105 @@
+[gd_scene load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://player/bike/bike_player.gd" id="1_mech"]
+[ext_resource type="Resource" path="res://player/bike/bike_tuning.tres" id="2_tuning"]
+[ext_resource type="Script" path="res://art/models/bike_model.gd" id="3_model"]
+[ext_resource type="Script" path="res://player/ship/ship_arsenal.gd" id="4_arsenal"]
+[ext_resource type="Script" path="res://combat/weapons/weapon_component.gd" id="5_weapon"]
+[ext_resource type="Script" path="res://player/ship/guard_orbs.gd" id="6_orbs"]
+[ext_resource type="Script" path="res://components/health_component.gd" id="7_health"]
+[ext_resource type="Script" path="res://components/hurtbox_component.gd" id="8_hurt"]
+[ext_resource type="Script" path="res://components/flash_component.gd" id="9_flash"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/player_shot.tscn" id="10_shot"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/burst_shot.tscn" id="11_burst"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/orb_shot.tscn" id="12_orb"]
+[ext_resource type="PackedScene" path="res://vfx/explosion.tscn" id="13_boom"]
+[ext_resource type="PackedScene" path="res://vfx/collect_burst.tscn" id="14_jumpfx"]
+[ext_resource type="Script" path="res://components/hitbox_component.gd" id="15_hitbox"]
+
+[sub_resource type="BoxShape3D" id="Shape_body"]
+size = Vector3(2.4, 1.6, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_ram"]
+size = Vector3(3.0, 1.8, 1.4)
+
+[sub_resource type="BoxShape3D" id="Shape_hurt"]
+size = Vector3(1.6, 1.4, 1)
+
+[node name="BikePlayer" type="CharacterBody3D" node_paths=PackedStringArray("model", "arsenal", "health", "hurtbox", "flash", "muzzle", "body_shape", "ram")]
+script = ExtResource("1_mech")
+tuning = ExtResource("2_tuning")
+model = NodePath("Model")
+arsenal = NodePath("Arsenal")
+health = NodePath("Health")
+hurtbox = NodePath("Hurtbox")
+flash = NodePath("Flash")
+muzzle = NodePath("Muzzle")
+body_shape = NodePath("Body")
+ram = NodePath("Ram")
+death_effect = ExtResource("13_boom")
+jump_effect = ExtResource("14_jumpfx")
+
+[node name="Body" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("Shape_body")
+
+[node name="Model" type="Node3D" parent="."]
+script = ExtResource("3_model")
+
+[node name="Muzzle" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, 0.85, 0)
+
+[node name="Arsenal" type="Node3D" parent="." node_paths=PackedStringArray("base_weapon", "burst_weapon", "orb_weapon", "guard_orbs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, 0.85, 0)
+script = ExtResource("4_arsenal")
+base_weapon = NodePath("Gun")
+burst_weapon = NodePath("BurstWeapon")
+orb_weapon = NodePath("OrbWeapon")
+guard_orbs = NodePath("../GuardOrbs")
+
+[node name="Gun" type="Node3D" parent="Arsenal"]
+script = ExtResource("5_weapon")
+projectile_scene = ExtResource("10_shot")
+team = 1
+fire_interval = 0.13
+projectile_speed = 42.0
+
+[node name="BurstWeapon" type="Node3D" parent="Arsenal"]
+script = ExtResource("5_weapon")
+projectile_scene = ExtResource("11_burst")
+team = 1
+projectile_speed = 28.0
+
+[node name="OrbWeapon" type="Node3D" parent="Arsenal"]
+script = ExtResource("5_weapon")
+projectile_scene = ExtResource("12_orb")
+team = 1
+projectile_speed = 30.0
+
+[node name="GuardOrbs" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+script = ExtResource("6_orbs")
+
+[node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
+script = ExtResource("8_hurt")
+team = 1
+health = NodePath("../Health")
+
+[node name="Shape" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("Shape_hurt")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("7_health")
+max_health = 5
+
+[node name="Flash" type="Node" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("9_flash")
+target = NodePath("../Model")
+mode = 2
+
+[node name="Ram" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.9, 0)
+script = ExtResource("15_hitbox")
+
+[node name="Shape" type="CollisionShape3D" parent="Ram"]
+shape = SubResource("Shape_ram")
