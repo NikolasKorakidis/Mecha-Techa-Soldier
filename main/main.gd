@@ -3,21 +3,57 @@ extends Node
 ## and cycles developer rooms (F2) until the real level flow exists.
 
 @export_file("*.tscn") var start_level: String
+## First gameplay stage (Start on the title card, Quit to Title comes back to start_level).
+@export_file("*.tscn") var first_stage: String
 @export_file("*.tscn") var dev_rooms: Array[String] = []
 
 @onready var _level_root: Node = %CurrentLevel
 @onready var _hud: CanvasLayer = %HUD
+@onready var _pause_menu: PauseMenu = %PauseMenu
 
 
 func _ready() -> void:
 	RunSession.reset_run()
 	SceneRouter.register_level_root(_level_root)
+	SceneRouter.level_changed.connect(_on_level_changed)
+	_pause_menu.resume_requested.connect(set_paused.bind(false))
+	_pause_menu.restart_requested.connect(restart_stage)
+	_pause_menu.quit_requested.connect(quit_to_title)
 	SceneRouter.go_to(start_level)
 
 
+func start_game() -> void:
+	set_paused(false)
+	RunSession.reset_run()
+	SceneRouter.go_to(first_stage)
+
+
+## Restart the current stage from its entry snapshot (score, weapon, energy).
+func restart_stage() -> void:
+	set_paused(false)
+	RunSession.restore_checkpoint()
+	SceneRouter.reload_current()
+
+
+func quit_to_title() -> void:
+	set_paused(false)
+	RunSession.reset_run()
+	SceneRouter.go_to(start_level)
+
+
+func is_in_gameplay() -> bool:
+	return is_instance_valid(SceneRouter.current_level) and SceneRouter.current_level.has_node(^"ShipPlayer")
+
+
+func _on_level_changed(level: Node) -> void:
+	_hud.visible = level.has_node(^"ShipPlayer")
+	if level.has_signal(&"start_requested"):
+		level.start_requested.connect(start_game)
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"pause"):
-		set_paused(not get_tree().paused)
+	if event.is_action_pressed(&"pause") and not get_tree().paused and is_in_gameplay():
+		set_paused(true)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed(&"debug_next_room") and not get_tree().paused:
 		next_dev_room()
@@ -29,7 +65,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func set_paused(paused: bool) -> void:
 	get_tree().paused = paused
-	_hud.set_paused(paused)
+	if paused:
+		_pause_menu.open()
+	else:
+		_pause_menu.close()
 
 
 func next_dev_room() -> void:

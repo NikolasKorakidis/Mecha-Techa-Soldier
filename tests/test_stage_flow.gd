@@ -176,7 +176,7 @@ func test_real_stages_load_and_chain() -> void:
 	assert_true(s1.waves.size() > 10 and s2.waves.size() > 10, "stages have authored waves")
 	assert_eq(s1.next_level, "res://levels/foundry_descent/foundry_descent.tscn", "stage 1 leads to stage 2")
 	assert_true(s2.next_level.is_empty(), "stage 2 is final")
-	assert_eq(s2.restart_level, "res://levels/orbital_riptide/orbital_riptide.tscn", "final stage restarts the run")
+	assert_eq(s2.restart_level, "res://ui/title/title_screen.tscn", "final stage returns to the title card")
 	for stage in [s1, s2]:
 		var last := -1.0
 		for wave in stage.waves:

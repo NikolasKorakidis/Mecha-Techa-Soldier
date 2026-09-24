@@ -32,14 +32,6 @@ theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 20
 script = ExtResource("2_debug")
 
-[node name="PauseLabel" type="Label" parent="Margin"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-text = "PAUSED"
-
 [node name="TutorialCard" type="Control" parent="."]
 process_mode = 1
 anchors_preset = 15

@@ -35,6 +35,8 @@ func _ready() -> void:
 		set_physics_process(false)
 		return
 	stage_ui.show_banner(stage.stage_name, stage.subtitle, intro_time + 0.5)
+	if RunSession.checkpoint_id != StringName(stage.stage_name):
+		RunSession.save_checkpoint(StringName(stage.stage_name))
 
 
 func _physics_process(delta: float) -> void:

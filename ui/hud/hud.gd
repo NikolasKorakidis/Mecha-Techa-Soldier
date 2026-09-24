@@ -15,7 +15,6 @@ var _score_label: Label
 var _score_value: int = 0
 var _score_shown: float = 0.0
 
-@onready var _pause_label: Label = %PauseLabel
 
 
 func _ready() -> void:
@@ -27,11 +26,6 @@ func _ready() -> void:
 	RunSession.echo_ammo_changed.connect(_on_echo_ammo_changed)
 	RunSession.run_reset.connect(_on_run_reset)
 	_sync_all(false)
-	set_paused(false)
-
-
-func set_paused(paused: bool) -> void:
-	_pause_label.visible = paused
 
 
 func _process(delta: float) -> void:

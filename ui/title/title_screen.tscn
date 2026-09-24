@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://ui/title/title_screen.gd" id="1_title"]
+[ext_resource type="Script" path="res://core/gameplay_camera.gd" id="2_cam"]
+[ext_resource type="Script" path="res://levels/shared/space_backdrop.gd" id="3_backdrop"]
+[ext_resource type="Environment" path="res://art/environments/space.tres" id="4_env"]
+[ext_resource type="Script" path="res://art/environments/environment_binder.gd" id="5_envbind"]
+[ext_resource type="Script" path="res://art/models/kestrel_model.gd" id="6_kestrel"]
+
+[node name="TitleScreen" type="Node3D"]
+script = ExtResource("1_title")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("4_env")
+script = ExtResource("5_envbind")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 0, 10)
+light_color = Color(0.82, 0.9, 1, 1)
+light_energy = 1.15
+
+[node name="RimLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866, 0.25, -0.433, 0, 0.866, 0.5, 0.5, 0.433, -0.75, 0, 0, -10)
+light_color = Color(1, 0.62, 0.38, 1)
+light_energy = 0.9
+
+[node name="GameplayCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
+projection = 1
+size = 18.0
+far = 200.0
+script = ExtResource("2_cam")
+
+[node name="SpaceBackdrop" type="Node3D" parent="."]
+script = ExtResource("3_backdrop")
+authored_moments = false
+
+[node name="Kestrel" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(2.4, 0, 0, 0, 2.4, 0, 0, 0, 2.4, 8.5, -1, 2)
+script = ExtResource("6_kestrel")

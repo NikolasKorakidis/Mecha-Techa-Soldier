@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://main/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://ui/hud/hud.tscn" id="2_hud"]
 [ext_resource type="Shader" path="res://art/shaders/vignette.gdshader" id="3_vignette"]
+[ext_resource type="Script" path="res://ui/pause/pause_menu.gd" id="4_pause"]
 
 [sub_resource type="ShaderMaterial" id="Mat_vignette"]
 shader = ExtResource("3_vignette")
@@ -10,7 +11,8 @@ shader = ExtResource("3_vignette")
 [node name="Main" type="Node"]
 process_mode = 3
 script = ExtResource("1_main")
-start_level = "res://levels/orbital_riptide/orbital_riptide.tscn"
+start_level = "res://ui/title/title_screen.tscn"
+first_stage = "res://levels/orbital_riptide/orbital_riptide.tscn"
 dev_rooms = Array[String](["res://levels/orbital_riptide/orbital_riptide.tscn", "res://levels/foundry_descent/foundry_descent.tscn", "res://levels/test_rooms/visual_test_room.tscn", "res://levels/test_rooms/combat_test_room.tscn", "res://levels/test_rooms/graybox_room.tscn"])
 
 [node name="CurrentLevel" type="Node" parent="."]
@@ -31,3 +33,7 @@ mouse_filter = 2
 
 [node name="HUD" parent="." instance=ExtResource("2_hud")]
 unique_name_in_owner = true
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("4_pause")

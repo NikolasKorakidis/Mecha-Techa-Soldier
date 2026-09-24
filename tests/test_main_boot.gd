@@ -16,12 +16,38 @@ func test_main_loads_start_level_and_switches_rooms() -> void:
 	assert_eq(main.get_node("%CurrentLevel").get_child_count(), 1, "exactly one level is mounted")
 
 
-func test_pause_toggles_tree_and_hud() -> void:
+func test_pause_opens_menu_and_freezes_the_tree() -> void:
 	var main: Node = (load("res://main/main.tscn") as PackedScene).instantiate()
 	add_autofree(main)
 	await wait_process_frames(1)
+	main.start_game()
+	await wait_process_frames(2)
 	main.set_paused(true)
 	assert_true(get_tree().paused, "tree paused")
-	assert_true(main.get_node("%HUD").get_node("%PauseLabel").visible, "pause label shown")
+	assert_true(main.get_node("%PauseMenu").is_open, "pause menu open")
+	var director := SceneRouter.current_level.get_node("LevelDirector") as LevelDirector
+	var t := director.stage_time
+	await wait_physics_frames(20)
+	assert_eq(director.stage_time, t, "stage time frozen while paused")
 	main.set_paused(false)
 	assert_false(get_tree().paused, "tree unpaused")
+	assert_false(main.get_node("%PauseMenu").is_open, "menu closed")
+
+
+func test_title_starts_game_and_quit_returns() -> void:
+	var main: Node = (load("res://main/main.tscn") as PackedScene).instantiate()
+	add_autofree(main)
+	await wait_process_frames(1)
+	assert_eq(SceneRouter.current_path, main.start_level, "boots to the title card")
+	assert_false(main.get_node("%HUD").visible, "no HUD on the title card")
+	main.start_game()
+	await wait_process_frames(1)
+	assert_eq(SceneRouter.current_path, main.first_stage, "start goes to stage 1")
+	assert_true(main.get_node("%HUD").visible, "HUD in gameplay")
+	RunSession.add_score(500)
+	main.restart_stage()
+	await wait_process_frames(1)
+	assert_eq(RunSession.score, 0, "restart restores the stage-entry score")
+	main.quit_to_title()
+	await wait_process_frames(1)
+	assert_eq(SceneRouter.current_path, main.start_level, "quit returns to the title")
