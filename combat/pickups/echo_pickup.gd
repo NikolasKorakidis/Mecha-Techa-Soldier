@@ -57,7 +57,10 @@ func _physics_process(delta: float) -> void:
 	var player := get_tree().get_first_node_in_group(ShipPlayer.GROUP) as ShipPlayer
 	var to_player := (player.global_position - global_position) if player and player.visible else Vector3.INF
 	if to_player != Vector3.INF and to_player.length() < magnet_radius:
-		global_position += to_player.normalized() * magnet_speed * delta
+		# Arc in: a sideways component that fades as the core closes in.
+		var dir := to_player.normalized()
+		var side := Vector3(-dir.y, dir.x, 0.0) * clampf(to_player.length() / magnet_radius, 0.0, 1.0) * 0.8
+		global_position += (dir + side).normalized() * magnet_speed * delta
 	else:
 		position.x -= drift_speed * delta
 		position.y += sin(_time * 3.0) * 0.8 * delta

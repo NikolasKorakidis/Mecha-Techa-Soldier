@@ -85,3 +85,16 @@ func test_overlay_flash_strobes_under_sustained_hits() -> void:
 			lit_frames += 1
 	assert_true(lit_frames < 50, "overlay is not solid under constant fire (%d/60 lit)" % lit_frames)
 	assert_true(lit_frames > 5, "overlay still shows hits")
+
+
+func test_hit_stop_is_brief_and_restores_time() -> void:
+	HitStop.trigger(get_tree(), 0.05)
+	assert_true(Engine.time_scale < 1.0, "time slowed on a strong hit")
+	await get_tree().create_timer(0.15, true, false, true).timeout
+	assert_eq(Engine.time_scale, 1.0, "time scale restored")
+
+
+func test_impact_sparks_follow_projectile_direction() -> void:
+	_scaffold()
+	var spark := Vfx.spawn(get_tree(), load("res://vfx/impact_spark.tscn"), Vector3.ZERO, 1.0, {&"direction": Vector3.UP}) as ImpactSpark
+	assert_eq(spark.direction, Vector3.UP, "direction applied before the burst is built")

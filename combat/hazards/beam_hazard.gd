@@ -61,7 +61,7 @@ func _physics_process(delta: float) -> void:
 		_hitbox.set_deferred(&"monitoring", true)
 		var camera := GameplayCamera.find(get_tree())
 		if camera:
-			camera.add_trauma(0.2)
+			camera.add_trauma(ArtStyle.SHAKE_MAJOR * 0.5)
 	var t := (_age - warn_time) / active_time
 	_beam.scale.y = 1.0 + 0.15 * sin(_age * 60.0)
 	if t >= 1.0:

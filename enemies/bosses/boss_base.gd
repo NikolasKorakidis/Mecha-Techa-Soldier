@@ -204,6 +204,7 @@ func _transition(next: State, reason: String) -> void:
 		if player:
 			player.grant_invulnerability(break_time + 0.5)
 		Vfx.spawn(get_tree(), death_effect, global_position + Vector3(0, 0, 1), 2.0)
+		HitStop.trigger(get_tree(), 0.08)
 	_on_state_entered(next)
 	state_changed.emit(state, reason)
 

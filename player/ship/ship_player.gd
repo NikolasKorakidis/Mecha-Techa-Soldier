@@ -10,6 +10,7 @@ signal echo_collected(echo_id: StringName)
 enum State { CONTROL, DASH, HIT, DISABLED, CINEMATIC }
 
 const GROUP := &"player"
+const COLLECT_EFFECT := preload("res://vfx/collect_burst.tscn")
 
 @export var tuning: ShipTuning
 @export var movement: ShipMovement
@@ -22,6 +23,7 @@ const GROUP := &"player"
 @export var model: KestrelModel
 @export var dash_meter: MeshInstance3D
 @export var muzzle_flash: Node3D
+@export var engine_trails: Array[EngineTrail] = []
 @export var death_effect: PackedScene
 
 ## When false, the ship ignores devices (tests and cinematics drive tick() directly).
@@ -139,7 +141,8 @@ func collect_echo(echo_id: StringName) -> void:
 		return
 	RunSession.equip_echo(echo_id, data.ammo)
 	flash.stop()
-	_shake(0.15)
+	_shake(0.12)
+	Vfx.spawn(get_tree(), COLLECT_EFFECT, global_position, 1.0, {&"color": data.module_color})
 	echo_collected.emit(echo_id)
 
 
@@ -180,7 +183,10 @@ func _update_visuals(delta: float) -> void:
 		# Bank into vertical motion; squash along the dash.
 		model.rotation.x = -movement.velocity.y / tuning.max_speed * 0.45
 		model.scale = Vector3(1.25, 0.8, 1.0) if movement.is_dashing else Vector3.ONE
-		model.set_thrust(2.0 if movement.is_dashing else 0.6 + movement.velocity.x / tuning.max_speed * 0.5)
+		var thrust := 2.0 if movement.is_dashing else 0.6 + movement.velocity.x / tuning.max_speed * 0.5
+		model.set_thrust(thrust)
+		for trail in engine_trails:
+			trail.set_thrust(thrust)
 		model.set_dashing(movement.is_dashing)
 		model.set_health_ratio(float(health.current) / float(health.max_health))
 		if movement.is_dashing:
@@ -236,7 +242,7 @@ func _on_damaged(payload: DamagePayload, source: Node) -> void:
 	flash.flash(tuning.hit_invulnerability)
 	movement.cancel_dash()
 	movement.velocity += Vector2(payload.knockback.x, payload.knockback.y)
-	_shake(0.45)
+	_shake(ArtStyle.SHAKE_PLAYER_HIT)
 	if not health.is_depleted():
 		state = State.HIT
 		_hit_left = tuning.hit_stun
@@ -255,6 +261,7 @@ func _on_depleted(_source: Node) -> void:
 	_update_invulnerability()
 	Vfx.spawn(get_tree(), death_effect, global_position, 1.8)
 	_break_apart()
+	HitStop.trigger(get_tree(), 0.09)
 	died.emit()
 
 

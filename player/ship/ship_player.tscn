@@ -38,7 +38,7 @@ size = Vector2(1.1, 0.8)
 [sub_resource type="BoxShape3D" id="Shape_hurt"]
 size = Vector3(0.9, 0.42, 1)
 
-[node name="ShipPlayer" type="Node3D" node_paths=PackedStringArray("movement", "weapon", "arsenal", "health", "hurtbox", "flash", "model", "dash_meter", "muzzle_flash")]
+[node name="ShipPlayer" type="Node3D" node_paths=PackedStringArray("movement", "weapon", "arsenal", "health", "hurtbox", "flash", "model", "dash_meter", "muzzle_flash", "engine_trails")]
 script = ExtResource("1_ship")
 tuning = ExtResource("2_tuning")
 movement = NodePath("Movement")
@@ -50,17 +50,18 @@ flash = NodePath("Flash")
 model = NodePath("Model")
 dash_meter = NodePath("DashMeter")
 muzzle_flash = NodePath("Muzzle/MuzzleFlash")
+engine_trails = [NodePath("EngineTrailUpper"), NodePath("EngineTrailLower")]
 death_effect = ExtResource("12_boom")
 
 [node name="Model" type="Node3D" parent="."]
 script = ExtResource("9_model")
 
 [node name="EngineTrailUpper" type="CPUParticles3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0.24, -0.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.62, 0.36, -0.1)
 script = ExtResource("10_trail")
 
 [node name="EngineTrailLower" type="CPUParticles3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -0.24, -0.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.62, -0.36, -0.1)
 script = ExtResource("10_trail")
 
 [node name="DashMeter" type="MeshInstance3D" parent="."]

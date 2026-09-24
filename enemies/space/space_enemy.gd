@@ -268,6 +268,7 @@ func _on_depleted(_source: Node) -> void:
 	RunSession.add_score(score_value)
 	if is_elite():
 		Vfx.spawn(get_tree(), collapse_effect, global_position, death_size)
+		HitStop.trigger(get_tree(), 0.06)
 		_drop_pickup()
 	else:
 		Vfx.spawn(get_tree(), death_effect, global_position, death_size)

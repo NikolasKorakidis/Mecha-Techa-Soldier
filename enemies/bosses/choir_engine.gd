@@ -138,7 +138,7 @@ func _update_null_chorus(time: float) -> void:
 				weapon.fire_at(Vector3(cos(a), sin(a), 0), 0.8)
 			_fired_steps += 1
 			if _camera:
-				_camera.add_trauma(0.25)
+				_camera.add_trauma(ArtStyle.SHAKE_MAJOR * 0.6)
 
 
 func _on_state_entered(new_state: State) -> void:

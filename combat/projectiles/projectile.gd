@@ -35,7 +35,9 @@ func _physics_process(delta: float) -> void:
 
 func _on_hit_landed(_hurtbox: HurtboxComponent) -> void:
 	if impact_effect:
-		Vfx.spawn(get_tree(), impact_effect, global_position)
+		# Sparks kick back off the surface, opposite the travel direction.
+		var back := -velocity.normalized() if velocity.length_squared() > 0.0 else Vector3.LEFT
+		Vfx.spawn(get_tree(), impact_effect, global_position, 1.0, {&"direction": back})
 	queue_free()
 
 
