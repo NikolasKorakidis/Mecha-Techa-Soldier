@@ -1,0 +1,60 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://levels/transform/transform_cutscene.gd" id="1_cut"]
+[ext_resource type="Script" path="res://core/gameplay_camera.gd" id="2_cam"]
+[ext_resource type="Environment" path="res://art/environments/space.tres" id="3_env"]
+[ext_resource type="Script" path="res://art/environments/environment_binder.gd" id="4_envbind"]
+[ext_resource type="Script" path="res://levels/shared/space_backdrop.gd" id="5_backdrop"]
+[ext_resource type="Script" path="res://levels/shared/starfield.gd" id="6_stars"]
+[ext_resource type="Script" path="res://ui/stage/stage_ui.gd" id="7_ui"]
+
+[node name="TransformToBike" type="Node3D" node_paths=PackedStringArray("stage_ui", "camera")]
+script = ExtResource("1_cut")
+from_form = 1
+to_form = 2
+title = "BIKE MODE"
+subtitle = "OUTRUN THE EXPLOSION"
+next_level = "res://levels/highway/highway_level.tscn"
+stage_ui = NodePath("StageUI")
+camera = NodePath("GameplayCamera")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("3_env")
+script = ExtResource("4_envbind")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 0, 10)
+light_color = Color(0.82, 0.9, 1, 1)
+light_energy = 1.2
+
+[node name="RimLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866, 0.25, -0.433, 0, 0.866, 0.5, 0.5, 0.433, -0.75, 0, 0, -10)
+light_color = Color(1, 0.62, 0.38, 1)
+light_energy = 1.1
+
+[node name="GameplayCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
+projection = 1
+size = 10.0
+far = 200.0
+script = ExtResource("2_cam")
+
+
+
+[node name="SpaceBackdrop" type="Node3D" parent="."]
+script = ExtResource("5_backdrop")
+nebula_warm = Color(0.55, 0.2, 0.1, 1)
+
+[node name="Streaks" type="MultiMeshInstance3D" parent="."]
+script = ExtResource("6_stars")
+star_count = 90
+layer_speeds = PackedFloat32Array(8, 18, 36)
+extents = Vector2(14, 7)
+depth = -8.0
+star_color = Color(1, 0.75, 0.5, 1)
+star_size = 0.06
+
+[node name="Effects" type="Node3D" parent="." groups=["vfx_root"]]
+
+[node name="StageUI" type="CanvasLayer" parent="."]
+script = ExtResource("7_ui")
