@@ -5,6 +5,7 @@ extends Node3D
 
 signal died
 signal respawned
+signal echo_collected(echo_id: StringName)
 
 enum State { CONTROL, DASH, HIT, DISABLED, CINEMATIC }
 
@@ -12,7 +13,9 @@ const GROUP := &"player"
 
 @export var tuning: ShipTuning
 @export var movement: ShipMovement
+## Base gun. The arsenal decides whether it or an echo weapon fires.
 @export var weapon: WeaponComponent
+@export var arsenal: ShipArsenal
 @export var health: HealthComponent
 @export var hurtbox: HurtboxComponent
 @export var flash: FlashComponent
@@ -55,7 +58,7 @@ func _ready() -> void:
 	var start_health := RunSession.health if RunSession.health > 0 else RunSession.max_health
 	health.setup(RunSession.max_health, start_health)
 
-	weapon.fired.connect(_on_weapon_fired)
+	arsenal.fired.connect(_on_weapon_fired)
 	if muzzle_flash:
 		muzzle_flash.visible = false
 	if dash_meter:
@@ -98,7 +101,7 @@ func tick(delta: float, input: ShipInput) -> void:
 		var next := movement.move_within(_plane_position(), _camera.get_play_rect(), delta)
 		global_position = Vector3(next.x, next.y, 0.0)
 
-	weapon.tick(delta, input.fire and controllable)
+	arsenal.tick(delta, input.fire and controllable)
 	_update_invulnerability()
 	_update_visuals(delta)
 	_update_accel_telemetry(delta, move)
@@ -108,7 +111,7 @@ func respawn(at: Vector3) -> void:
 	global_position = Vector3(at.x, at.y, 0.0)
 	visible = true
 	movement.reset()
-	weapon.reset()
+	arsenal.reset()
 	health.revive()
 	hurtbox.set_deferred(&"monitorable", true)
 	_invulnerable_left = tuning.respawn_invulnerability
@@ -124,6 +127,24 @@ func set_cinematic(enabled: bool) -> void:
 		return
 	state = State.CINEMATIC if enabled else State.CONTROL
 	movement.reset()
+	_update_invulnerability()
+
+
+## Installs (or refills) an echo weapon from a pickup.
+func collect_echo(echo_id: StringName) -> void:
+	var data := EchoModules.get_data(echo_id)
+	if data == null:
+		push_error("ShipPlayer: unknown echo '%s'." % echo_id)
+		return
+	RunSession.equip_echo(echo_id, data.ammo)
+	flash.stop()
+	_shake(0.15)
+	echo_collected.emit(echo_id)
+
+
+## Brief safety window, e.g. when a boss changes phase.
+func grant_invulnerability(seconds: float) -> void:
+	_invulnerable_left = maxf(_invulnerable_left, seconds)
 	_update_invulnerability()
 
 
@@ -182,7 +203,7 @@ func _update_accel_telemetry(delta: float, move: Vector2) -> void:
 		_accel_timer = -1.0
 
 
-func _on_weapon_fired(_projectile: Projectile) -> void:
+func _on_weapon_fired() -> void:
 	if muzzle_flash:
 		_muzzle_flash_left = 0.045
 		muzzle_flash.scale = Vector3.ONE * randf_range(0.8, 1.2)
@@ -215,7 +236,9 @@ func _on_depleted(_source: Node) -> void:
 	visible = false
 	flash.stop()
 	movement.reset()
-	weapon.reset()
+	arsenal.reset()
+	# Contra rule: dying drops the echo weapon.
+	RunSession.clear_echo()
 	hurtbox.set_deferred(&"monitorable", false)
 	_update_invulnerability()
 	Vfx.spawn(get_tree(), death_effect, global_position, 1.8)

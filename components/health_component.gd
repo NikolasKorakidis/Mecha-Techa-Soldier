@@ -11,6 +11,8 @@ signal depleted(source: Node)
 
 ## Set by the owner (dash frames, hit blink, phase transitions).
 var invulnerable: bool = false
+## Damage never takes health below this (bosses use it so a phase cannot be skipped).
+var floor_health: int = 0
 var current: int = 0
 
 var _depleted: bool = false
@@ -31,7 +33,7 @@ func setup(maximum: int, value: int) -> void:
 func apply_damage(payload: DamagePayload, source: Node) -> bool:
 	if _depleted or invulnerable or payload.amount <= 0:
 		return false
-	current = maxi(0, current - payload.amount)
+	current = maxi(floor_health, current - payload.amount)
 	health_changed.emit(current, max_health)
 	damaged.emit(payload, source)
 	if current == 0:

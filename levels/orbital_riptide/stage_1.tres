@@ -1,0 +1,203 @@
+[gd_resource type="Resource" script_class="StageData" load_steps=33 format=3]
+
+[ext_resource type="Script" path="res://directors/stage_data.gd" id="1_stage"]
+[ext_resource type="Script" path="res://directors/wave_data.gd" id="2_wave"]
+[ext_resource type="PackedScene" path="res://enemies/bosses/choir_engine.tscn" id="3_boss"]
+[ext_resource type="PackedScene" path="res://enemies/space/space_drone.tscn" id="4_drone"]
+[ext_resource type="PackedScene" path="res://enemies/space/needle.tscn" id="5_needle"]
+[ext_resource type="PackedScene" path="res://enemies/space/lancer.tscn" id="6_lancer"]
+[ext_resource type="PackedScene" path="res://enemies/space/gunpod.tscn" id="7_gunpod"]
+[ext_resource type="PackedScene" path="res://enemies/space/rammer.tscn" id="8_rammer"]
+[ext_resource type="PackedScene" path="res://enemies/space/gunship.tscn" id="9_gunship"]
+[ext_resource type="PackedScene" path="res://enemies/space/tesla.tscn" id="10_tesla"]
+[ext_resource type="PackedScene" path="res://enemies/space/warden.tscn" id="11_warden"]
+
+[sub_resource type="Resource" id="Wave_0"]
+script = ExtResource("2_wave")
+start_time = 1.0
+enemy_scene = ExtResource("4_drone")
+count = 3
+interval = 0.8
+spawn_y = PackedFloat32Array(4.0, 0.0, -4.0)
+prompt = "HOLD FIRE TO SHOOT  ·  DASH THROUGH DANGER"
+
+[sub_resource type="Resource" id="Wave_1"]
+script = ExtResource("2_wave")
+start_time = 6.0
+enemy_scene = ExtResource("5_needle")
+count = 5
+interval = 0.25
+spawn_y = PackedFloat32Array(3.0)
+completion_bonus = 500
+prompt = "DESTROY WHOLE FORMATIONS FOR A BONUS"
+
+[sub_resource type="Resource" id="Wave_2"]
+script = ExtResource("2_wave")
+start_time = 9.0
+enemy_scene = ExtResource("5_needle")
+count = 5
+interval = 0.25
+spawn_y = PackedFloat32Array(-3.0)
+completion_bonus = 500
+
+[sub_resource type="Resource" id="Wave_3"]
+script = ExtResource("2_wave")
+start_time = 13.0
+enemy_scene = ExtResource("6_lancer")
+count = 4
+interval = 0.6
+spawn_y = PackedFloat32Array(6.5)
+
+[sub_resource type="Resource" id="Wave_4"]
+script = ExtResource("2_wave")
+start_time = 16.0
+enemy_scene = ExtResource("6_lancer")
+count = 4
+interval = 0.6
+spawn_y = PackedFloat32Array(-6.5)
+
+[sub_resource type="Resource" id="Wave_5"]
+script = ExtResource("2_wave")
+start_time = 20.0
+enemy_scene = ExtResource("7_gunpod")
+count = 2
+interval = 0.4
+spawn_y = PackedFloat32Array(4.5, -4.5)
+hold_x = PackedFloat32Array(10.0, 12.0)
+
+[sub_resource type="Resource" id="Wave_6"]
+script = ExtResource("2_wave")
+start_time = 25.0
+enemy_scene = ExtResource("4_drone")
+count = 4
+interval = 0.6
+spawn_y = PackedFloat32Array(6.0, 2.0, -2.0, -6.0)
+
+[sub_resource type="Resource" id="Wave_7"]
+script = ExtResource("2_wave")
+start_time = 28.0
+enemy_scene = ExtResource("8_rammer")
+count = 3
+interval = 1.0
+spawn_y = PackedFloat32Array(5.0, 0.0, -5.0)
+prompt = "CHARGERS LOCK ON — SIDESTEP"
+
+[sub_resource type="Resource" id="Wave_8"]
+script = ExtResource("2_wave")
+start_time = 33.0
+enemy_scene = ExtResource("9_gunship")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(0.0)
+prompt = "ELITE INBOUND — DESTROY IT TO STEAL ITS WEAPON"
+
+[sub_resource type="Resource" id="Wave_9"]
+script = ExtResource("2_wave")
+start_time = 36.0
+enemy_scene = ExtResource("5_needle")
+count = 6
+interval = 0.2
+spawn_y = PackedFloat32Array(6.5)
+completion_bonus = 800
+
+[sub_resource type="Resource" id="Wave_10"]
+script = ExtResource("2_wave")
+start_time = 39.0
+enemy_scene = ExtResource("5_needle")
+count = 6
+interval = 0.2
+spawn_y = PackedFloat32Array(-6.5)
+completion_bonus = 800
+
+[sub_resource type="Resource" id="Wave_11"]
+script = ExtResource("2_wave")
+start_time = 45.0
+enemy_scene = ExtResource("6_lancer")
+count = 6
+interval = 0.45
+spawn_y = PackedFloat32Array(6.5, -6.5)
+
+[sub_resource type="Resource" id="Wave_12"]
+script = ExtResource("2_wave")
+start_time = 48.0
+enemy_scene = ExtResource("10_tesla")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(3.0)
+
+[sub_resource type="Resource" id="Wave_13"]
+script = ExtResource("2_wave")
+start_time = 49.0
+enemy_scene = ExtResource("7_gunpod")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(-5.0)
+hold_x = PackedFloat32Array(12.0)
+
+[sub_resource type="Resource" id="Wave_14"]
+script = ExtResource("2_wave")
+start_time = 55.0
+enemy_scene = ExtResource("5_needle")
+count = 5
+interval = 0.25
+spawn_y = PackedFloat32Array(5.0)
+completion_bonus = 600
+
+[sub_resource type="Resource" id="Wave_15"]
+script = ExtResource("2_wave")
+start_time = 55.0
+enemy_scene = ExtResource("5_needle")
+count = 5
+interval = 0.25
+spawn_y = PackedFloat32Array(-5.0)
+completion_bonus = 600
+
+[sub_resource type="Resource" id="Wave_16"]
+script = ExtResource("2_wave")
+start_time = 60.0
+enemy_scene = ExtResource("8_rammer")
+count = 4
+interval = 0.8
+spawn_y = PackedFloat32Array(6.0, -6.0, 3.0, -3.0)
+
+[sub_resource type="Resource" id="Wave_17"]
+script = ExtResource("2_wave")
+start_time = 64.0
+enemy_scene = ExtResource("11_warden")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(0.0)
+
+[sub_resource type="Resource" id="Wave_18"]
+script = ExtResource("2_wave")
+start_time = 65.0
+enemy_scene = ExtResource("4_drone")
+count = 4
+interval = 0.9
+spawn_y = PackedFloat32Array(6.5, -6.5)
+
+[sub_resource type="Resource" id="Wave_19"]
+script = ExtResource("2_wave")
+start_time = 73.0
+enemy_scene = ExtResource("6_lancer")
+count = 6
+interval = 0.4
+spawn_y = PackedFloat32Array(6.5, -6.5)
+
+[sub_resource type="Resource" id="Wave_20"]
+script = ExtResource("2_wave")
+start_time = 75.0
+enemy_scene = ExtResource("5_needle")
+count = 8
+interval = 0.2
+spawn_y = PackedFloat32Array(1.0)
+completion_bonus = 1000
+
+[resource]
+script = ExtResource("1_stage")
+stage_name = "STAGE 1 — ORBITAL RIPTIDE"
+subtitle = "Answer ECHO-9's signal"
+waves = Array[ExtResource("2_wave")]([SubResource("Wave_0"), SubResource("Wave_1"), SubResource("Wave_2"), SubResource("Wave_3"), SubResource("Wave_4"), SubResource("Wave_5"), SubResource("Wave_6"), SubResource("Wave_7"), SubResource("Wave_8"), SubResource("Wave_9"), SubResource("Wave_10"), SubResource("Wave_11"), SubResource("Wave_12"), SubResource("Wave_13"), SubResource("Wave_14"), SubResource("Wave_15"), SubResource("Wave_16"), SubResource("Wave_17"), SubResource("Wave_18"), SubResource("Wave_19"), SubResource("Wave_20")])
+boss_scene = ExtResource("3_boss")
+clear_bonus = 10000
+next_level = "res://levels/foundry_descent/foundry_descent.tscn"

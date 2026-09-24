@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://player/ship/ship_player.gd" id="1_ship"]
 [ext_resource type="Resource" path="res://player/ship/ship_tuning.tres" id="2_tuning"]
@@ -12,6 +12,10 @@
 [ext_resource type="Script" path="res://vfx/engine_trail.gd" id="10_trail"]
 [ext_resource type="Shader" path="res://art/shaders/additive_glow.gdshader" id="11_glow"]
 [ext_resource type="PackedScene" path="res://vfx/explosion.tscn" id="12_boom"]
+[ext_resource type="Script" path="res://player/ship/ship_arsenal.gd" id="13_arsenal"]
+[ext_resource type="Script" path="res://player/ship/guard_orbs.gd" id="14_orbs"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/burst_shot.tscn" id="15_burst"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/orb_shot.tscn" id="16_orbshot"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_meter"]
 shading_mode = 0
@@ -34,11 +38,12 @@ size = Vector2(1.1, 0.8)
 [sub_resource type="BoxShape3D" id="Shape_hurt"]
 size = Vector3(0.9, 0.42, 1)
 
-[node name="ShipPlayer" type="Node3D" node_paths=PackedStringArray("movement", "weapon", "health", "hurtbox", "flash", "model", "dash_meter", "muzzle_flash")]
+[node name="ShipPlayer" type="Node3D" node_paths=PackedStringArray("movement", "weapon", "arsenal", "health", "hurtbox", "flash", "model", "dash_meter", "muzzle_flash")]
 script = ExtResource("1_ship")
 tuning = ExtResource("2_tuning")
 movement = NodePath("Movement")
 weapon = NodePath("Muzzle")
+arsenal = NodePath("Arsenal")
 health = NodePath("Health")
 hurtbox = NodePath("Hurtbox")
 flash = NodePath("Flash")
@@ -74,6 +79,29 @@ projectile_speed = 40.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 0.4)
 cast_shadow = 0
 mesh = SubResource("Mesh_muzzle")
+
+[node name="Arsenal" type="Node3D" parent="." node_paths=PackedStringArray("base_weapon", "burst_weapon", "orb_weapon", "guard_orbs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65, 0, 0)
+script = ExtResource("13_arsenal")
+base_weapon = NodePath("../Muzzle")
+burst_weapon = NodePath("BurstWeapon")
+orb_weapon = NodePath("OrbWeapon")
+guard_orbs = NodePath("../GuardOrbs")
+
+[node name="BurstWeapon" type="Node3D" parent="Arsenal"]
+script = ExtResource("4_weapon")
+projectile_scene = ExtResource("15_burst")
+team = 1
+projectile_speed = 36.0
+
+[node name="OrbWeapon" type="Node3D" parent="Arsenal"]
+script = ExtResource("4_weapon")
+projectile_scene = ExtResource("16_orbshot")
+team = 1
+projectile_speed = 38.0
+
+[node name="GuardOrbs" type="Node3D" parent="."]
+script = ExtResource("14_orbs")
 
 [node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
 script = ExtResource("6_hurt")

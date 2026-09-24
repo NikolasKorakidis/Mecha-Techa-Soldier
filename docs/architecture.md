@@ -98,6 +98,39 @@ ShipPlayer (Node3D, ship_player.gd) — state: CONTROL, DASH, HIT, DISABLED, CIN
 - Models are `@tool` scripts that build primitives at runtime via `ModelKit`; scenes keep gameplay nodes
   (hurtboxes, muzzles, telegraphs) as real scene nodes so exported references resolve.
 
+## Stage flow
+```
+Level (inherits graybox_room.tscn)
+├── Enemies                 (LevelDirector spawns wave units here; bosses summon here)
+├── Pickups                 (group "pickup_root" — elite weapon cores)
+├── StageUI                 (level-owned overlay: banners, WARNING, prompts, boss bar)
+└── LevelDirector           (runs a StageData resource)
+```
+- `StageData` (`directors/stage_data.gd`): stage name, `waves: Array[WaveData]`, boss scene, clear bonus,
+  `next_level` / `restart_level`. `WaveData`: start time, enemy scene, count, interval, entry heights,
+  optional parking X, speed scale, formation bonus, prompt.
+- `LevelDirector` states: `INTRO → WAVES → BOSS_WARNING → BOSS → CLEAR → DONE`. Waves run on accumulated
+  physics time. After the last wave, the boss comes when the field is clear (or after a straggler timeout).
+  On boss defeat: clear bonus, hostiles cleared, banner, then `SceneRouter.go_to(next_level)`.
+- Debug keys: F6 skip to boss, F8 advance boss phase, F7 cycle echo weapon (Main).
+
+## Enemies and bosses
+- `SpaceEnemy` (`enemies/space/space_enemy.gd`): one movement pattern (`STRAIGHT, SINE, SWOOP, HOLD, CHARGE`)
+  + one fire pattern (`STRAIGHT, AIMED, AIMED_BURST, DIAGONAL_PAIR, SPREAD_FAN, RADIAL_RING`). Each type is a
+  thin inherited scene of `space_enemy.tscn` overriding stats and shapes; `EnemyModel.kind` picks the look.
+  Elites set `drop_echo`. Enemies join group `enemies` and expose `is_alive()` + `hurtbox` (Arc targeting).
+- `BossBase` (`enemies/bosses/boss_base.gd`): `INTRO → PHASE_1 → BREAK_1 → PHASE_2 → BREAK_2 → PHASE_3 →
+  DEFEATED`. Health floors (`HealthComponent.floor_health`) hold each phase until its break. Subclasses
+  override `_phase_attacks`, `_attack_begin/_update/_duration`, optionally `_phase_complete` and
+  `_core_exposed`. `BossTurret` is a destructible module; `BeamHazard` is a telegraphed lightning lane.
+
+## Weapons
+- `RunSession.selected_echo` + `echo_ammo`; `equip_echo()`, `consume_echo_ammo()`, `clear_echo()`.
+- `EchoModuleData` resources in `combat/weapons/echoes/` (`EchoModules.get_data(id)`).
+- `ShipArsenal` picks base gun vs echo each tick; `GuardOrbs` cancel hostile projectiles (hitboxes are
+  monitorable on the hitbox layer so orbs can see them). `EchoPickup` magnetizes to the player and calls
+  `ShipPlayer.collect_echo()`.
+
 ## Performance approach
 No pooling yet: instantiate + off-screen/lifetime cleanup. Build a stress room and profile a release
 build before pooling anything; pool only proven hotspots.

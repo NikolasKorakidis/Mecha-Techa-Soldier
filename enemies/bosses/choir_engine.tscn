@@ -1,0 +1,59 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://enemies/bosses/choir_engine.gd" id="1_boss"]
+[ext_resource type="Script" path="res://components/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://components/hurtbox_component.gd" id="3_hurt"]
+[ext_resource type="Script" path="res://components/hitbox_component.gd" id="4_hit"]
+[ext_resource type="Script" path="res://combat/weapons/weapon_component.gd" id="5_weapon"]
+[ext_resource type="Script" path="res://components/damage_payload.gd" id="6_payload"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/enemy_shot.tscn" id="7_shot"]
+[ext_resource type="PackedScene" path="res://vfx/explosion.tscn" id="8_boom"]
+[ext_resource type="PackedScene" path="res://enemies/space/space_drone.tscn" id="9_drone"]
+
+[sub_resource type="SphereShape3D" id="Shape_core"]
+radius = 1.7
+
+[sub_resource type="Resource" id="Payload_contact"]
+script = ExtResource("6_payload")
+amount = 1
+team = 2
+knockback = Vector3(-10, 0, 0)
+
+[node name="ChoirEngine" type="Node3D" node_paths=PackedStringArray("weapon", "health", "hurtbox")]
+script = ExtResource("1_boss")
+weapon = NodePath("Weapon")
+summon_scene = ExtResource("9_drone")
+boss_name = "THE CHOIR ENGINE"
+max_health = 420
+home_position = Vector3(10, 0, 0)
+health = NodePath("Health")
+hurtbox = NodePath("Hurtbox")
+death_effect = ExtResource("8_boom")
+
+[node name="Weapon" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, 0)
+script = ExtResource("5_weapon")
+projectile_scene = ExtResource("7_shot")
+team = 2
+projectile_speed = 10.0
+
+[node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
+script = ExtResource("3_hurt")
+team = 2
+health = NodePath("../Health")
+
+[node name="Shape" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("Shape_core")
+
+[node name="ContactHitbox" type="Area3D" parent="."]
+script = ExtResource("4_hit")
+payload = SubResource("Payload_contact")
+single_hit = false
+continuous = true
+
+[node name="Shape" type="CollisionShape3D" parent="ContactHitbox"]
+shape = SubResource("Shape_core")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 420

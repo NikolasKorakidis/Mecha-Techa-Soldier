@@ -47,6 +47,9 @@ $GODOT --headless --path . --quit-after 180 2>&1 | tee /tmp/boot.log && ! grep -
 |---|---|
 | F2 | Next developer room |
 | F3 | Toggle debug telemetry panel |
+| F6 | Skip to the stage boss |
+| F7 | Cycle echo weapon (none → Burst → Arc → Guard) |
+| F8 | Advance boss to its next state |
 | Esc / Start | Pause |
 
 ## Web build (GitHub Pages)

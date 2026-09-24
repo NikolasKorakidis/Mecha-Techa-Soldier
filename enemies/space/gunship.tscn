@@ -1,0 +1,42 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://enemies/space/space_enemy.tscn" id="1_base"]
+
+[sub_resource type="BoxShape3D" id="Shape_hurt"]
+size = Vector3(4.2, 2.4, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_contact"]
+size = Vector3(3.6, 1.8, 1)
+
+[node name="Gunship" instance=ExtResource("1_base")]
+movement = 3
+speed = 4.0
+hold_x = 9.0
+hold_time = 10.0
+bob_amplitude = 0.8
+fire_pattern = 5
+spread_count = 5
+spread_angle = 50.0
+first_shot_delay = 0.8
+fire_interval = 2.1
+score_value = 1500
+death_size = 2.2
+drop_echo = &"burst"
+
+[node name="Model" parent="."]
+kind = 5
+
+[node name="Telegraph" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6, 0, 0.5)
+
+[node name="Muzzle" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6, 0, 0)
+
+[node name="Shape" parent="Hurtbox"]
+shape = SubResource("Shape_hurt")
+
+[node name="Shape" parent="ContactHitbox"]
+shape = SubResource("Shape_contact")
+
+[node name="Health" parent="."]
+max_health = 32

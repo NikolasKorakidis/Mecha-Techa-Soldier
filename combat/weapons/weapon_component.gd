@@ -23,6 +23,11 @@ func tick(delta: float, trigger_held: bool) -> void:
 
 
 func fire() -> Projectile:
+	return fire_at(direction)
+
+
+## Fires one projectile along `aim` (any direction on the gameplay plane).
+func fire_at(aim: Vector3, speed_scale: float = 1.0) -> Projectile:
 	if projectile_scene == null:
 		push_error("WeaponComponent '%s' has no projectile scene." % get_path())
 		return null
@@ -32,7 +37,7 @@ func fire() -> Projectile:
 	var projectile := projectile_scene.instantiate() as Projectile
 	root.add_child(projectile)
 	projectile.global_position = Vector3(global_position.x, global_position.y, 0.0)
-	projectile.setup(team, damage, direction.normalized() * projectile_speed)
+	projectile.setup(team, damage, Vector3(aim.x, aim.y, 0.0).normalized() * projectile_speed * speed_scale)
 	fired.emit(projectile)
 	return projectile
 

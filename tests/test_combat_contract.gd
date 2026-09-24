@@ -139,7 +139,7 @@ func test_projectile_lifetime_expires() -> void:
 
 func test_offscreen_enemy_survives_until_it_has_entered() -> void:
 	_make_level_scaffold()
-	var drone := (load("res://enemies/space/space_drone.tscn") as PackedScene).instantiate() as SpaceDrone
+	var drone := (load("res://enemies/space/space_drone.tscn") as PackedScene).instantiate() as SpaceEnemy
 	drone.position = Vector3(19, 0, 0)
 	add_autofree(drone)
 	await wait_physics_frames(5)
@@ -153,7 +153,7 @@ func test_offscreen_enemy_survives_until_it_has_entered() -> void:
 
 func test_drone_telegraphs_before_firing_and_scores_on_death() -> void:
 	_make_level_scaffold()
-	var drone := (load("res://enemies/space/space_drone.tscn") as PackedScene).instantiate() as SpaceDrone
+	var drone := (load("res://enemies/space/space_drone.tscn") as PackedScene).instantiate() as SpaceEnemy
 	drone.position = Vector3(8, 0, 0)
 	drone.speed = 0.0
 	drone.first_shot_delay = 0.1

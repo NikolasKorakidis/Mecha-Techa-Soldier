@@ -6,6 +6,7 @@ signal health_changed(current: int, maximum: int)
 signal score_changed(score: int)
 signal energy_changed(segments: int)
 signal echo_changed(echo_id: StringName)
+signal echo_ammo_changed(ammo: int)
 signal checkpoint_saved(checkpoint_id: StringName)
 signal run_reset
 
@@ -20,6 +21,8 @@ var health: int = DEFAULT_MAX_HEALTH
 var score: int = 0
 var energy: int = 0
 var selected_echo: StringName = NO_ECHO
+## Shots left on the active echo weapon; the echo is dropped when it reaches zero.
+var echo_ammo: int = 0
 var difficulty: Difficulty = Difficulty.ARCADE
 var checkpoint_id: StringName = &""
 
@@ -32,6 +35,7 @@ func reset_run() -> void:
 	score = 0
 	energy = 0
 	selected_echo = NO_ECHO
+	echo_ammo = 0
 	checkpoint_id = &""
 	_checkpoint.clear()
 	run_reset.emit()
@@ -39,6 +43,7 @@ func reset_run() -> void:
 	score_changed.emit(score)
 	energy_changed.emit(energy)
 	echo_changed.emit(selected_echo)
+	echo_ammo_changed.emit(echo_ammo)
 
 
 func set_health(value: int) -> void:
@@ -80,6 +85,28 @@ func set_echo(echo_id: StringName) -> void:
 	echo_changed.emit(selected_echo)
 
 
+## Installs an echo weapon with a shot budget, replacing any current one.
+func equip_echo(echo_id: StringName, ammo: int) -> void:
+	echo_ammo = maxi(0, ammo)
+	set_echo(echo_id if echo_ammo > 0 else NO_ECHO)
+	echo_ammo_changed.emit(echo_ammo)
+
+
+## Spends shots from the active echo. Returns false if no echo is active.
+func consume_echo_ammo(shots: int = 1) -> bool:
+	if selected_echo == NO_ECHO or echo_ammo <= 0:
+		return false
+	echo_ammo = maxi(0, echo_ammo - shots)
+	echo_ammo_changed.emit(echo_ammo)
+	if echo_ammo == 0:
+		set_echo(NO_ECHO)
+	return true
+
+
+func clear_echo() -> void:
+	equip_echo(NO_ECHO, 0)
+
+
 func save_checkpoint(id: StringName) -> void:
 	checkpoint_id = id
 	_checkpoint = {
@@ -87,6 +114,7 @@ func save_checkpoint(id: StringName) -> void:
 		"score": score,
 		"energy": energy,
 		"echo": selected_echo,
+		"echo_ammo": echo_ammo,
 	}
 	checkpoint_saved.emit(id)
 
@@ -105,5 +133,5 @@ func restore_checkpoint() -> bool:
 	score_changed.emit(score)
 	energy = _checkpoint["energy"]
 	energy_changed.emit(energy)
-	set_echo(_checkpoint["echo"])
+	equip_echo(_checkpoint["echo"], _checkpoint["echo_ammo"])
 	return true

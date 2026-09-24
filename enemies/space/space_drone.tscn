@@ -1,27 +1,6 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=4 format=3]
 
-[ext_resource type="Script" path="res://enemies/space/space_drone.gd" id="1_drone"]
-[ext_resource type="Script" path="res://components/health_component.gd" id="2_health"]
-[ext_resource type="Script" path="res://components/hurtbox_component.gd" id="3_hurt"]
-[ext_resource type="Script" path="res://components/hitbox_component.gd" id="4_hit"]
-[ext_resource type="Script" path="res://components/flash_component.gd" id="5_flash"]
-[ext_resource type="Script" path="res://components/offscreen_cleanup.gd" id="6_clean"]
-[ext_resource type="Script" path="res://combat/weapons/weapon_component.gd" id="7_weapon"]
-[ext_resource type="Script" path="res://components/damage_payload.gd" id="8_payload"]
-[ext_resource type="PackedScene" path="res://combat/projectiles/enemy_shot.tscn" id="9_shot"]
-[ext_resource type="Script" path="res://art/models/drone_model.gd" id="10_model"]
-[ext_resource type="PackedScene" path="res://vfx/explosion.tscn" id="11_boom"]
-[ext_resource type="Shader" path="res://art/shaders/additive_glow.gdshader" id="12_glow"]
-
-[sub_resource type="ShaderMaterial" id="Mat_flare"]
-shader = ExtResource("12_glow")
-shader_parameter/tint = Color(1, 0.75, 0.95, 1)
-shader_parameter/energy = 2.5
-shader_parameter/shape = 0
-
-[sub_resource type="QuadMesh" id="Mesh_flare"]
-material = SubResource("Mat_flare")
-size = Vector2(1.4, 1.4)
+[ext_resource type="PackedScene" path="res://enemies/space/space_enemy.tscn" id="1_base"]
 
 [sub_resource type="BoxShape3D" id="Shape_hurt"]
 size = Vector3(1.3, 1.0, 1)
@@ -29,62 +8,26 @@ size = Vector3(1.3, 1.0, 1)
 [sub_resource type="BoxShape3D" id="Shape_contact"]
 size = Vector3(1.0, 0.8, 1)
 
-[sub_resource type="Resource" id="Payload_contact"]
-script = ExtResource("8_payload")
-amount = 1
-team = 2
-knockback = Vector3(-6, 0, 0)
+[node name="SpaceDrone" instance=ExtResource("1_base")]
+movement = 1
+speed = 4.0
+fire_pattern = 1
+score_value = 100
 
-[node name="SpaceDrone" type="Node3D" node_paths=PackedStringArray("health", "weapon", "flash", "telegraph")]
-script = ExtResource("1_drone")
-health = NodePath("Health")
-weapon = NodePath("Muzzle")
-flash = NodePath("Flash")
-telegraph = NodePath("Telegraph")
-death_effect = ExtResource("11_boom")
+[node name="Model" parent="."]
+kind = 0
 
-[node name="Model" type="Node3D" parent="."]
-script = ExtResource("10_model")
-
-[node name="Telegraph" type="MeshInstance3D" parent="."]
+[node name="Telegraph" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0, 0.5)
-cast_shadow = 0
-mesh = SubResource("Mesh_flare")
 
-[node name="Muzzle" type="Node3D" parent="."]
+[node name="Muzzle" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, 0, 0)
-script = ExtResource("7_weapon")
-projectile_scene = ExtResource("9_shot")
-team = 2
-projectile_speed = 11.0
-direction = Vector3(-1, 0, 0)
 
-[node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
-script = ExtResource("3_hurt")
-team = 2
-health = NodePath("../Health")
-
-[node name="Shape" type="CollisionShape3D" parent="Hurtbox"]
+[node name="Shape" parent="Hurtbox"]
 shape = SubResource("Shape_hurt")
 
-[node name="ContactHitbox" type="Area3D" parent="."]
-script = ExtResource("4_hit")
-payload = SubResource("Payload_contact")
-single_hit = false
-continuous = true
-
-[node name="Shape" type="CollisionShape3D" parent="ContactHitbox"]
+[node name="Shape" parent="ContactHitbox"]
 shape = SubResource("Shape_contact")
 
-[node name="Health" type="Node" parent="."]
-script = ExtResource("2_health")
-
-[node name="Flash" type="Node" parent="." node_paths=PackedStringArray("target")]
-script = ExtResource("5_flash")
-target = NodePath("../Model")
-mode = 1
-
-[node name="OffscreenCleanup" type="Node" parent="."]
-script = ExtResource("6_clean")
-margin = 3.0
-require_entered = true
+[node name="Health" parent="."]
+max_health = 3

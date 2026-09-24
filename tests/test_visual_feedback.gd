@@ -65,3 +65,23 @@ func test_overlay_flash_paints_and_clears_meshes() -> void:
 	await get_tree().create_timer(0.15).timeout
 	assert_true(mesh.material_overlay == null, "overlay cleared after flash")
 	assert_true(target.visible, "overlay mode never hides the target")
+
+
+func test_overlay_flash_strobes_under_sustained_hits() -> void:
+	var target := Node3D.new()
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = BoxMesh.new()
+	target.add_child(mesh)
+	add_autofree(target)
+	var flash := FlashComponent.new()
+	flash.target = target
+	flash.mode = FlashComponent.Mode.OVERLAY
+	add_autofree(flash)
+	var lit_frames := 0
+	for i in 60:
+		flash.flash(0.05)  # hit every frame
+		await get_tree().process_frame
+		if mesh.material_overlay != null:
+			lit_frames += 1
+	assert_true(lit_frames < 50, "overlay is not solid under constant fire (%d/60 lit)" % lit_frames)
+	assert_true(lit_frames > 5, "overlay still shows hits")

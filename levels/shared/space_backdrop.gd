@@ -8,6 +8,22 @@ extends Node3D
 const NEBULA_SHADER := preload("res://art/shaders/nebula.gdshader")
 const PLANET_SHADER := preload("res://art/shaders/gas_giant.gdshader")
 
+@export_group("Palette")
+@export var nebula_deep: Color = Color(0.012, 0.035, 0.07)
+@export var nebula_teal: Color = Color(0.03, 0.2, 0.26)
+@export var nebula_violet: Color = Color(0.16, 0.07, 0.26)
+@export var nebula_warm: Color = Color(0.5, 0.22, 0.12)
+@export var nebula_scroll: float = 0.006
+@export var planet_band_dark: Color = Color(0.05, 0.13, 0.36)
+@export var planet_band_mid: Color = Color(0.12, 0.32, 0.66)
+@export var planet_band_light: Color = Color(0.36, 0.64, 0.86)
+@export var planet_atmosphere: Color = Color(0.45, 0.85, 1.0)
+@export var planet_radius: float = 17.0
+@export var planet_position: Vector3 = Vector3(6, -25, -60)
+@export var show_ring: bool = true
+@export var debris_tint: Color = Color("151c2d")
+
+@export_group("Motion")
 @export var debris_count: int = 10
 @export var debris_speed_range: Vector2 = Vector2(2.5, 6.0)
 @export var ring_scroll_speed: float = 0.4
@@ -23,13 +39,19 @@ func _ready() -> void:
 	_debris.clear()
 	_build_nebula()
 	_build_planet()
-	_build_ring()
+	if show_ring:
+		_build_ring()
 	_build_debris()
 
 
 func _build_nebula() -> void:
 	var material := ShaderMaterial.new()
 	material.shader = NEBULA_SHADER
+	material.set_shader_parameter(&"deep_color", nebula_deep)
+	material.set_shader_parameter(&"teal_color", nebula_teal)
+	material.set_shader_parameter(&"violet_color", nebula_violet)
+	material.set_shader_parameter(&"warm_color", nebula_warm)
+	material.set_shader_parameter(&"scroll_speed", nebula_scroll)
 	var nebula := ModelKit.quad(self, Vector2(48, 27), Vector3(0, 0, -80), material)
 	nebula.name = "Nebula"
 
@@ -37,7 +59,11 @@ func _build_nebula() -> void:
 func _build_planet() -> void:
 	var material := ShaderMaterial.new()
 	material.shader = PLANET_SHADER
-	var planet := ModelKit.sphere(self, 17.0, Vector3(6, -25, -60), material)
+	material.set_shader_parameter(&"band_dark", planet_band_dark)
+	material.set_shader_parameter(&"band_mid", planet_band_mid)
+	material.set_shader_parameter(&"band_light", planet_band_light)
+	material.set_shader_parameter(&"atmosphere", planet_atmosphere)
+	var planet := ModelKit.sphere(self, planet_radius, planet_position, material)
 	planet.name = "GasGiant"
 	planet.rotation_degrees = Vector3(0, 0, -12)
 	(planet.mesh as SphereMesh).radial_segments = 48
@@ -79,7 +105,7 @@ func _build_ring() -> void:
 func _build_debris() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 21
-	var dark := ModelKit.toon(Color("151c2d"), 0.7, 0.7, 0.3)
+	var dark := ModelKit.toon(debris_tint, 0.7, 0.7, 0.3)
 	var rust := ModelKit.toon(Color("2a2330"), 0.7, 0.7, 0.3)
 	for i in debris_count:
 		var size := Vector3(rng.randf_range(0.4, 1.6), rng.randf_range(0.3, 1.0), rng.randf_range(0.3, 1.0))

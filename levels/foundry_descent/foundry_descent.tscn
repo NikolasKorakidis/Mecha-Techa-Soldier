@@ -1,0 +1,40 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://levels/test_rooms/graybox_room.tscn" id="1_base"]
+[ext_resource type="Script" path="res://directors/level_director.gd" id="2_director"]
+[ext_resource type="Resource" path="res://levels/foundry_descent/stage_2.tres" id="3_stage"]
+[ext_resource type="Script" path="res://ui/stage/stage_ui.gd" id="4_ui"]
+
+[node name="FoundryDescent" instance=ExtResource("1_base")]
+
+[node name="Title" parent="."]
+visible = false
+
+[node name="SpaceBackdrop" parent="."]
+nebula_deep = Color(0.07, 0.015, 0.025, 1)
+nebula_teal = Color(0.32, 0.09, 0.05, 1)
+nebula_violet = Color(0.26, 0.05, 0.12, 1)
+nebula_warm = Color(0.95, 0.45, 0.15, 1)
+nebula_scroll = 0.012
+planet_band_dark = Color(0.3, 0.07, 0.05, 1)
+planet_band_mid = Color(0.72, 0.28, 0.1, 1)
+planet_band_light = Color(1, 0.62, 0.3, 1)
+planet_atmosphere = Color(1, 0.55, 0.25, 1)
+planet_radius = 30.0
+planet_position = Vector3(0, -38.5, -60)
+show_ring = false
+debris_tint = Color(0.16, 0.07, 0.08, 1)
+debris_speed_range = Vector2(4, 9)
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Pickups" type="Node3D" parent="." groups=["pickup_root"]]
+
+[node name="StageUI" type="CanvasLayer" parent="."]
+script = ExtResource("4_ui")
+
+[node name="LevelDirector" type="Node" parent="." node_paths=PackedStringArray("enemy_root", "stage_ui")]
+script = ExtResource("2_director")
+stage = ExtResource("3_stage")
+enemy_root = NodePath("../Enemies")
+stage_ui = NodePath("../StageUI")

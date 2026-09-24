@@ -22,6 +22,9 @@ func _initialize() -> void:
 		&"pause": [_key(KEY_ESCAPE), _button(JOY_BUTTON_START)],
 		&"debug_toggle_panel": [_key(KEY_F3)],
 		&"debug_next_room": [_key(KEY_F2)],
+		&"debug_skip_to_boss": [_key(KEY_F6)],
+		&"debug_cycle_echo": [_key(KEY_F7)],
+		&"debug_boss_phase": [_key(KEY_F8)],
 	}
 	for action_name: StringName in actions:
 		for event: InputEvent in actions[action_name]:

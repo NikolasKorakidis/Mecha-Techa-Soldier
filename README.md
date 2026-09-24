@@ -4,7 +4,7 @@
 platformer. The link between both halves is **Echo Shift** — decode an enemy's combat pattern (Burst, Arc,
 Guard) and carry it through the ship-to-mech transformation.
 
-**Status:** M0 foundation + M1 ship feel + visual pass v1 (procedural models, VFX, space backdrop). Next up: M2 Echo lab.
+**Status:** two playable shooter stages with bosses, 8 enemy types, elite weapon drops (Burst / Arc / Guard), procedural visuals. Next up: Echo Energy meter + tether decode, audio, then the ship-to-mech transformation.
 
 ## Play it
 **In the browser:** https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ (Chrome or Edge recommended;
@@ -21,7 +21,8 @@ click the game once to give it keyboard focus). Every push to the branch rebuild
 | Vertical burst | Space | A / Cross |
 | Dash | K / Shift | B / Circle |
 | Pause | Esc | Start |
-| Next dev room / debug panel | F2 / F3 | — |
+| Next stage / debug panel | F2 / F3 | — |
+| Skip to boss / cycle weapon / next boss phase | F6 / F7 / F8 | — |
 
 ## Docs
 - [Game design](docs/game-design.md) — loop, Echo Shift, levels, bosses, milestones

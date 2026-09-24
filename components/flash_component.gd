@@ -6,7 +6,9 @@ extends Node
 
 enum Mode { BLINK, OVERLAY }
 
-const OVERLAY_COLOR := Color(1.0, 1.0, 1.0, 0.85)
+const OVERLAY_COLOR := Color(1.0, 1.0, 1.0, 0.6)
+## Under sustained fire the overlay strobes instead of staying solid white.
+const OVERLAY_MIN_GAP := 0.1
 
 @export var target: Node3D
 @export var mode: Mode = Mode.BLINK
@@ -16,13 +18,17 @@ static var _overlay_material: StandardMaterial3D
 
 var _time_left: float = 0.0
 var _toggle_left: float = 0.0
+var _overlay_cooldown: float = 0.0
 
 
 func flash(duration: float) -> void:
+	if mode == Mode.OVERLAY:
+		if _overlay_cooldown > 0.0:
+			return
+		_overlay_cooldown = duration + OVERLAY_MIN_GAP
+		_set_overlay(true)
 	_time_left = duration
 	_toggle_left = interval
-	if mode == Mode.OVERLAY:
-		_set_overlay(true)
 
 
 func stop() -> void:
@@ -38,6 +44,7 @@ func is_flashing() -> bool:
 
 
 func _process(delta: float) -> void:
+	_overlay_cooldown = maxf(0.0, _overlay_cooldown - delta)
 	if _time_left <= 0.0 or target == null:
 		return
 	_time_left -= delta

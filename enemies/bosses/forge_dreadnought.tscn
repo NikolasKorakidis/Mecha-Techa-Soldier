@@ -1,0 +1,82 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://enemies/bosses/forge_dreadnought.gd" id="1_boss"]
+[ext_resource type="Script" path="res://components/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://components/hurtbox_component.gd" id="3_hurt"]
+[ext_resource type="Script" path="res://components/hitbox_component.gd" id="4_hit"]
+[ext_resource type="Script" path="res://combat/weapons/weapon_component.gd" id="5_weapon"]
+[ext_resource type="Script" path="res://components/damage_payload.gd" id="6_payload"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/enemy_shot.tscn" id="7_shot"]
+[ext_resource type="PackedScene" path="res://vfx/explosion.tscn" id="8_boom"]
+[ext_resource type="PackedScene" path="res://enemies/space/rammer.tscn" id="9_rammer"]
+[ext_resource type="Script" path="res://enemies/bosses/boss_turret.gd" id="10_turret"]
+
+[sub_resource type="SphereShape3D" id="Shape_core"]
+radius = 1.3
+
+[sub_resource type="BoxShape3D" id="Shape_hull"]
+size = Vector3(8, 4.2, 1)
+
+[sub_resource type="Resource" id="Payload_contact"]
+script = ExtResource("6_payload")
+amount = 1
+team = 2
+knockback = Vector3(-12, 0, 0)
+
+[node name="ForgeDreadnought" type="Node3D" node_paths=PackedStringArray("weapon", "turrets", "health", "hurtbox")]
+script = ExtResource("1_boss")
+weapon = NodePath("Weapon")
+turrets = [NodePath("TurretTop"), NodePath("TurretBottom")]
+summon_scene = ExtResource("9_rammer")
+boss_name = "FORGE DREADNOUGHT"
+max_health = 520
+phase_thresholds = Vector2(1, 0.45)
+home_position = Vector3(10.5, 0, 0)
+intro_offset = 16.0
+health = NodePath("Health")
+hurtbox = NodePath("Hurtbox")
+death_effect = ExtResource("8_boom")
+defeat_score = 30000
+
+[node name="Weapon" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, 0)
+script = ExtResource("5_weapon")
+projectile_scene = ExtResource("7_shot")
+team = 2
+projectile_speed = 10.0
+
+[node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 0, 0)
+script = ExtResource("3_hurt")
+team = 2
+health = NodePath("../Health")
+
+[node name="Shape" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("Shape_core")
+
+[node name="ContactHitbox" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, 0)
+script = ExtResource("4_hit")
+payload = SubResource("Payload_contact")
+single_hit = false
+continuous = true
+
+[node name="Shape" type="CollisionShape3D" parent="ContactHitbox"]
+shape = SubResource("Shape_hull")
+
+[node name="TurretTop" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0.3)
+script = ExtResource("10_turret")
+projectile_scene = ExtResource("7_shot")
+death_effect = ExtResource("8_boom")
+
+[node name="TurretBottom" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.2, 0.3)
+script = ExtResource("10_turret")
+projectile_scene = ExtResource("7_shot")
+death_effect = ExtResource("8_boom")
+fire_interval = 2.9
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 520

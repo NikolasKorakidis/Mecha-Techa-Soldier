@@ -68,6 +68,59 @@ points. Passive trickle only on Story difficulty.
 Echo Shift copies a behavior; it does not capture or retain the enemy. Avoid purple capture spheres,
 fish-shaped enemies, the names Alpha/Beta Beam, copied enemy followers, and G-Darius power-up colors.
 
+## Current build: stage flow, enemy roster, weapon drops (implemented)
+Built ahead of the M2–M4 order at the user's request. Where it differs from the plan above, this section
+describes what is actually in the game.
+
+### Weapon drops (echo acquisition, v1)
+Elite carriers (gold-white pulsing core with a concentric ring) drop a **weapon core** when destroyed.
+Flying into it installs that echo weapon for a fixed number of shots; the HUD shows `NAME ×ammo`
+(red when low). At zero ammo the ship reverts to the base gun. A new core replaces the current weapon.
+Dying drops the weapon (Contra rule). The weapon carries between stages.
+
+| Echo | Dropped by | Ship weapon | Shots |
+|---|---|---|---|
+| BURST | Gunship | 5-way spread | 140 |
+| ARC | Tesla | Chain lightning: nearest enemy in reach, then up to 2 more nearby (no ammo spent without a target) | 110 |
+| GUARD | Warden | Two orbiting orbs that destroy enemy bullets and fire alongside you | 180 |
+
+The tether/decode interaction and the Echo Energy meter (Pulse, Resonance Beam, Overdrive Counter) are
+still planned (M2); drops are the first acquisition path.
+
+### Enemy roster (space)
+| Enemy | Movement | Attack | Role |
+|---|---|---|---|
+| Drone | Sine drift | Straight shot | Basic fodder |
+| Needle | Fast straight rows | None (contact) | Formation bonus target |
+| Lancer | Swoop toward center and back | Diagonal pair | Lane pressure |
+| Gunpod | Enters, parks, leaves | Aimed 3-round burst (barrel tracks you) | Priority turret (Contra-style) |
+| Rammer | Approaches, telegraphs, locks on, charges | Body | Forces sidesteps |
+| Gunship (elite) | Parks | 5-way aimed fan | Drops BURST |
+| Tesla (elite) | Parks, wide bob | 5-round aimed burst | Drops ARC |
+| Warden (elite) | Parks | 12-way radial ring, alternating gaps | Drops GUARD |
+
+Every volley is preceded by a swelling telegraph flare. Whole formations destroyed award a
+**formation bonus**; one escapee voids it.
+
+### Stage structure
+Each stage: title banner → authored waves (`stage_*.tres`) → **WARNING** → boss → **STAGE CLEAR** → next.
+- **Stage 1 — Orbital Riptide** (~80 s of waves) → boss **The Choir Engine**.
+- **Stage 2 — Foundry Descent** (burning-atmosphere palette, 12% faster waves) → boss **Forge Dreadnought**.
+- After Stage 2: **MISSION COMPLETE**, then the run restarts at Stage 1.
+
+Stage 2 is a shooter stage for now. The planned ship-to-mech transformation and the Foundry Run platformer
+(M5–M7) remain the intended second half; Stage 2 can become the approach before the transformation.
+
+### Bosses (implemented)
+Both follow `.claude/rules/bosses.md`: explicit states, health floors so phases cannot be skipped, breaks
+that clear bullets and protect the player, no back-to-back attack repeats, slower first use.
+- **The Choir Engine** (420 HP): fan volleys, rotating spiral with safe lanes, drone summons; phase 2 adds
+  telegraphed lightning lanes and aimed bursts; phase 3 adds the Null Chorus (inward ring → core flare →
+  three radial rings with a gap). One mask shatters per break. (Overdrive Counter beam contest: pending M2.)
+- **Forge Dreadnought** (520 HP): phase 1 — destroy two tracking turrets while dodging broadside walls and
+  rammer escorts; the core armor opens at the break; phase 2 — lightning lane sweeps, radial bursts;
+  phase 3 — spiral + everything faster.
+
 ## Controls
 | Action | Keyboard | Controller | Space | Mech |
 |---|---|---|---|---|
@@ -211,9 +264,9 @@ Build prompts from the plan map onto milestones as shown. One milestone per sess
 |---|---|---|---|---|
 | M0 Foundation | 0 | Bootable project, input, session, HUD | Clean launch and scene transition | Done |
 | M1 Ship feel | 1, 2 | Ship movement, fire, dash, damage; shared combat contract | 5-min movement/combat test without control complaints | Graybox done — needs playtest |
-| M2 Echo lab | 3 | Three ship echoes and energy | Replacement and persistence tests pass | |
-| M3 Space graybox | 4 | Full pre-boss level | Complete start-to-boss run | |
-| M4 Space boss | 5 | Choir Engine | All phase and checkpoint tests pass | |
+| M2 Echo lab | 3 | Three ship echoes and energy | Replacement and persistence tests pass | Echo weapons via elite drops done; tether decode + energy meter pending |
+| M3 Space graybox | 4 | Full pre-boss level | Complete start-to-boss run | Done (Stage 1 + Stage 2 wave scripts) |
+| M4 Space boss | 5 | Choir Engine | All phase and checkpoint tests pass | Done without Overdrive Counter; Forge Dreadnought added |
 | M5 Transformation | 6 | Cinematic bridge and mech movement | State carries correctly between modes | |
 | M6 Ground graybox | 7 | Full pre-boss platform level | All critical jumps and hazards pass | |
 | M7 Ground boss | 8 | Forge Regent and ending | Complete two-level run | |

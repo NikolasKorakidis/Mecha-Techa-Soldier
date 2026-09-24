@@ -1,0 +1,193 @@
+[gd_resource type="Resource" script_class="StageData" load_steps=30 format=3]
+
+[ext_resource type="Script" path="res://directors/stage_data.gd" id="1_stage"]
+[ext_resource type="Script" path="res://directors/wave_data.gd" id="2_wave"]
+[ext_resource type="PackedScene" path="res://enemies/bosses/forge_dreadnought.tscn" id="3_boss"]
+[ext_resource type="PackedScene" path="res://enemies/space/space_drone.tscn" id="4_drone"]
+[ext_resource type="PackedScene" path="res://enemies/space/needle.tscn" id="5_needle"]
+[ext_resource type="PackedScene" path="res://enemies/space/lancer.tscn" id="6_lancer"]
+[ext_resource type="PackedScene" path="res://enemies/space/gunpod.tscn" id="7_gunpod"]
+[ext_resource type="PackedScene" path="res://enemies/space/rammer.tscn" id="8_rammer"]
+[ext_resource type="PackedScene" path="res://enemies/space/gunship.tscn" id="9_gunship"]
+[ext_resource type="PackedScene" path="res://enemies/space/tesla.tscn" id="10_tesla"]
+[ext_resource type="PackedScene" path="res://enemies/space/warden.tscn" id="11_warden"]
+
+[sub_resource type="Resource" id="Wave_0"]
+script = ExtResource("2_wave")
+start_time = 1.0
+enemy_scene = ExtResource("5_needle")
+count = 6
+interval = 0.22
+spawn_y = PackedFloat32Array(4.0)
+speed_scale = 1.12
+completion_bonus = 700
+
+[sub_resource type="Resource" id="Wave_1"]
+script = ExtResource("2_wave")
+start_time = 3.5
+enemy_scene = ExtResource("5_needle")
+count = 6
+interval = 0.22
+spawn_y = PackedFloat32Array(-4.0)
+speed_scale = 1.12
+completion_bonus = 700
+
+[sub_resource type="Resource" id="Wave_2"]
+script = ExtResource("2_wave")
+start_time = 7.0
+enemy_scene = ExtResource("7_gunpod")
+count = 3
+interval = 0.5
+spawn_y = PackedFloat32Array(5.5, 0.0, -5.5)
+hold_x = PackedFloat32Array(9.0, 12.0, 9.0)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_3"]
+script = ExtResource("2_wave")
+start_time = 12.0
+enemy_scene = ExtResource("6_lancer")
+count = 6
+interval = 0.45
+spawn_y = PackedFloat32Array(6.5, -6.5)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_4"]
+script = ExtResource("2_wave")
+start_time = 16.0
+enemy_scene = ExtResource("8_rammer")
+count = 5
+interval = 0.6
+spawn_y = PackedFloat32Array(6.0, 3.0, 0.0, -3.0, -6.0)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_5"]
+script = ExtResource("2_wave")
+start_time = 21.0
+enemy_scene = ExtResource("10_tesla")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(0.0)
+speed_scale = 1.12
+prompt = "FOUNDRY DEFENSES ONLINE"
+
+[sub_resource type="Resource" id="Wave_6"]
+script = ExtResource("2_wave")
+start_time = 23.0
+enemy_scene = ExtResource("4_drone")
+count = 6
+interval = 0.5
+spawn_y = PackedFloat32Array(6.5, -6.5, 4.0, -4.0, 1.0, -1.0)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_7"]
+script = ExtResource("2_wave")
+start_time = 30.0
+enemy_scene = ExtResource("5_needle")
+count = 8
+interval = 0.18
+spawn_y = PackedFloat32Array(6.5)
+speed_scale = 1.12
+completion_bonus = 1000
+
+[sub_resource type="Resource" id="Wave_8"]
+script = ExtResource("2_wave")
+start_time = 32.0
+enemy_scene = ExtResource("5_needle")
+count = 8
+interval = 0.18
+spawn_y = PackedFloat32Array(-6.5)
+speed_scale = 1.12
+completion_bonus = 1000
+
+[sub_resource type="Resource" id="Wave_9"]
+script = ExtResource("2_wave")
+start_time = 36.0
+enemy_scene = ExtResource("9_gunship")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(3.0)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_10"]
+script = ExtResource("2_wave")
+start_time = 37.0
+enemy_scene = ExtResource("7_gunpod")
+count = 2
+interval = 0.5
+spawn_y = PackedFloat32Array(-5.5, 6.0)
+hold_x = PackedFloat32Array(12.0, 12.5)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_11"]
+script = ExtResource("2_wave")
+start_time = 44.0
+enemy_scene = ExtResource("8_rammer")
+count = 6
+interval = 0.5
+spawn_y = PackedFloat32Array(6.0, -6.0, 4.0, -4.0, 2.0, -2.0)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_12"]
+script = ExtResource("2_wave")
+start_time = 49.0
+enemy_scene = ExtResource("11_warden")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(-2.0)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_13"]
+script = ExtResource("2_wave")
+start_time = 50.0
+enemy_scene = ExtResource("6_lancer")
+count = 8
+interval = 0.35
+spawn_y = PackedFloat32Array(6.5, -6.5)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_14"]
+script = ExtResource("2_wave")
+start_time = 58.0
+enemy_scene = ExtResource("7_gunpod")
+count = 3
+interval = 0.4
+spawn_y = PackedFloat32Array(6.0, 0.0, -6.0)
+hold_x = PackedFloat32Array(10.0, 12.5, 10.0)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_15"]
+script = ExtResource("2_wave")
+start_time = 62.0
+enemy_scene = ExtResource("5_needle")
+count = 10
+interval = 0.16
+spawn_y = PackedFloat32Array(0.0)
+speed_scale = 1.12
+completion_bonus = 1500
+
+[sub_resource type="Resource" id="Wave_16"]
+script = ExtResource("2_wave")
+start_time = 66.0
+enemy_scene = ExtResource("10_tesla")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(4.0)
+speed_scale = 1.12
+
+[sub_resource type="Resource" id="Wave_17"]
+script = ExtResource("2_wave")
+start_time = 67.0
+enemy_scene = ExtResource("9_gunship")
+count = 1
+interval = 0.0
+spawn_y = PackedFloat32Array(-4.0)
+speed_scale = 1.12
+
+[resource]
+script = ExtResource("1_stage")
+stage_name = "STAGE 2 — FOUNDRY DESCENT"
+subtitle = "Into the burning sky"
+waves = Array[ExtResource("2_wave")]([SubResource("Wave_0"), SubResource("Wave_1"), SubResource("Wave_2"), SubResource("Wave_3"), SubResource("Wave_4"), SubResource("Wave_5"), SubResource("Wave_6"), SubResource("Wave_7"), SubResource("Wave_8"), SubResource("Wave_9"), SubResource("Wave_10"), SubResource("Wave_11"), SubResource("Wave_12"), SubResource("Wave_13"), SubResource("Wave_14"), SubResource("Wave_15"), SubResource("Wave_16"), SubResource("Wave_17")])
+boss_scene = ExtResource("3_boss")
+clear_bonus = 20000
+restart_level = "res://levels/orbital_riptide/orbital_riptide.tscn"

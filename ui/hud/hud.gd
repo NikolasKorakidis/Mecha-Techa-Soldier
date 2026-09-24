@@ -13,6 +13,7 @@ func _ready() -> void:
 	RunSession.score_changed.connect(_on_score_changed)
 	RunSession.energy_changed.connect(_on_energy_changed)
 	RunSession.echo_changed.connect(_on_echo_changed)
+	RunSession.echo_ammo_changed.connect(_on_echo_ammo_changed)
 	_on_health_changed(RunSession.health, RunSession.max_health)
 	_on_score_changed(RunSession.score)
 	_on_energy_changed(RunSession.energy)
@@ -38,8 +39,24 @@ func _on_score_changed(score: int) -> void:
 	_score_label.text = "%08d" % score
 
 
-func _on_echo_changed(echo_id: StringName) -> void:
-	_echo_label.text = "ECHO: %s" % ("—" if echo_id == RunSession.NO_ECHO else String(echo_id).to_upper())
+func _on_echo_changed(_echo_id: StringName) -> void:
+	_refresh_echo()
+
+
+func _on_echo_ammo_changed(_ammo: int) -> void:
+	_refresh_echo()
+
+
+## Active echo weapon in its module color, with shots left; low ammo turns red.
+func _refresh_echo() -> void:
+	var data := EchoModules.get_data(RunSession.selected_echo)
+	if data == null:
+		_echo_label.text = "WEAPON: BASIC"
+		_echo_label.add_theme_color_override(&"font_color", Color(0.75, 0.85, 0.95))
+		return
+	_echo_label.text = "%s  ×%d" % [data.display_name, RunSession.echo_ammo]
+	var low := RunSession.echo_ammo <= data.ammo / 5
+	_echo_label.add_theme_color_override(&"font_color", Palette.DANGER if low else data.module_color)
 
 
 func _rebuild_segments(container: HBoxContainer, count: int, shape: SegmentPip.Shape, color: Color) -> void:

@@ -18,14 +18,24 @@ Each `tests/test_*.gd` extends `TestCase`; every `test_*` method runs on a fresh
 | Projectile → hurtbox hit through physics | `test_combat_contract.gd` | ✅ |
 | HUD health updates only from RunSession | `test_ship_player.gd` | ✅ |
 | Ship accel, bounds, dash, invulnerability, death, respawn | `test_ship_player.gd` | ✅ |
-| Wave timing uses elapsed time consistently | M3 | ⬜ |
-| Boss transitions cannot skip or repeat illegally | M4 / M7 | ⬜ |
+| Wave timing uses elapsed time consistently | `test_stage_flow.gd` | ✅ |
+| Formation bonus only when every unit is destroyed | `test_stage_flow.gd` | ✅ |
+| WARNING → boss → clear flow; skip-to-boss | `test_stage_flow.gd` | ✅ |
+| Boss transitions cannot skip or repeat illegally; defeated emitted once | `test_stage_flow.gd` | ✅ |
+| Boss breaks clear bullets and protect the player; no back-to-back attacks | `test_stage_flow.gd` | ✅ |
+| Dreadnought core armored until turrets die | `test_stage_flow.gd` | ✅ |
+| Echo ammo, replacement, loss on death; Burst/Arc/Guard behavior; elite drops | `test_echo_weapons.gd` | ✅ |
+| Enemy aim, fan count, hold/exit, charge lock-on; all enemy scenes wired | `test_enemy_patterns.gd` | ✅ |
 | Save data loads defaults when absent or incompatible | M9 | ⬜ |
 
 ## Movement instrumentation (F3 debug panel)
 - Ship: state, speed, time-to-max-speed, last dash distance, dash cooldown, invulnerability, last hit source + time.
 - Mech (M5): run speed, jump apex, airtime, coyote use, buffered jump use, dash distance, landing recovery.
 - Boss (M4/M7): attack selected, state transition reason.
+
+## Full-run bot (manual tool)
+A scratch bot (not committed) played Stage 1 → Choir Engine → Stage 2 → Forge Dreadnought → MISSION
+COMPLETE → Stage 1 at 6× speed with zero engine errors. Recreate it when stage flow changes.
 
 ## Manual regression checklist
 - [ ] Fresh run on keyboard.

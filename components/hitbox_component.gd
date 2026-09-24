@@ -20,7 +20,8 @@ func _ready() -> void:
 	collision_layer = PhysicsLayers.HITBOX
 	collision_mask = PhysicsLayers.HURTBOX
 	monitoring = true
-	monitorable = false
+	# Monitorable so Guard orbs can detect and cancel hostile projectiles.
+	monitorable = true
 	if source == null:
 		source = get_parent()
 	area_entered.connect(_on_area_entered)
@@ -28,6 +29,8 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if not monitoring:
+		return
 	for area in get_overlapping_areas():
 		_try_hit(area)
 

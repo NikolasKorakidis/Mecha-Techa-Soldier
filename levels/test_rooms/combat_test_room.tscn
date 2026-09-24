@@ -12,6 +12,8 @@ text = "COMBAT TEST ROOM"
 
 [node name="Enemies" type="Node3D" parent="."]
 
+[node name="Pickups" type="Node3D" parent="." groups=["pickup_root"]]
+
 [node name="TargetDummy" parent="." instance=ExtResource("2_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4, 0)
 

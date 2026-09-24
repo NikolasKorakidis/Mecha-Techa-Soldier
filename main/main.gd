@@ -22,6 +22,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed(&"debug_next_room") and not get_tree().paused:
 		next_dev_room()
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"debug_cycle_echo") and not get_tree().paused:
+		cycle_debug_echo()
+		get_viewport().set_input_as_handled()
 
 
 func set_paused(paused: bool) -> void:
@@ -34,3 +37,12 @@ func next_dev_room() -> void:
 		return
 	var index := (dev_rooms.find(SceneRouter.current_path) + 1) % dev_rooms.size()
 	SceneRouter.go_to(dev_rooms[index])
+
+
+## Debug (F7): none → Burst → Arc → Guard → none, with full ammo.
+func cycle_debug_echo() -> void:
+	var order: Array[StringName] = [RunSession.NO_ECHO]
+	order.append_array(EchoModules.ALL)
+	var next: StringName = order[(order.find(RunSession.selected_echo) + 1) % order.size()]
+	var data := EchoModules.get_data(next)
+	RunSession.equip_echo(next, data.ammo if data else 0)
