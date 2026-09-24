@@ -16,6 +16,22 @@ const ASPECT := 16.0 / 9.0
 
 var trauma: float = 0.0
 
+## Follow mode (platformer / runner). With no target the camera stays put (shooter).
+@export var follow_target: Node3D
+## Where the target sits relative to the view center (world units).
+@export var follow_offset: Vector2 = Vector2(0.0, 1.5)
+## Extra lead in the facing/moving direction.
+@export var lookahead: float = 3.0
+## Vertical dead zone: the camera only moves when the target leaves this band.
+@export var vertical_deadzone: float = 2.0
+@export var follow_smoothing: float = 8.0
+## Camera center is clamped to this rect (world units). Zero size = unlimited.
+@export var limits: Rect2 = Rect2()
+
+var _locked: bool = false
+var _lock_center: Vector2 = Vector2.ZERO
+var _lead: float = 0.0
+
 var _noise := FastNoiseLite.new()
 var _noise_time: float = 0.0
 
@@ -32,6 +48,58 @@ func _ready() -> void:
 
 func add_trauma(amount: float) -> void:
 	trauma = clampf(trauma + amount, 0.0, ArtStyle.SHAKE_MAX_TRAUMA)
+
+
+## Fix the view on an arena (boss rooms). unlock() resumes following.
+func lock_to(center: Vector2) -> void:
+	_locked = true
+	_lock_center = center
+
+
+func unlock() -> void:
+	_locked = false
+
+
+func is_locked() -> bool:
+	return _locked
+
+
+## Jump straight to the target (level start, respawn).
+func snap_to_target() -> void:
+	if follow_target:
+		var goal := _goal(0.0)
+		global_position = Vector3(goal.x, goal.y, global_position.z)
+
+
+func _physics_process(delta: float) -> void:
+	if follow_target == null and not _locked:
+		return
+	var goal := _lock_center if _locked else _goal(delta)
+	var t := clampf(follow_smoothing * delta, 0.0, 1.0)
+	var pos := Vector2(global_position.x, global_position.y).lerp(goal, t)
+	global_position = Vector3(pos.x, pos.y, global_position.z)
+
+
+func _goal(delta: float) -> Vector2:
+	if not is_instance_valid(follow_target):
+		return Vector2(global_position.x, global_position.y)
+	var p := Vector2(follow_target.global_position.x, follow_target.global_position.y)
+	var facing := 1.0
+	if &"facing" in follow_target:
+		facing = float(follow_target.get(&"facing"))
+	_lead = lerpf(_lead, facing * lookahead, clampf(3.0 * delta, 0.0, 1.0)) if delta > 0.0 else facing * lookahead
+	var goal := Vector2(p.x + follow_offset.x + _lead, global_position.y)
+	var target_y := p.y + follow_offset.y
+	if delta == 0.0:
+		goal.y = target_y
+	elif target_y > goal.y + vertical_deadzone:
+		goal.y = target_y - vertical_deadzone
+	elif target_y < goal.y - vertical_deadzone:
+		goal.y = target_y + vertical_deadzone
+	if limits.size != Vector2.ZERO:
+		goal.x = clampf(goal.x, limits.position.x, limits.end.x)
+		goal.y = clampf(goal.y, limits.position.y, limits.end.y)
+	return goal
 
 
 func _process(delta: float) -> void:

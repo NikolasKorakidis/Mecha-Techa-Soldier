@@ -16,6 +16,9 @@ const BURST_ANGLES: Array[float] = [-16.0, -8.0, 0.0, 8.0, 16.0]
 @export var arc_chain_range: float = 6.5
 @export var arc_chain_count: int = 3
 
+## +1 fires right, -1 fires left (the mech turns around; the ship never does).
+var facing: float = 1.0
+
 var _cooldown: float = 0.0
 var _modules: Dictionary = {}
 
@@ -27,6 +30,7 @@ func _ready() -> void:
 
 
 func tick(delta: float, trigger_held: bool) -> void:
+	base_weapon.direction = Vector3(facing, 0, 0)
 	var echo := RunSession.selected_echo
 	guard_orbs.active = echo == EchoModules.GUARD
 	_cooldown = maxf(0.0, _cooldown - delta)
@@ -59,7 +63,7 @@ func _fire_burst(data: EchoModuleData) -> void:
 	burst_weapon.damage = data.damage
 	for angle in BURST_ANGLES:
 		var a := deg_to_rad(angle)
-		burst_weapon.fire_at(Vector3(cos(a), sin(a), 0))
+		burst_weapon.fire_at(Vector3(cos(a) * facing, sin(a), 0))
 
 
 ## Returns false (no ammo spent) when nothing is in range; the base gun fires instead.
@@ -85,7 +89,7 @@ func _fire_guard(data: EchoModuleData) -> void:
 	orb_weapon.damage = data.damage
 	for pos in guard_orbs.orb_positions():
 		orb_weapon.global_position = pos
-		orb_weapon.fire_at(Vector3.RIGHT)
+		orb_weapon.fire_at(Vector3(facing, 0, 0))
 
 
 func _find_arc_chain() -> Array[Node3D]:
@@ -110,7 +114,7 @@ func _find_arc_chain() -> Array[Node3D]:
 		for enemy in candidates:
 			if chain.has(enemy):
 				continue
-			if i == 0 and enemy.global_position.x < global_position.x - 1.0:
+			if i == 0 and (enemy.global_position.x - global_position.x) * facing < -1.0:
 				continue  # First link only reaches forward.
 			var d := from.distance_to(enemy.global_position)
 			if d < best_distance:

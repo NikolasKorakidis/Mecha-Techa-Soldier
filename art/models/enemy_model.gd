@@ -5,7 +5,7 @@ extends Node3D
 ## "face" on the camera side, chunky outlines. Echo carriers (elites) add a gold-white core,
 ## orbiting gold fragments, a slow pulsing ring and a faint vertical beacon — never color alone.
 
-enum Kind { DRONE, NEEDLE, LANCER, GUNPOD, RAMMER, GUNSHIP, TESLA, WARDEN }
+enum Kind { DRONE, NEEDLE, LANCER, GUNPOD, RAMMER, GUNSHIP, TESLA, WARDEN, WALKER, HOPPER }
 
 const SENSOR := Color("ffc36a")
 const METAL := Color("3d2f45")
@@ -15,6 +15,9 @@ const METAL := Color("3d2f45")
 		kind = value
 		if is_inside_tree():
 			_build()
+
+## Any kind can be dressed as an echo carrier (e.g. an elite walker).
+@export var elite_override: bool = false
 
 ## Set by the enemy: brightens the beacon while the carrier is on screen and targetable.
 var targetable: bool = true
@@ -36,7 +39,7 @@ func _ready() -> void:
 
 
 func is_elite_kind() -> bool:
-	return kind in [Kind.GUNSHIP, Kind.TESLA, Kind.WARDEN]
+	return elite_override or kind in [Kind.GUNSHIP, Kind.TESLA, Kind.WARDEN]
 
 
 ## Kick the model back on each volley.
@@ -166,6 +169,24 @@ func _build() -> void:
 			core_pos = Vector3(-0.62, 0, 0.12)
 			core_radius = 0.3
 
+		Kind.WALKER:
+			# Two-legged gun-bot, origin at its feet.
+			ModelKit.box(_body, Vector3(1.1, 0.8, 0.9), Vector3(0.05, 1.45, 0), coral)
+			ModelKit.box(_body, Vector3(1.12, 0.22, 0.92), Vector3(0.05, 1.08, 0), under)
+			ModelKit.hex_x(_body, 0.16, 0.8, Vector3(-0.75, 1.4, 0.3), metal, 6)
+			for side: float in [1.0, -1.0]:
+				ModelKit.box(_body, Vector3(0.22, 0.75, 0.22), Vector3(0.1, 0.62, 0.3 * side), armor, Vector3(0, 0, -12))
+				ModelKit.box(_body, Vector3(0.5, 0.16, 0.34), Vector3(-0.02, 0.1, 0.3 * side), under)
+			core_pos = Vector3(-0.1, 1.5, 0.48)
+		Kind.HOPPER:
+			ModelKit.sphere(_body, 0.62, Vector3(0, 1.0, 0), coral, Vector3(1.15, 0.85, 0.9))
+			ModelKit.box(_body, Vector3(1.0, 0.18, 0.95), Vector3(0, 0.62, 0), under)
+			for side: float in [1.0, -1.0]:
+				ModelKit.prism(_body, Vector3(0.3, 0.7, 0.3), Vector3(0.35 * side, 0.3, 0.2), armor, Vector3(0, 0, 180))
+				ModelKit.prism(_body, Vector3(0.25, 0.4, 0.2), Vector3(0.2 * side, 1.55, 0.15), coral)
+			core_pos = Vector3(-0.35, 1.05, 0.5)
+			core_radius = 0.18
+
 	ModelKit.sphere(_body, core_radius, core_pos, _core_material)
 	ModelKit.quad(_body, Vector2.ONE * core_radius * 3.2, core_pos + Vector3(0, 0, 0.1), ModelKit.glow(core_color, 0.6))
 	if elite:
@@ -207,7 +228,7 @@ func _process(delta: float) -> void:
 	if _shield_rim:
 		(_shield_rim.material_override as ShaderMaterial).set_shader_parameter(&"energy", 0.5 + 0.3 * sin(_time * 3.0))
 	if _barrel_pivot:
-		var player := get_tree().get_first_node_in_group(ShipPlayer.GROUP) as Node3D
+		var player := Players.find(get_tree())
 		if player:
 			var to_player := player.global_position - _barrel_pivot.global_position
 			_barrel_pivot.rotation.z = lerp_angle(_barrel_pivot.rotation.z, atan2(-to_player.y, -to_player.x), 0.15)

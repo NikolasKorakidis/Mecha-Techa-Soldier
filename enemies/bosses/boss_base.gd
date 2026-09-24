@@ -200,8 +200,8 @@ func _transition(next: State, reason: String) -> void:
 	_apply_state_rules()
 	if next == State.BREAK_1 or next == State.BREAK_2:
 		clear_hostile_projectiles(get_tree())
-		var player := get_tree().get_first_node_in_group(ShipPlayer.GROUP) as ShipPlayer
-		if player:
+		var player := Players.find(get_tree())
+		if player and player.has_method(&"grant_invulnerability"):
 			player.grant_invulnerability(break_time + 0.5)
 		Vfx.spawn(get_tree(), death_effect, global_position + Vector3(0, 0, 1), 2.0)
 		HitStop.trigger(get_tree(), 0.08)
@@ -292,8 +292,8 @@ func _home() -> Vector3:
 
 
 func _player_position() -> Vector3:
-	var player := get_tree().get_first_node_in_group(ShipPlayer.GROUP) as Node3D
-	return player.global_position if player and player.visible else global_position + Vector3.LEFT * 10.0
+	var player := Players.find(get_tree())
+	return Players.aim_point(player) if player and player.visible else global_position + Vector3.LEFT * 10.0
 
 
 func _aim_at_player(from: Vector3) -> Vector3:

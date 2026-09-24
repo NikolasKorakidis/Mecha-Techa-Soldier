@@ -8,7 +8,10 @@ const STEPS: Array[Dictionary] = [
 	{"id": "move", "text": "MOVE", "key": "W A S D", "pad": "L-STICK", "hold": 0.8},
 	{"id": "fire", "text": "HOLD TO FIRE", "key": "J", "pad": "RT", "hold": 1.0},
 	{"id": "dash", "text": "DASH THROUGH DANGER", "key": "K", "pad": "B", "hold": 0.0},
+	{"id": "super", "text": "SUPER READY — UNLEASH IT", "key": "I", "pad": "RB", "hold": 0.0, "when": "super_ready"},
 ]
+## Players may expose `tutorial_steps() -> Array[Dictionary]` to replace the ship's cards.
+## A step with "when": "super_ready" waits until the SUPER meter is full.
 const ECHO_STEP := {"id": "echo_core", "text": "FLY INTO THE CORE TO STEAL ITS WEAPON", "key": "", "pad": "", "hold": 0.0}
 const START_DELAY := 2.8
 ## An ignored card steps aside after this long and returns later (never marked done).
@@ -44,7 +47,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	var player := get_tree().get_first_node_in_group(ShipPlayer.GROUP) as ShipPlayer
+	var player := Players.find(get_tree())
 	if player == null or not Settings.tutorials_enabled:
 		_hide()
 		return
@@ -70,10 +73,15 @@ func _reset_for_level() -> void:
 
 
 func _pick_next() -> void:
-	for step in STEPS:
-		if not Settings.tutorials_done.has(step["id"]):
-			_show(step)
-			return
+	var player := Players.find(get_tree())
+	var steps: Array = player.call(&"tutorial_steps") if player and player.has_method(&"tutorial_steps") else STEPS
+	for step: Dictionary in steps:
+		if Settings.tutorials_done.has(step["id"]):
+			continue
+		if step.get("when", "") == "super_ready" and not RunSession.super_ready():
+			continue
+		_show(step)
+		return
 	# First weapon core on the field → explain stealing weapons.
 	var pickups := get_tree().get_first_node_in_group(EchoPickup.ROOT_GROUP)
 	if pickups and pickups.get_child_count() > 0 and not Settings.tutorials_done.has(ECHO_STEP["id"]):
@@ -114,15 +122,28 @@ func _step_satisfied(delta: float) -> bool:
 		"fire":
 			if Input.is_action_pressed(&"fire"):
 				_progress += delta
-		"dash":
+		"bike_duck":
+			if Input.is_action_pressed(&"move_down"):
+				_progress += delta
+		"dash", "mech_dash", "bike_boost":
 			return Input.is_action_just_pressed(&"dash")
+		"mech_move":
+			if absf(Input.get_axis(&"move_left", &"move_right")) > 0.3:
+				_progress += delta
+		"mech_jump":
+			return Input.is_action_just_pressed(&"jump")
+		"mech_double_jump":
+			var player := Players.find(get_tree())
+			return player != null and int(player.get(&"double_jumps")) > 0
+		"super":
+			return Input.is_action_just_pressed(&"special")
 		"echo_core":
 			return RunSession.selected_echo != RunSession.NO_ECHO
 	return _progress >= float(_step.get("hold", 0.0)) and float(_step.get("hold", 0.0)) > 0.0
 
 
 ## Keeps the card off the ship: flips to the top safe area when the ship is below.
-func _avoid_player(player: ShipPlayer) -> void:
+func _avoid_player(player: Node3D) -> void:
 	var camera := get_viewport().get_camera_3d()
 	if camera == null:
 		return

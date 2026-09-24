@@ -54,7 +54,7 @@ func _physics_process(delta: float) -> void:
 	if lifetime <= 0.0:
 		queue_free()
 		return
-	var player := get_tree().get_first_node_in_group(ShipPlayer.GROUP) as ShipPlayer
+	var player := Players.find(get_tree())
 	var to_player := (player.global_position - global_position) if player and player.visible else Vector3.INF
 	if to_player != Vector3.INF and to_player.length() < magnet_radius:
 		# Arc in: a sideways component that fades as the core closes in.
@@ -73,8 +73,8 @@ func _physics_process(delta: float) -> void:
 func _on_area_entered(area: Area3D) -> void:
 	if _collected:
 		return
-	var player := area.get_parent() as ShipPlayer
-	if player == null or player.state == ShipPlayer.State.DISABLED:
+	var player := area.get_parent()
+	if player == null or not player.is_in_group(Players.GROUP) or not player.call(&"can_collect"):
 		return
 	_collected = true
 	player.collect_echo(echo_id)

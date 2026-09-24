@@ -43,11 +43,11 @@ func quit_to_title() -> void:
 
 
 func is_in_gameplay() -> bool:
-	return is_instance_valid(SceneRouter.current_level) and SceneRouter.current_level.has_node(^"ShipPlayer")
+	return is_instance_valid(SceneRouter.current_level) and Players.find(get_tree()) != null
 
 
 func _on_level_changed(level: Node) -> void:
-	_hud.visible = level.has_node(^"ShipPlayer")
+	_hud.visible = Players.find(get_tree()) != null
 	if level.has_signal(&"start_requested"):
 		level.start_requested.connect(start_game, CONNECT_DEFERRED)
 

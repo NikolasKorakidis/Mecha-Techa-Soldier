@@ -13,6 +13,8 @@ signal run_reset
 enum Difficulty { STORY, ARCADE }
 
 const MAX_ENERGY := 3
+## Kill value (score points) that fills one energy segment.
+const CHARGE_PER_SEGMENT := 600
 const DEFAULT_MAX_HEALTH := 5
 const NO_ECHO := &""
 
@@ -25,6 +27,7 @@ var selected_echo: StringName = NO_ECHO
 var echo_ammo: int = 0
 var difficulty: Difficulty = Difficulty.ARCADE
 var checkpoint_id: StringName = &""
+var energy_charge: int = 0
 
 var _checkpoint: Dictionary = {}
 
@@ -36,6 +39,7 @@ func reset_run() -> void:
 	energy = 0
 	selected_echo = NO_ECHO
 	echo_ammo = 0
+	energy_charge = 0
 	checkpoint_id = &""
 	_checkpoint.clear()
 	run_reset.emit()
@@ -68,6 +72,22 @@ func add_energy(segments: int) -> int:
 	if energy != before:
 		energy_changed.emit(energy)
 	return energy - before
+
+
+## Kills charge the SUPER meter: every CHARGE_PER_SEGMENT points of kill value = one segment.
+func add_charge(points: int) -> void:
+	if points <= 0 or energy >= MAX_ENERGY:
+		return
+	energy_charge += points
+	while energy_charge >= CHARGE_PER_SEGMENT and energy < MAX_ENERGY:
+		energy_charge -= CHARGE_PER_SEGMENT
+		add_energy(1)
+	if energy >= MAX_ENERGY:
+		energy_charge = 0
+
+
+func super_ready() -> bool:
+	return energy >= MAX_ENERGY
 
 
 ## Spends `cost` segments only if all of them are available.

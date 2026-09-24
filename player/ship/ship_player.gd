@@ -94,6 +94,8 @@ func tick(delta: float, input: ShipInput) -> void:
 		_dash_start = _plane_position()
 	if controllable and input.burst_pressed:
 		movement.try_burst(move.y)
+	if controllable and input.special_pressed and RunSession.super_ready():
+		_fire_super()
 
 	movement.step(delta, move)
 	if state == State.DASH and not movement.is_dashing:
@@ -144,6 +146,10 @@ func collect_echo(echo_id: StringName) -> void:
 	_shake(0.12)
 	Vfx.spawn(get_tree(), COLLECT_EFFECT, global_position, 1.0, {&"color": data.module_color})
 	echo_collected.emit(echo_id)
+
+
+func can_collect() -> bool:
+	return state != State.DISABLED
 
 
 ## Brief safety window, e.g. when a boss changes phase.
@@ -263,6 +269,15 @@ func _on_depleted(_source: Node) -> void:
 	_break_apart()
 	HitStop.trigger(get_tree(), 0.09)
 	died.emit()
+
+
+## SUPER: Resonance Beam from the nose; the ship can keep moving while it fires.
+func _fire_super() -> void:
+	RunSession.spend_energy(RunSession.MAX_ENERGY)
+	var root := get_tree().get_first_node_in_group(Vfx.ROOT_GROUP)
+	if root:
+		root.add_child(PlayerBeam.create(weapon, 1.0, 1.6))
+	grant_invulnerability(1.8)
 
 
 func _spawn_afterimage() -> void:

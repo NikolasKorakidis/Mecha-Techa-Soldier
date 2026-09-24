@@ -74,7 +74,7 @@ func is_alive() -> bool:
 func _physics_process(delta: float) -> void:
 	if not is_alive():
 		return
-	var player := get_tree().get_first_node_in_group(ShipPlayer.GROUP) as Node3D
+	var player := Players.find_active(get_tree())
 	if player:
 		var d := player.global_position - global_position
 		_barrel.rotation.z = lerp_angle(_barrel.rotation.z, atan2(-d.y, -d.x), 0.12)

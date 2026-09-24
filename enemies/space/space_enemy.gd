@@ -240,10 +240,10 @@ func _fire_volley() -> void:
 
 
 func _aim_at_player() -> Vector3:
-	var player := get_tree().get_first_node_in_group(ShipPlayer.GROUP) as Node3D
+	var player := Players.find(get_tree())
 	if player == null or not player.visible:
 		return Vector3.LEFT
-	var to_player := player.global_position - global_position
+	var to_player := Players.aim_point(player) - global_position
 	to_player.z = 0.0
 	return to_player.normalized() if to_player.length_squared() > 0.01 else Vector3.LEFT
 
@@ -266,6 +266,7 @@ func _on_damaged(_payload: DamagePayload, _source: Node) -> void:
 
 func _on_depleted(_source: Node) -> void:
 	RunSession.add_score(score_value)
+	RunSession.add_charge(score_value)
 	if is_elite():
 		Vfx.spawn(get_tree(), collapse_effect, global_position, death_size)
 		HitStop.trigger(get_tree(), 0.06)
