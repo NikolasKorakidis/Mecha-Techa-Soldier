@@ -40,6 +40,9 @@ func _run() -> void:
 func _run_one(script: GDScript, method_name: String) -> bool:
 	# Autoload names are not compile-time identifiers inside a --script main loop.
 	root.get_node(^"RunSession").reset_run()
+	var settings := root.get_node(^"Settings")
+	settings.set_persistence(false)
+	settings.reset_defaults()
 	paused = false
 	var test: TestCase = script.new()
 	root.add_child(test)

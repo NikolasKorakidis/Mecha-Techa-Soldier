@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://levels/test_rooms/graybox_room.tscn" id="1_base"]
+[ext_resource type="Script" path="res://levels/test_rooms/visual_test_room.gd" id="2_room"]
+
+[node name="VisualTestRoom" node_paths=PackedStringArray("enemy_root") instance=ExtResource("1_base")]
+script = ExtResource("2_room")
+enemy_root = NodePath("Enemies")
+
+[node name="Title" parent="."]
+text = "VISUAL TEST ROOM"
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Pickups" type="Node3D" parent="." groups=["pickup_root"]]

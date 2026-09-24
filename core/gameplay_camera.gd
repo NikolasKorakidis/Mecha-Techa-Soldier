@@ -31,7 +31,7 @@ func _ready() -> void:
 
 
 func add_trauma(amount: float) -> void:
-	trauma = clampf(trauma + amount, 0.0, 1.0)
+	trauma = clampf(trauma + amount, 0.0, ArtStyle.SHAKE_MAX_TRAUMA)
 
 
 func _process(delta: float) -> void:
@@ -41,7 +41,7 @@ func _process(delta: float) -> void:
 		return
 	trauma = maxf(0.0, trauma - trauma_decay * delta)
 	_noise_time += delta * 40.0
-	var amount := trauma * trauma * shake_scale
+	var amount := trauma * trauma * shake_scale * ArtStyle.shake_scale()
 	h_offset = max_shake_offset.x * amount * _noise.get_noise_2d(_noise_time, 0.0)
 	v_offset = max_shake_offset.y * amount * _noise.get_noise_2d(0.0, _noise_time)
 

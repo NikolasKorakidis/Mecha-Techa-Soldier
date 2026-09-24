@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://core/gameplay_camera.gd" id="1_cam"]
 [ext_resource type="Script" path="res://levels/shared/starfield.gd" id="2_stars"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://levels/test_rooms/test_room.gd" id="4_room"]
 [ext_resource type="PackedScene" path="res://player/ship/ship_player.tscn" id="5_ship"]
 [ext_resource type="Environment" path="res://art/environments/space.tres" id="6_env"]
+[ext_resource type="Script" path="res://art/environments/environment_binder.gd" id="7_envbind"]
 
 [node name="GrayboxRoom" type="Node3D" node_paths=PackedStringArray("player", "spawn")]
 script = ExtResource("4_room")
@@ -14,6 +15,7 @@ spawn = NodePath("PlayerSpawn")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("6_env")
+script = ExtResource("7_envbind")
 
 [node name="KeyLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 0, 10)

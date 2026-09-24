@@ -33,10 +33,18 @@ func set_paused(paused: bool) -> void:
 
 
 func next_dev_room() -> void:
-	if dev_rooms.is_empty():
+	var rooms := available_dev_rooms()
+	if rooms.is_empty():
 		return
-	var index := (dev_rooms.find(SceneRouter.current_path) + 1) % dev_rooms.size()
-	SceneRouter.go_to(dev_rooms[index])
+	var index := (rooms.find(SceneRouter.current_path) + 1) % rooms.size()
+	SceneRouter.go_to(rooms[index])
+
+
+## Test rooms are for debug builds only; release builds cycle real stages.
+func available_dev_rooms() -> Array[String]:
+	if OS.is_debug_build():
+		return dev_rooms
+	return dev_rooms.filter(func(path: String) -> bool: return not path.contains("/test_rooms/"))
 
 
 ## Debug (F7): none → Burst → Arc → Guard → none, with full ammo.

@@ -16,7 +16,7 @@ func _scaffold() -> GameplayCamera:
 func test_trauma_is_capped_and_decays() -> void:
 	var camera := _scaffold()
 	camera.add_trauma(5.0)
-	assert_eq(camera.trauma, 1.0, "trauma capped at 1")
+	assert_eq(camera.trauma, ArtStyle.SHAKE_MAX_TRAUMA, "trauma capped")
 	await wait_process_frames(90)
 	assert_eq(camera.trauma, 0.0, "trauma decays to zero")
 	assert_eq(camera.h_offset, 0.0, "offset reset after shake")
