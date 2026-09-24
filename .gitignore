@@ -1,0 +1,22 @@
+# Godot 4 caches and generated imports
+.godot/
+/android/
+*.translation
+
+# Exports
+/builds/
+*.exe
+*.pck
+*.dmg
+*.app/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.tmp
+.vscode/
+.idea/
+
+# Local machine config (paths live in docs/local-setup.md, not in files)
+.env
+*.local.cfg

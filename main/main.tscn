@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://main/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://ui/hud/hud.tscn" id="2_hud"]
+
+[node name="Main" type="Node"]
+process_mode = 3
+script = ExtResource("1_main")
+start_level = "res://levels/test_rooms/graybox_room.tscn"
+dev_rooms = Array[String](["res://levels/test_rooms/graybox_room.tscn"])
+
+[node name="CurrentLevel" type="Node" parent="."]
+unique_name_in_owner = true
+process_mode = 1
+
+[node name="HUD" parent="." instance=ExtResource("2_hud")]
+unique_name_in_owner = true
