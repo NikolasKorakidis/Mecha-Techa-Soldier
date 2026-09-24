@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ShipTuning" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://player/ship/ship_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+max_speed = 13.0
+acceleration = 110.0
+deceleration = 80.0
+boundary_margin = Vector2(1.1, 0.7)
+hud_top_inset = 1.1
+soft_edge = 0.6
+dash_speed = 32.0
+dash_duration = 0.18
+dash_invulnerability = 0.12
+dash_cooldown = 0.75
+burst_speed = 20.0
+burst_duration = 0.12
+burst_cooldown = 0.45
+hit_invulnerability = 1.2
+hit_stun = 0.12
+respawn_invulnerability = 2.0

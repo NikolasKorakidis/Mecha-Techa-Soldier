@@ -1,0 +1,137 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="Script" path="res://player/ship/ship_player.gd" id="1_ship"]
+[ext_resource type="Resource" path="res://player/ship/ship_tuning.tres" id="2_tuning"]
+[ext_resource type="Script" path="res://player/ship/ship_movement.gd" id="3_move"]
+[ext_resource type="Script" path="res://combat/weapons/weapon_component.gd" id="4_weapon"]
+[ext_resource type="Script" path="res://components/health_component.gd" id="5_health"]
+[ext_resource type="Script" path="res://components/hurtbox_component.gd" id="6_hurt"]
+[ext_resource type="Script" path="res://components/flash_component.gd" id="7_flash"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/player_shot.tscn" id="8_shot"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_hull"]
+albedo_color = Color(0.94, 0.96, 1, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_blue"]
+albedo_color = Color(0.2, 0.45, 0.95, 1)
+roughness = 0.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_gold"]
+albedo_color = Color(1, 0.78, 0.25, 1)
+metallic = 0.4
+roughness = 0.3
+
+[sub_resource type="StandardMaterial3D" id="Mat_core"]
+albedo_color = Color(0.25, 0.78, 1, 1)
+emission_enabled = true
+emission = Color(0.25, 0.78, 1, 1)
+emission_energy_multiplier = 2.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_meter"]
+shading_mode = 0
+albedo_color = Color(0.25, 0.78, 1, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_body"]
+material = SubResource("Mat_hull")
+size = Vector3(1.5, 0.45, 0.8)
+
+[sub_resource type="CylinderMesh" id="Mesh_nose"]
+material = SubResource("Mat_blue")
+top_radius = 0.0
+bottom_radius = 0.3
+height = 0.8
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="Mesh_canopy"]
+material = SubResource("Mat_gold")
+radius = 0.28
+height = 0.56
+radial_segments = 10
+rings = 5
+
+[sub_resource type="BoxMesh" id="Mesh_wing"]
+material = SubResource("Mat_blue")
+size = Vector3(1.1, 0.32, 1.2)
+
+[sub_resource type="SphereMesh" id="Mesh_core"]
+material = SubResource("Mat_core")
+radius = 0.2
+height = 0.4
+radial_segments = 10
+rings = 5
+
+[sub_resource type="BoxMesh" id="Mesh_meter"]
+material = SubResource("Mat_meter")
+size = Vector3(1.2, 0.08, 0.05)
+
+[sub_resource type="BoxShape3D" id="Shape_hurt"]
+size = Vector3(0.9, 0.42, 1)
+
+[node name="ShipPlayer" type="Node3D" node_paths=PackedStringArray("movement", "weapon", "health", "hurtbox", "flash", "model", "dash_meter")]
+script = ExtResource("1_ship")
+tuning = ExtResource("2_tuning")
+movement = NodePath("Movement")
+weapon = NodePath("Muzzle")
+health = NodePath("Health")
+hurtbox = NodePath("Hurtbox")
+flash = NodePath("Flash")
+model = NodePath("Model")
+dash_meter = NodePath("DashMeter")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+mesh = SubResource("Mesh_body")
+
+[node name="Nose" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 1.15, 0, 0)
+mesh = SubResource("Mesh_nose")
+
+[node name="Canopy" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1.6, 0, 0, 0, 0.8, 0, 0, 0, 1, 0.25, 0.28, 0)
+mesh = SubResource("Mesh_canopy")
+
+[node name="WingUpper" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 0.5, 0)
+mesh = SubResource("Mesh_wing")
+
+[node name="WingLower" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, -0.5, 0)
+mesh = SubResource("Mesh_wing")
+
+[node name="Core" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, 0, 0)
+mesh = SubResource("Mesh_core")
+
+[node name="DashMeter" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.05, 0)
+mesh = SubResource("Mesh_meter")
+
+[node name="Muzzle" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, 0)
+script = ExtResource("4_weapon")
+projectile_scene = ExtResource("8_shot")
+team = 1
+fire_interval = 0.09
+projectile_speed = 40.0
+
+[node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
+script = ExtResource("6_hurt")
+team = 1
+health = NodePath("../Health")
+
+[node name="Shape" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("Shape_hurt")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("5_health")
+max_health = 5
+
+[node name="Flash" type="Node" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("7_flash")
+target = NodePath("../Model")
+
+[node name="Movement" type="Node" parent="."]
+script = ExtResource("3_move")

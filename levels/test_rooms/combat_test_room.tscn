@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://levels/test_rooms/graybox_room.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://enemies/shared/target_dummy.tscn" id="2_dummy"]
+[ext_resource type="PackedScene" path="res://enemies/space/space_drone.tscn" id="3_drone"]
+[ext_resource type="Script" path="res://levels/test_rooms/drone_spawner.gd" id="4_spawner"]
+
+[node name="CombatTestRoom" instance=ExtResource("1_base")]
+
+[node name="Title" parent="."]
+text = "COMBAT TEST ROOM"
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="TargetDummy" parent="." instance=ExtResource("2_dummy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4, 0)
+
+[node name="DroneSpawner" type="Node3D" parent="." node_paths=PackedStringArray("container")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0, 0)
+script = ExtResource("4_spawner")
+enemy_scene = ExtResource("3_drone")
+container = NodePath("../Enemies")

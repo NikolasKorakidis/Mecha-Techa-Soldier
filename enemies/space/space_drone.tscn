@@ -1,0 +1,128 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://enemies/space/space_drone.gd" id="1_drone"]
+[ext_resource type="Script" path="res://components/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://components/hurtbox_component.gd" id="3_hurt"]
+[ext_resource type="Script" path="res://components/hitbox_component.gd" id="4_hit"]
+[ext_resource type="Script" path="res://components/flash_component.gd" id="5_flash"]
+[ext_resource type="Script" path="res://components/offscreen_cleanup.gd" id="6_clean"]
+[ext_resource type="Script" path="res://combat/weapons/weapon_component.gd" id="7_weapon"]
+[ext_resource type="Script" path="res://components/damage_payload.gd" id="8_payload"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/enemy_shot.tscn" id="9_shot"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_coral"]
+albedo_color = Color(1, 0.35, 0.3, 1)
+roughness = 0.55
+
+[sub_resource type="StandardMaterial3D" id="Mat_dark"]
+albedo_color = Color(0.35, 0.12, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_core"]
+albedo_color = Color(1, 0.55, 0.15, 1)
+emission_enabled = true
+emission = Color(1, 0.5, 0.1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_warn"]
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 1)
+
+[sub_resource type="PrismMesh" id="Mesh_body"]
+material = SubResource("Mat_coral")
+size = Vector3(1.2, 1.5, 0.7)
+
+[sub_resource type="BoxMesh" id="Mesh_fin"]
+material = SubResource("Mat_dark")
+size = Vector3(0.7, 0.18, 0.9)
+
+[sub_resource type="SphereMesh" id="Mesh_core"]
+material = SubResource("Mat_core")
+radius = 0.22
+height = 0.44
+radial_segments = 10
+rings = 5
+
+[sub_resource type="SphereMesh" id="Mesh_warn"]
+material = SubResource("Mat_warn")
+radius = 0.32
+height = 0.64
+radial_segments = 10
+rings = 5
+
+[sub_resource type="BoxShape3D" id="Shape_hurt"]
+size = Vector3(1.3, 1.0, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_contact"]
+size = Vector3(1.0, 0.8, 1)
+
+[sub_resource type="Resource" id="Payload_contact"]
+script = ExtResource("8_payload")
+amount = 1
+team = 2
+knockback = Vector3(-6, 0, 0)
+
+[node name="SpaceDrone" type="Node3D" node_paths=PackedStringArray("health", "weapon", "flash", "telegraph")]
+script = ExtResource("1_drone")
+health = NodePath("Health")
+weapon = NodePath("Muzzle")
+flash = NodePath("Flash")
+telegraph = NodePath("Model/Telegraph")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("Mesh_body")
+
+[node name="FinUpper" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, 0.45, 0.55, 0)
+mesh = SubResource("Mesh_fin")
+
+[node name="FinLower" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.94, 0.34, 0, -0.34, 0.94, 0, 0, 0, 1, 0.45, -0.55, 0)
+mesh = SubResource("Mesh_fin")
+
+[node name="Core" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0, 0.3)
+mesh = SubResource("Mesh_core")
+
+[node name="Telegraph" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, 0, 0.3)
+mesh = SubResource("Mesh_warn")
+
+[node name="Muzzle" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, 0, 0)
+script = ExtResource("7_weapon")
+projectile_scene = ExtResource("9_shot")
+team = 2
+projectile_speed = 11.0
+direction = Vector3(-1, 0, 0)
+
+[node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
+script = ExtResource("3_hurt")
+team = 2
+health = NodePath("../Health")
+
+[node name="Shape" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("Shape_hurt")
+
+[node name="ContactHitbox" type="Area3D" parent="."]
+script = ExtResource("4_hit")
+payload = SubResource("Payload_contact")
+single_hit = false
+continuous = true
+
+[node name="Shape" type="CollisionShape3D" parent="ContactHitbox"]
+shape = SubResource("Shape_contact")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2_health")
+
+[node name="Flash" type="Node" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("5_flash")
+target = NodePath("../Model")
+
+[node name="OffscreenCleanup" type="Node" parent="."]
+script = ExtResource("6_clean")
+margin = 3.0
+require_entered = true
