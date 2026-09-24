@@ -31,69 +31,119 @@ func _ready() -> void:
 	_shins.clear()
 	_pack_flames.clear()
 	var white := ModelKit.hull(Palette.PLAYER_PRIMARY)
+	var white_thin := ModelKit.hull(Palette.PLAYER_PRIMARY, ArtStyle.OUTLINE_THIN)
 	var blue := ModelKit.hull(Palette.PLAYER_SECONDARY)
+	var blue_thin := ModelKit.hull(Palette.PLAYER_SECONDARY, ArtStyle.OUTLINE_THIN)
 	var dark := ModelKit.hull(Palette.PLAYER_SHADOW.darkened(0.2), ArtStyle.OUTLINE_THIN, 0.3)
 	var metal := ModelKit.hull(Color("2b3550"), ArtStyle.OUTLINE_THIN, 0.35)
+	var joint := ModelKit.hull(Color("1a2033"), ArtStyle.OUTLINE_THIN, 0.3)
 	var gold := ModelKit.glossy(Palette.PLAYER_GOLD)
 	ModelKit.with_outline(gold, ArtStyle.OUTLINE_THIN)
 	var energy := ModelKit.emissive(Palette.PLAYER_ENERGY, 2.6)
+	var visor := ModelKit.emissive(Palette.PLAYER_ENERGY.lerp(Color.WHITE, 0.3), 3.2)
 
-	# Legs (back leg first so the front one draws over it).
+	# Legs (back leg first so the front one draws over it): thigh armour, knee cap,
+	# shin with vents and an energy line, articulated foot.
 	for i in 2:
 		var front := i == 1
 		var z := 0.22 if front else -0.22
 		var hip := ModelKit.group(self, "LegFront" if front else "LegBack", Vector3(0.0, 1.05, z))
-		ModelKit.box(hip, Vector3(0.36, 0.55, 0.34), Vector3(0, -0.25, 0), blue if front else dark)
+		ModelKit.sphere(hip, 0.17, Vector3.ZERO, joint)
+		ModelKit.box(hip, Vector3(0.34, 0.52, 0.32), Vector3(0, -0.26, 0), metal)
+		ModelKit.box(hip, Vector3(0.3, 0.42, 0.36), Vector3(0.06, -0.24, 0), blue_thin if front else dark)
+		ModelKit.box(hip, Vector3(0.08, 0.3, 0.37), Vector3(0.2, -0.26, 0), white_thin if front else metal)
 		var knee := ModelKit.group(hip, "Knee", Vector3(0, -0.52, 0))
-		ModelKit.box(knee, Vector3(0.4, 0.5, 0.38), Vector3(0, -0.22, 0), white if front else metal)
-		ModelKit.box(knee, Vector3(0.24, 0.16, 0.4), Vector3(0.13, 0.02, 0), gold)
-		ModelKit.box(knee, Vector3(0.62, 0.18, 0.42), Vector3(0.1, -0.5, 0), dark)
+		ModelKit.sphere(knee, 0.15, Vector3.ZERO, joint)
+		ModelKit.box(knee, Vector3(0.4, 0.52, 0.38), Vector3(0, -0.24, 0), white if front else metal)
+		ModelKit.prism(knee, Vector3(0.22, 0.22, 0.4), Vector3(0.16, 0.03, 0), gold, Vector3(0, 0, -90))
+		for k in 3:
+			ModelKit.box(knee, Vector3(0.12, 0.04, 0.39), Vector3(-0.1, -0.16 - k * 0.08, 0), joint)
+		ModelKit.box(knee, Vector3(0.04, 0.3, 0.02), Vector3(0.16, -0.26, 0.2 * signf(z)), energy)
+		# Foot: ankle block, sole, toe cap, heel spur.
+		ModelKit.box(knee, Vector3(0.28, 0.12, 0.3), Vector3(0, -0.46, 0), joint)
+		ModelKit.box(knee, Vector3(0.66, 0.16, 0.42), Vector3(0.1, -0.54, 0), dark)
+		ModelKit.prism(knee, Vector3(0.3, 0.22, 0.4), Vector3(0.42, -0.52, 0), blue_thin if front else metal, Vector3(0, 0, -90))
+		ModelKit.box(knee, Vector3(0.14, 0.14, 0.3), Vector3(-0.24, -0.5, 0), metal)
 		_legs.append(hip)
 		_shins.append(knee)
 
-	ModelKit.box(ModelKit.group(self, "Pelvis", Vector3(0, 1.1, 0)), Vector3(0.6, 0.28, 0.7), Vector3.ZERO, dark)
+	# Pelvis: hip skirt plates and belt light.
+	var pelvis := ModelKit.group(self, "Pelvis", Vector3(0, 1.1, 0))
+	ModelKit.box(pelvis, Vector3(0.6, 0.28, 0.7), Vector3.ZERO, dark)
+	ModelKit.box(pelvis, Vector3(0.28, 0.32, 0.3), Vector3(0.22, -0.06, 0), white_thin)
+	for side: float in [1.0, -1.0]:
+		ModelKit.box(pelvis, Vector3(0.36, 0.34, 0.08), Vector3(0.02, -0.12, 0.38 * side), blue_thin, Vector3(0, 0, 6))
+	ModelKit.box(pelvis, Vector3(0.1, 0.08, 0.72), Vector3(0.3, 0.08, 0), energy)
 
-	# Torso with chest core and gold visor-plate.
+	# Torso: chest plates, abdomen segments, collar, vents, chest core.
 	_torso = ModelKit.group(self, "Torso", Vector3(0, 1.55, 0))
-	ModelKit.box(_torso, Vector3(0.8, 0.7, 0.72), Vector3.ZERO, white)
-	ModelKit.box(_torso, Vector3(0.84, 0.18, 0.76), Vector3(0, -0.3, 0), blue)
-	ModelKit.prism(_torso, Vector3(0.5, 0.3, 0.74), Vector3(0.28, 0.12, 0), white, Vector3(0, 0, -90))
-	ModelKit.sphere(_torso, 0.13, Vector3(0.18, 0.02, 0.38), ModelKit.emissive(Palette.PLAYER_ENERGY.lerp(Palette.RESONANCE_VIOLET, 0.35), 3.0))
-	_core_glow = ModelKit.quad(_torso, Vector2.ONE * 0.8, Vector3(0.18, 0.02, 0.46), ModelKit.glow(Palette.PLAYER_ENERGY, 1.0))
+	ModelKit.box(_torso, Vector3(0.44, 0.26, 0.56), Vector3(0, -0.36, 0), joint)
+	for k in 2:
+		ModelKit.box(_torso, Vector3(0.46, 0.08, 0.6), Vector3(0.02, -0.29 - k * 0.1, 0), metal)
+	ModelKit.box(_torso, Vector3(0.8, 0.62, 0.72), Vector3(0, 0.04, 0), white)
+	ModelKit.box(_torso, Vector3(0.84, 0.16, 0.76), Vector3(0, -0.24, 0), blue)
+	ModelKit.prism(_torso, Vector3(0.5, 0.3, 0.74), Vector3(0.28, 0.14, 0), white, Vector3(0, 0, -90))
+	ModelKit.box(_torso, Vector3(0.34, 0.05, 0.02), Vector3(0.12, 0.26, 0.37), joint)
+	for k in 3:
+		ModelKit.box(_torso, Vector3(0.22, 0.04, 0.02), Vector3(-0.2, 0.12 - k * 0.08, 0.37), joint)
+	ModelKit.box(_torso, Vector3(0.62, 0.14, 0.6), Vector3(-0.02, 0.38, 0), dark)
+	ModelKit.cylinder(_torso, 0.17, 0.17, 0.06, Vector3(0.18, 0.02, 0.37), metal, Vector3(90, 0, 0), 10)
+	ModelKit.sphere(_torso, 0.13, Vector3(0.18, 0.02, 0.4), ModelKit.emissive(Palette.PLAYER_ENERGY.lerp(Palette.RESONANCE_VIOLET, 0.35), 3.0))
+	_core_glow = ModelKit.quad(_torso, Vector2.ONE * 0.8, Vector3(0.18, 0.02, 0.48), ModelKit.glow(Palette.PLAYER_ENERGY, 1.0))
 
-	# Thruster pack (ex-engines).
+	# Thruster pack (ex-engines) with stabiliser fins.
 	var pack := ModelKit.group(_torso, "Pack", Vector3(-0.5, 0.05, 0))
+	ModelKit.box(pack, Vector3(0.3, 0.6, 0.62), Vector3(0.05, 0.02, 0), dark)
 	for side: float in [1.0, -1.0]:
 		ModelKit.hex_x(pack, 0.17, 0.5, Vector3(-0.05, 0.12 * side, 0.18 * side), metal, 8)
+		ModelKit.hex_x(pack, 0.19, 0.08, Vector3(-0.3, 0.12 * side, 0.18 * side), energy, 8)
 		var flame := ModelKit.quad(pack, Vector2(0.9, 0.3), Vector3(-0.3, 0.12 * side - 0.4, 0.18 * side),
 				ModelKit.glow(Palette.PLAYER_ENERGY, 2.0, ModelKit.GlowShape.STREAK), Vector3(0, 0, 90))
 		flame.visible = false
 		_pack_flames.append(flame)
+	ModelKit.prism(pack, Vector3(0.2, 0.6, 0.1), Vector3(-0.2, 0.5, 0), blue_thin, Vector3(0, 0, 30))
 
-	# Back shoulder + arm.
+	# Back shoulder + arm with forearm and fist.
 	var shoulder_b := ModelKit.group(_torso, "ShoulderBack", Vector3(-0.05, 0.3, -0.5))
 	ModelKit.box(shoulder_b, Vector3(0.62, 0.42, 0.42), Vector3.ZERO, dark)
+	ModelKit.box(shoulder_b, Vector3(0.64, 0.08, 0.44), Vector3(0, 0.2, 0), metal)
 	_arm_back = ModelKit.group(shoulder_b, "Arm", Vector3(0, -0.2, 0))
-	ModelKit.box(_arm_back, Vector3(0.24, 0.6, 0.24), Vector3(0, -0.3, 0), metal)
+	ModelKit.box(_arm_back, Vector3(0.22, 0.34, 0.22), Vector3(0, -0.17, 0), joint)
+	ModelKit.box(_arm_back, Vector3(0.28, 0.36, 0.28), Vector3(0.02, -0.48, 0), metal)
+	ModelKit.box(_arm_back, Vector3(0.24, 0.2, 0.26), Vector3(0.04, -0.72, 0), dark)
 
-	# Head: compact helmet, gold visor band, blue crest.
+	# Head: helmet, faceplate, glowing visor, ear pods, twin antennae, crest.
 	_head = ModelKit.group(_torso, "Head", Vector3(0.08, 0.55, 0))
+	ModelKit.box(_head, Vector3(0.3, 0.14, 0.3), Vector3(-0.02, -0.2, 0), joint)
 	ModelKit.box(_head, Vector3(0.46, 0.4, 0.46), Vector3.ZERO, white)
-	ModelKit.box(_head, Vector3(0.2, 0.12, 0.48), Vector3(0.16, 0.02, 0), gold)
-	ModelKit.box(_head, Vector3(0.06, 0.06, 0.1), Vector3(0.27, 0.03, 0.18), energy)
+	ModelKit.box(_head, Vector3(0.18, 0.2, 0.4), Vector3(0.2, -0.08, 0), metal)
+	ModelKit.box(_head, Vector3(0.14, 0.1, 0.48), Vector3(0.2, 0.05, 0), gold)
+	ModelKit.box(_head, Vector3(0.05, 0.06, 0.44), Vector3(0.28, 0.05, 0), visor)
+	for side: float in [1.0, -1.0]:
+		ModelKit.cylinder(_head, 0.1, 0.1, 0.08, Vector3(-0.04, 0.0, 0.25 * side), blue_thin, Vector3(90, 0, 0), 8)
+		ModelKit.box(_head, Vector3(0.03, 0.34, 0.03), Vector3(-0.1, 0.3, 0.2 * side), metal, Vector3(0, 0, 18))
 	ModelKit.prism(_head, Vector3(0.14, 0.36, 0.1), Vector3(-0.05, 0.3, 0), blue, Vector3(0, 0, 25))
 
-	# Front shoulder (ex-wing block): big, blue, white strip, cyan edge.
+	# Front shoulder (ex-wing block): layered pauldron, white strip, cyan edge, running light.
 	var shoulder_f := ModelKit.group(_torso, "ShoulderFront", Vector3(-0.05, 0.32, 0.5))
 	ModelKit.box(shoulder_f, Vector3(0.78, 0.5, 0.5), Vector3.ZERO, blue)
 	ModelKit.box(shoulder_f, Vector3(0.8, 0.08, 0.52), Vector3(0, 0.27, 0), white)
+	ModelKit.box(shoulder_f, Vector3(0.66, 0.16, 0.54), Vector3(0.02, -0.2, 0), dark)
 	ModelKit.box(shoulder_f, Vector3(0.6, 0.05, 0.06), Vector3(0.05, 0, 0.27), energy)
+	ModelKit.sphere(shoulder_f, 0.05, Vector3(0.38, 0.14, 0.26), ModelKit.emissive(Palette.PLAYER_GOLD, 3.0))
+	ModelKit.prism(shoulder_f, Vector3(0.3, 0.2, 0.3), Vector3(-0.38, 0.1, 0), blue_thin, Vector3(0, 0, 90))
 
-	# Arm cannon (ex-nose), pivot at the shoulder so it can kick.
+	# Arm cannon (ex-nose): forearm armour, barrel with rings, heat vents, charge coil.
 	_cannon = ModelKit.group(_torso, "ArmCannon", Vector3(0.0, 0.05, 0.52))
+	ModelKit.box(_cannon, Vector3(0.24, 0.34, 0.24), Vector3(0, -0.12, 0), joint)
 	ModelKit.hex_x(_cannon, 0.2, 0.75, Vector3(0.3, -0.15, 0), white, 6, 0.9)
+	ModelKit.box(_cannon, Vector3(0.44, 0.1, 0.3), Vector3(0.22, 0.03, 0), blue_thin)
+	for k in 3:
+		ModelKit.box(_cannon, Vector3(0.04, 0.06, 0.32), Vector3(0.1 + k * 0.1, 0.1, 0), joint)
 	ModelKit.hex_x(_cannon, 0.21, 0.12, Vector3(0.7, -0.15, 0), blue, 6)
+	ModelKit.hex_x(_cannon, 0.23, 0.05, Vector3(0.52, -0.15, 0), gold, 6)
 	ModelKit.cylinder(_cannon, 0.13, 0.13, 0.04, Vector3(0.77, -0.15, 0), energy, Vector3(0, 0, 90), 8)
+	ModelKit.box(_cannon, Vector3(0.3, 0.03, 0.02), Vector3(0.36, -0.15, 0.21), energy)
 
 
 ## Called by the controller every frame.

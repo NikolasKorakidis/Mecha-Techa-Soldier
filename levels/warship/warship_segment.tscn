@@ -1,0 +1,46 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://levels/warship/interior_backdrop.gd" id="1_backdrop"]
+[ext_resource type="Script" path="res://core/camera_follower.gd" id="2_follower"]
+[ext_resource type="Script" path="res://levels/warship/warship_exterior.gd" id="3_exterior"]
+[ext_resource type="Script" path="res://levels/warship/warship_layout.gd" id="4_layout"]
+[ext_resource type="Script" path="res://directors/platformer_director.gd" id="5_director"]
+[ext_resource type="PackedScene" path="res://enemies/bosses/reactor_core.tscn" id="6_boss"]
+
+[node name="WarshipSegment" type="Node3D"]
+
+[node name="InteriorBackdrop" type="Node3D" parent="."]
+script = ExtResource("1_backdrop")
+
+[node name="ExteriorFollower" type="Node3D" parent="."]
+script = ExtResource("2_follower")
+factor = 0.6
+
+[node name="WarshipExterior" type="Node3D" parent="ExteriorFollower"]
+script = ExtResource("3_exterior")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="BossGate" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 300.6, 0, 0)
+
+[node name="Layout" type="Node3D" parent="." node_paths=PackedStringArray("enemy_root", "boss_gate")]
+script = ExtResource("4_layout")
+enemy_root = NodePath("../Enemies")
+boss_gate = NodePath("../BossGate")
+
+[node name="PlayerSpawn" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 30.2, 0)
+
+[node name="PlatformerDirector" type="Node" parent="." node_paths=PackedStringArray("enemy_root", "spawn", "boss_gate")]
+script = ExtResource("5_director")
+stage_name = "STAGE 2"
+subtitle = "WARSHIP INFILTRATION — DESTROY THE CORE"
+enemy_root = NodePath("../Enemies")
+boss_scene = ExtResource("6_boss")
+spawn = NodePath("../PlayerSpawn")
+arena_center = Vector2(315, 6)
+boss_gate = NodePath("../BossGate")
+boss_trigger_x = 304.0
+camera_limits = Rect2(-115, 5.5, 430, 32)
+auto_start = false

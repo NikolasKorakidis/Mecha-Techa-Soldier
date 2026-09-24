@@ -17,8 +17,13 @@ const ELITE := preload("res://enemies/ground/elite_walker.tscn")
 
 ## [x, top, width, height] — walkable blocks.
 const SOLIDS := [
-	# Hull roof: seals the level so wall-climbs cannot skip sections.
-	[-18.0, 30.0, 351.0, 8.0, false],
+	# Exterior hull (the drop zone): stern mass + roof deck with the entry hatch at x 0..8.
+	# The roof also seals the level so wall-climbs cannot skip sections.
+	[-130.0, 30.0, 112.0, 50.0], [-18.0, 30.0, 18.0, 8.0], [8.0, 30.0, 308.0, 8.0], [330.0, 30.0, 16.0, 8.0],
+	# Bulkhead tower right of the hatch: the only way on is down.
+	[8.0, 90.0, 4.0, 60.0, false],
+	# Docking gantry over the hatch: caps any wall-climb up the bulkhead.
+	[-12.0, 44.0, 24.0, 2.0, false],
 	# 1. Landing bay
 	[-16.0, 0.0, 48.0, 8.0], [-18.0, 16.0, 3.0, 24.0],
 	# 2. Pit run
@@ -75,10 +80,33 @@ const ITEMS := [
 	[ItemPickup.Kind.ENERGY, 296.0, 1.2],
 ]
 
-const CHECKPOINTS := [[128.0, 2.5], [203.0, 0.0], [284.0, 0.0]]
+const CHECKPOINTS := [[14.0, 0.0], [128.0, 2.5], [203.0, 0.0], [284.0, 0.0]]
+
+## Roof section over the reactor arena; blown open for the escape.
+const BLAST_ROOF := [316.0, 30.0, 14.0, 8.0]
+const HATCH_X := 0.0
+const HATCH_WIDTH := 8.0
+
+## Ambience in world space: [kind, x, y] — steam vents, spark showers, light pools.
+const AMBIENCE := [
+	[&"steam", 20.0, 0.0], [&"sparks", 40.0, 13.0], [&"steam", 64.0, 0.0], [&"sparks", 104.0, 6.3],
+	[&"steam", 122.0, 0.0], [&"sparks", 160.0, 16.0], [&"steam", 206.0, 0.0], [&"sparks", 216.0, 7.3],
+	[&"sparks", 238.0, 7.3], [&"steam", 256.0, 0.0], [&"steam", 290.0, 0.0], [&"sparks", 310.0, 21.5],
+]
+## [x, y, color, range]
+const LIGHTS := [
+	[4.0, 6.0, Color(1.0, 0.65, 0.3), 14.0], [108.0, 4.5, Color(0.7, 0.45, 1.0), 16.0],
+	[180.0, 11.0, Color(0.3, 0.8, 1.0), 16.0], [222.0, 5.0, Color(1.0, 0.25, 0.2), 18.0],
+	[315.0, 8.0, Color(0.55, 0.4, 1.0), 20.0], [-60.0, 36.0, Color(0.6, 0.8, 1.0), 22.0],
+]
+
+var blast_roof: StaticBody3D
 
 
 func _ready() -> void:
+	# The level's pickup root lives outside this sub-scene: find it by its group.
+	if pickup_root == null:
+		pickup_root = get_tree().get_first_node_in_group(EchoPickup.ROOT_GROUP) as Node3D
 	if enemy_root == null or pickup_root == null or boss_gate == null:
 		push_error("WarshipLayout: enemy_root, pickup_root and boss_gate must be assigned.")
 		return
@@ -117,8 +145,130 @@ func _ready() -> void:
 		checkpoint.position = Vector3(c[0], c[1], 0)
 		checkpoint.add_to_group(&"checkpoints")
 		add_child(checkpoint)
+	blast_roof = LevelKit.solid(world, BLAST_ROOF[0], BLAST_ROOF[1], BLAST_ROOF[2], BLAST_ROOF[3])
+	LevelKit.stripes(blast_roof, -BLAST_ROOF[2] * 0.5, BLAST_ROOF[3] * 0.5 - 0.7, BLAST_ROOF[2])
 	_build_gate()
 	_build_reactor_housing()
+	_build_hatch()
+	_build_exterior_deck()
+	_build_ambience()
+
+
+## Blows the arena roof out (escape cinematic): debris burst, then the opening stays.
+func blast_open() -> void:
+	if not is_instance_valid(blast_roof):
+		return
+	var at := blast_roof.global_position
+	for i in 6:
+		Vfx.spawn(get_tree(), preload("res://vfx/explosion.tscn"), at + Vector3(randf_range(-6, 6), randf_range(-3, 3), 2.5), randf_range(1.8, 3.2))
+	var root := get_tree().get_first_node_in_group(Vfx.ROOT_GROUP)
+	if root:
+		var pieces: Array[Node3D] = []
+		for i in 8:
+			var piece := Node3D.new()
+			ModelKit.box(piece, Vector3(randf_range(1.0, 2.5), randf_range(0.6, 1.5), 1.2), Vector3.ZERO, LevelKit.material(&"hull"))
+			piece.position = at + Vector3(randf_range(-6, 6), randf_range(-2, 3), 1)
+			pieces.append(piece)
+		root.add_child(FragmentBurst.create(pieces, at, 12.0))
+	blast_roof.queue_free()
+
+
+## Open entry hatch in the roof deck: door leaves folded up, striped frame, beacons.
+func _build_hatch() -> void:
+	var hatch := ModelKit.group(self, "Hatch", Vector3(HATCH_X + HATCH_WIDTH * 0.5, 30.0, 0))
+	var frame := ModelKit.hull(Color("3d4a66"))
+	var dark := LevelKit.material(&"hull_dark")
+	for side: float in [-1.0, 1.0]:
+		var x := side * (HATCH_WIDTH * 0.5 + 0.2)
+		ModelKit.box(hatch, Vector3(0.5, 0.5, 3.0), Vector3(x, 0.1, 0), frame)
+		# Door leaf standing open.
+		var leaf := ModelKit.group(hatch, "Leaf", Vector3(x + side * 0.3, 0.3, -1.2))
+		ModelKit.box(leaf, Vector3(0.3, 3.6, 2.2), Vector3(0, 1.8, 0), frame, Vector3(0, 0, -side * 18))
+		LevelKit.stripes(leaf, -0.2, 1.0, 0.5)
+		var beacon := ModelKit.emissive(Palette.INTERACTABLE, 2.4)
+		ModelKit.sphere(hatch, 0.22, Vector3(x, 0.6, 1.2), beacon)
+		ModelKit.quad(hatch, Vector2.ONE * 1.6, Vector3(x, 0.6, 1.4), ModelKit.glow(Palette.INTERACTABLE, 0.8))
+	LevelKit.stripes(hatch, -HATCH_WIDTH * 0.5, -0.4, HATCH_WIDTH)
+	# Shaft walls down to the bay ceiling, lit from inside.
+	for side: float in [-1.0, 1.0]:
+		ModelKit.box(hatch, Vector3(0.3, 8.0, 3.0), Vector3(side * HATCH_WIDTH * 0.5, -4.0, -0.3), dark)
+	ModelKit.quad(hatch, Vector2(HATCH_WIDTH, 8.0), Vector3(0, -4.0, -1.6), ModelKit.glow(Color(1.0, 0.7, 0.35), 0.35))
+	var sign := Label3D.new()
+	sign.text = "▼  ENTRY  ▼"
+	sign.font_size = 64
+	sign.pixel_size = 0.01
+	sign.outline_size = 10
+	sign.modulate = Palette.INTERACTABLE
+	sign.position = Vector3(0, 3.8, 0.5)
+	hatch.add_child(sign)
+
+
+## Exterior roof deck details around the drop zone: landing ring, deck markings, masts,
+## turret domes and running lights along the hull edge.
+func _build_exterior_deck() -> void:
+	var deck := ModelKit.group(self, "ExteriorDeck")
+	var metal := ModelKit.hull(Color("3d4a66"), ArtStyle.OUTLINE_THIN)
+	var dark := LevelKit.material(&"hull_dark")
+	# Landing target where the mech touches down.
+	var ring := ModelKit.group(deck, "LandingRing", Vector3(-60, 30.03, 0))
+	ModelKit.cylinder(ring, 2.4, 2.4, 0.05, Vector3.ZERO, ModelKit.emissive(Palette.INTERACTABLE, 0.9), Vector3.ZERO, 24)
+	ModelKit.cylinder(ring, 2.0, 2.0, 0.07, Vector3.ZERO, dark, Vector3.ZERO, 24)
+	# Deck arrows toward the hatch.
+	for x in range(-48, -2, 8):
+		ModelKit.prism(deck, Vector3(0.8, 1.4, 0.05), Vector3(x, 30.35, 2.02), LevelKit.material(&"stripe"), Vector3(0, 0, -90))
+	# Masts, sensor domes and a deck turret behind the walkway.
+	for x: float in [-110.0, -86.0, -34.0, 30.0, 70.0]:
+		var mast := ModelKit.group(deck, "Mast", Vector3(x, 30, -2.6))
+		ModelKit.box(mast, Vector3(0.4, 7.0, 0.4), Vector3(0, 3.5, 0), metal)
+		ModelKit.box(mast, Vector3(2.6, 0.2, 0.3), Vector3(0, 5.6, 0), metal)
+		ModelKit.box(mast, Vector3(1.6, 0.2, 0.3), Vector3(0, 6.4, 0), metal)
+		ModelKit.sphere(mast, 0.18, Vector3(0, 7.1, 0), LevelKit.material(&"red_light"))
+	for x: float in [-96.0, -20.0, 48.0, 120.0]:
+		var dome := ModelKit.group(deck, "Dome", Vector3(x, 30, -3.2))
+		ModelKit.sphere(dome, 2.2, Vector3.ZERO, metal, Vector3(1, 0.55, 1))
+		ModelKit.box(dome, Vector3(3.2, 0.5, 0.5), Vector3(1.8, 0.9, 0.6), dark, Vector3(0, 0, 8))
+		ModelKit.box(dome, Vector3(3.2, 0.5, 0.5), Vector3(1.8, 0.9, -0.6), dark, Vector3(0, 0, 8))
+	# Running lights along the deck edge.
+	for x in range(-128, 344, 6):
+		ModelKit.box(deck, Vector3(0.5, 0.12, 0.1), Vector3(x, 29.75, 2.05), LevelKit.material(&"light"))
+	# Hull side windows and markings on the stern mass.
+	for row in 3:
+		for x in range(-126, -22, 3):
+			if (x + row * 7) % 5 == 0:
+				continue
+			ModelKit.box(deck, Vector3(1.2, 0.35, 0.05), Vector3(x, 25.0 - row * 3.5, 2.04), LevelKit.material(&"warm_light") if (x * 7 + row) % 3 else LevelKit.material(&"light"))
+	var mark := Label3D.new()
+	mark.text = "VX-07"
+	mark.font_size = 256
+	mark.pixel_size = 0.03
+	mark.outline_size = 0
+	mark.modulate = Color(0.55, 0.62, 0.78, 0.55)
+	mark.position = Vector3(-78, 16.0, 2.05)
+	deck.add_child(mark)
+	LevelKit.stripes(deck, -130.0, 28.6, 112.0)
+	# Bulkhead face: hazard bands, lamps and a sealed door outline.
+	for y in range(31, 46, 3):
+		LevelKit.stripes(deck, 8.0, float(y), 4.0)
+	for y in range(32, 46, 4):
+		ModelKit.sphere(deck, 0.2, Vector3(8.0, y, 2.2), LevelKit.material(&"red_light"))
+	ModelKit.box(deck, Vector3(0.1, 5.0, 2.6), Vector3(7.95, 32.5, 0), LevelKit.material(&"hull_dark"))
+
+
+func _build_ambience() -> void:
+	var amb := ModelKit.group(self, "Ambience")
+	for a: Array in AMBIENCE:
+		if a[0] == &"steam":
+			LevelKit.steam(amb, Vector3(a[1], a[2], -1.0))
+		else:
+			LevelKit.sparks(amb, Vector3(a[1], a[2], 1.0))
+	for l: Array in LIGHTS:
+		var light := OmniLight3D.new()
+		light.position = Vector3(l[0], l[1], 4.0)
+		light.light_color = l[2]
+		light.omni_range = l[3]
+		light.light_energy = 1.6
+		light.omni_attenuation = 1.2
+		amb.add_child(light)
 
 
 ## Blast door that seals the arena once the boss fight starts (director toggles it).
