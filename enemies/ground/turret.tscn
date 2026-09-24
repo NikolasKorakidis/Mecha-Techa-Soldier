@@ -1,0 +1,25 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://enemies/ground/ground_enemy.tscn" id="1_base"]
+
+[node name="Turret" instance=ExtResource("1_base")]
+behavior = 2
+fire_interval = 2.2
+burst_count = 3
+score_value = 400
+death_size = 1.2
+
+[node name="Model" parent="Facing"]
+kind = 3
+
+[node name="Muzzle" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.0, 0)
+
+[node name="Telegraph" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.0, 0.6)
+
+[node name="Health" parent="."]
+max_health = 6
+
+[node name="Facing" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)

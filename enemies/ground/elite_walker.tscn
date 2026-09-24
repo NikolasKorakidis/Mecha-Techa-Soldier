@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://enemies/ground/ground_enemy.tscn" id="1_base"]
+
+[node name="EliteWalker" instance=ExtResource("1_base")]
+behavior = 0
+speed = 1.6
+fire_interval = 1.6
+burst_count = 3
+score_value = 1200
+death_size = 1.6
+drop_echo = &"burst"
+health_drop_chance = 0.0
+
+[node name="Model" parent="Facing"]
+kind = 8
+elite_override = true
+
+[node name="Muzzle" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 1.4, 0)
+
+[node name="Telegraph" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 1.4, 0.6)
+
+[node name="Health" parent="."]
+max_health = 14

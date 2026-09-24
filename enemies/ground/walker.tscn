@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://enemies/ground/ground_enemy.tscn" id="1_base"]
+
+[node name="Walker" instance=ExtResource("1_base")]
+behavior = 0
+speed = 2.4
+fire_interval = 2.4
+score_value = 300
+
+[node name="Model" parent="Facing"]
+kind = 8
+
+[node name="Muzzle" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 1.4, 0)
+
+[node name="Telegraph" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 1.4, 0.6)
+
+[node name="Health" parent="."]
+max_health = 4
