@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://levels/hull_run/hull_track.gd" id="1_track"]
+[ext_resource type="Script" path="res://levels/hull_run/hull_run_backdrop.gd" id="2_backdrop"]
+[ext_resource type="Script" path="res://directors/hull_run_director.gd" id="3_director"]
+
+[node name="HullRunSegment" type="Node3D"]
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Track" type="Node3D" parent="." node_paths=PackedStringArray("enemy_root")]
+script = ExtResource("1_track")
+enemy_root = NodePath("../Enemies")
+
+[node name="Backdrop" type="Node3D" parent="."]
+script = ExtResource("2_backdrop")
+
+[node name="PlayerSpawn" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 322, 30.6, 0)
+
+[node name="HullRunDirector" type="Node" parent="." node_paths=PackedStringArray("enemy_root", "track", "backdrop", "spawn")]
+script = ExtResource("3_director")
+enemy_root = NodePath("../Enemies")
+track = NodePath("../Track")
+backdrop = NodePath("../Backdrop")
+spawn = NodePath("../PlayerSpawn")
+auto_start = false

@@ -16,6 +16,7 @@ var _wheels: Array[Node3D] = []
 var _body: Node3D
 var _fairing: Node3D
 var _flames: Array[MeshInstance3D] = []
+var _rear_glows: Array[MeshInstance3D] = []
 var _core_glow: MeshInstance3D
 var _time: float = 0.0
 var _kick: float = 0.0
@@ -27,6 +28,7 @@ func _ready() -> void:
 	ModelKit.clear(self)
 	_wheels.clear()
 	_flames.clear()
+	_rear_glows.clear()
 	var white := ModelKit.hull(Palette.PLAYER_PRIMARY)
 	var blue := ModelKit.hull(Palette.PLAYER_SECONDARY)
 	var dark := ModelKit.hull(Palette.PLAYER_SHADOW.darkened(0.2), ArtStyle.OUTLINE_THIN, 0.3)
@@ -72,9 +74,10 @@ func _ready() -> void:
 	ModelKit.box(_fairing, Vector3(0.1, 0.08, 0.62), Vector3(0.42, 0.25, 0), energy)
 
 	# Side fin (ex-shoulder block) with a cyan edge strip.
-	var fin := ModelKit.group(_body, "Fin", Vector3(-0.35, 0.05, 0.4))
-	ModelKit.box(fin, Vector3(0.9, 0.36, 0.2), Vector3.ZERO, blue, Vector3(0, 0, -8))
-	ModelKit.box(fin, Vector3(0.8, 0.05, 0.05), Vector3(0.0, 0.0, 0.11), energy, Vector3(0, 0, -8))
+	for side: float in [1.0, -1.0]:
+		var fin := ModelKit.group(_body, "Fin", Vector3(-0.35, 0.05, 0.4 * side))
+		ModelKit.box(fin, Vector3(0.9, 0.36, 0.2), Vector3.ZERO, blue, Vector3(0, 0, -8))
+		ModelKit.box(fin, Vector3(0.8, 0.05, 0.05), Vector3(0.0, 0.0, 0.11 * side), energy, Vector3(0, 0, -8))
 
 	# Exhaust (ex-thruster pack).
 	var exhaust := ModelKit.group(_body, "Exhaust", Vector3(-1.05, 0.12, 0))
@@ -83,6 +86,16 @@ func _ready() -> void:
 		var flame := ModelKit.quad(exhaust, Vector2(1.0, 0.3), Vector3(-0.55, 0, 0.18 * side),
 				ModelKit.glow(Palette.PLAYER_ENERGY, 1.8, ModelKit.GlowShape.STREAK))
 		_flames.append(flame)
+		# Camera-facing burn so the exhaust reads from the chase camera behind.
+		var rear := MeshInstance3D.new()
+		rear.mesh = QuadMesh.new()
+		rear.material_override = ModelKit.glow_billboard(Palette.PLAYER_ENERGY, 1.6)
+		rear.position = Vector3(-0.35, 0, 0.18 * side)
+		rear.scale = Vector3.ONE * 0.8
+		exhaust.add_child(rear)
+		_rear_glows.append(rear)
+	# Tail light bar and under-glow.
+	ModelKit.box(exhaust, Vector3(0.06, 0.1, 0.5), Vector3(0.1, 0.28, 0), ModelKit.emissive(Palette.DANGER, 2.5))
 
 
 ## speed_ratio 0..1 drives wheel spin and flame length.
@@ -113,6 +126,8 @@ func update_pose(new_pose: Pose, speed: float, speed_ratio: float, delta: float)
 	for flame in _flames:
 		flame.scale = Vector3(length, 1, 1)
 		flame.position.x = -0.5 * length
+	for rear in _rear_glows:
+		rear.scale = Vector3.ONE * (0.5 + 0.35 * length)
 	(_core_glow.material_override as ShaderMaterial).set_shader_parameter(&"energy", 1.0 + 0.3 * sin(_time * 5.0))
 
 

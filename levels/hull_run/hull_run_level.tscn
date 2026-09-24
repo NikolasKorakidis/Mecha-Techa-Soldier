@@ -1,0 +1,48 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://core/gameplay_camera.gd" id="1_cam"]
+[ext_resource type="Environment" path="res://art/environments/space.tres" id="2_env"]
+[ext_resource type="Script" path="res://art/environments/environment_binder.gd" id="3_envbind"]
+[ext_resource type="PackedScene" path="res://player/bike/hull_rider.tscn" id="4_rider"]
+[ext_resource type="Script" path="res://ui/stage/stage_ui.gd" id="5_ui"]
+[ext_resource type="PackedScene" path="res://levels/hull_run/hull_run_segment.tscn" id="6_segment"]
+
+[node name="HullRunLevel" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("2_env")
+script = ExtResource("3_envbind")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.5, -0.6, 0.62, 0, 0.72, 0.69, -0.87, -0.35, 0.36, 0, 60, 0)
+light_color = Color(1, 0.9, 0.8, 1)
+light_energy = 1.2
+
+[node name="RimLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.5, 0.3, -0.8, 0, 0.94, 0.35, 0.87, 0.17, -0.46, 0, 60, 0)
+light_color = Color(0.5, 0.7, 1, 1)
+light_energy = 0.8
+
+[node name="GameplayCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 313, 34, 0)
+far = 2400.0
+script = ExtResource("1_cam")
+
+[node name="Effects" type="Node3D" parent="." groups=["vfx_root"]]
+
+[node name="Projectiles" type="Node3D" parent="." groups=["projectile_root"]]
+
+[node name="Pickups" type="Node3D" parent="." groups=["pickup_root"]]
+
+[node name="HullRider" parent="." instance=ExtResource("4_rider")]
+
+[node name="StageUI" type="CanvasLayer" parent="."]
+script = ExtResource("5_ui")
+
+[node name="Segment" parent="." instance=ExtResource("6_segment")]
+
+[node name="HullRunDirector" parent="Segment"]
+auto_start = true
+restart_level = "res://ui/title/title_screen.tscn"
+
+[editable path="Segment"]

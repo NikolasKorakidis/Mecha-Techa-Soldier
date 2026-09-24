@@ -1,0 +1,63 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://player/bike/hull_rider.gd" id="1_rider"]
+[ext_resource type="Resource" path="res://player/bike/hull_rider_tuning.tres" id="2_tuning"]
+[ext_resource type="Script" path="res://art/models/bike_model.gd" id="3_model"]
+[ext_resource type="Script" path="res://components/health_component.gd" id="4_health"]
+[ext_resource type="Script" path="res://components/hurtbox_component.gd" id="5_hurt"]
+[ext_resource type="Script" path="res://components/flash_component.gd" id="6_flash"]
+[ext_resource type="Script" path="res://components/hitbox_component.gd" id="7_hitbox"]
+
+[sub_resource type="BoxShape3D" id="Shape_body"]
+size = Vector3(2.6, 1.4, 1.0)
+
+[sub_resource type="BoxShape3D" id="Shape_hurt"]
+size = Vector3(2.2, 1.2, 0.9)
+
+[sub_resource type="BoxShape3D" id="Shape_ram"]
+size = Vector3(3.4, 1.8, 2.6)
+
+[node name="HullRider" type="CharacterBody3D" node_paths=PackedStringArray("model", "health", "hurtbox", "flash", "muzzle", "ram")]
+script = ExtResource("1_rider")
+tuning = ExtResource("2_tuning")
+model = NodePath("Model")
+health = NodePath("Health")
+hurtbox = NodePath("Hurtbox")
+flash = NodePath("Flash")
+muzzle = NodePath("Muzzle")
+ram = NodePath("Ram")
+
+[node name="Body" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+shape = SubResource("Shape_body")
+
+[node name="Model" type="Node3D" parent="."]
+script = ExtResource("3_model")
+
+[node name="Muzzle" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9, 0.85, 0)
+
+[node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+script = ExtResource("5_hurt")
+team = 1
+health = NodePath("../Health")
+
+[node name="Shape" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("Shape_hurt")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("4_health")
+max_health = 5
+
+[node name="Flash" type="Node" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("6_flash")
+target = NodePath("../Model")
+mode = 2
+
+[node name="Ram" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.9, 0)
+script = ExtResource("7_hitbox")
+
+[node name="Shape" type="CollisionShape3D" parent="Ram"]
+shape = SubResource("Shape_ram")
