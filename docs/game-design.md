@@ -102,21 +102,29 @@ still planned (M2); drops are the first acquisition path.
 Every volley is preceded by a swelling telegraph flare. Whole formations destroyed award a
 **formation bonus**; one escapee voids it.
 
-### Stage structure (campaign v2)
-Title → **Stage 1** shooter → transformation → **Stage 2** platformer → transformation → **Stage 3** runner →
-**MISSION COMPLETE** → title. Score, echo weapon and SUPER energy carry across all three forms.
-- **Stage 1 — Orbital Riptide** (~80 s of waves) → boss **The Choir Engine**.
-- **Ship → Mech** cutscene (~5 s, skippable with Jump/Fire): the Kestrel breaks into its parts and re-locks
-  as the mech ("MECH MODE — landing on the enemy warship").
-- **Stage 2 — Warship Infiltration** (Mega Man X-style platformer, ~3–5 min): landing bay → pit run → electric
-  corridor (timed floor panels) → tower climb → moving platforms over the reactor pit → crusher hall →
-  elite guard + dash-jump gap → boss arena. Three checkpoints; death respawns at the last one; pits cost
-  1 HP and return you to safe ground. Boss **Warship Reactor Core**. Then "CORE DESTROYED — ESCAPE".
-- **Mech → Bike** cutscene ("BIKE MODE — outrun the explosion").
-- **Stage 3 — Highway Escape** (auto-runner, ~60 s): gaps, barriers, duck beams, mines, breakable crates,
-  laser gates, jump pads, drones, energy-orb arcs; the warship burns on the horizon and explosions chase
-  the left edge. Cross the extraction gate → MISSION COMPLETE.
-- **Foundry Descent** (the second shooter stage) is kept as a dev room (F2), out of the main flow.
+### Stage structure (campaign v3 — seamless)
+The whole run is one continuous world (`levels/campaign/campaign.tscn`): one camera, one sky, no loading between
+stages. Score, echo weapon and SUPER energy carry across all three forms.
+- **Stage 1 — Orbital Riptide** (side-view shooter, ~80 s of waves) → **The Choir Engine**. Depth: distant
+  capital-ship battle trading turbolaser fire, drifting asteroid belt, sun with light shafts, and the enemy
+  warship looming in late in the stage.
+- **Boarding run** (in-engine, letterboxed): the Kestrel breaks off, races across space to the warship VX-07
+  (camera pulls wide to show it), transforms above the roof and the **mech drops onto the hull**.
+- **Stage 2 — Warship Infiltration** (Mega Man X-style platformer): roof deck drop zone → entry hatch (a
+  bulkhead + gantry block roof-running) → landing bay → pit run → electric corridor → tower climb → moving
+  platforms over the reactor pit → crusher hall → elite guard + dash-jump gap → **Warship Reactor Core**.
+  Four checkpoints; pits cost 1 HP. Detail: parallax back wall (window bays onto space, pipes, screens,
+  fans, beacons, generators), mid-layer pillars/cables/catwalks, foreground girders, steam and sparks,
+  coloured light pools, a far superstructure (command tower, dishes, batteries, engines) outside.
+- **Escape** (in-engine): slow motion, the arena roof blows out, the mech thrusts up to the top hull, turns into
+  the bike, and the camera swings from the side view to a chase view behind it (ortho → matched-FOV
+  perspective → orbit).
+- **Stage 3 — Hull Run** (3D, camera behind the bike, ~70 s): warm-up → blast field → **trench run** (walls
+  with turrets) → burning deck with jump pads → **pursuit gunship** mini boss → the bow. Around you: ringed
+  gas giant, red moon, the blue world below, capital ships fighting, explosions tearing through the hull.
+- **Ending**: the bike launches off the bow and glides out while the warship explodes → MISSION COMPLETE → title.
+- Restart Stage resumes at the current stage inside the campaign. Standalone dev rooms (F2) exist for each
+  stage: `orbital_riptide`, `warship_level`, `hull_run_level`, plus Foundry Descent.
 
 ### Mech (Stage 2)
 Run, variable-height jump, **double jump**, coyote time + jump buffer, ground/air **dash** (dash + jump keeps
@@ -127,14 +135,18 @@ forward), **SUPER** = Resonance Beam. Tuning: `player/mech/mech_tuning.tres`
 Ground enemies: Walker (patrols, turns at ledges, fires forward), Hopper (leaps at you), Turret (aimed
 bursts), Flyer (sine hover, aimed shots), Elite Walker (drops BURST). All telegraph before firing.
 
-### Bike (Stage 3)
-Auto-runs; cruise speed ramps 14 → 22 u/s, forward/back throttles ±25%. Jump + double jump, **duck** (hold
-down) under beams, fast-fall (down in the air), **boost** (Dash) — 0.5 s of speed + i-frames that rams
-through crates and drones, 1.3 s cooldown — hold-to-fire, SUPER. Hits slow you down briefly.
-Tuning: `player/bike/bike_tuning.tres`.
+### Bike (Stage 3, 3D)
+Rides forward on its own (cruise 30 → 40 u/s), steer across the 18-wide deck, hold down to brake. Jump + double
+jump over walls and gaps, **boost** (Dash): speed + i-frames + ram, and steering while boosting does a
+sidestep roll. Hold fire for twin cannons with light aim assist; echo weapons carry over (BURST 5-way fan,
+ARC strong homing, GUARD heavy twin bolts). SUPER fires the beam straight down the track.
+Hazards: machinery blocks, low walls, flame vents, laser fences with one gap, blast zones that erupt when you
+get close, deck gaps into the burning interior. Enemies: Talon interceptors (elite variant), hull turrets,
+pursuit gunship (lead-flies ahead, triple volleys, drops blast mines, calls fighters).
+Tuning: `player/bike/hull_rider_tuning.tres`.
 
 ### SUPER (all forms)
-Kills (and crates/orbs on the highway) charge three energy segments (600 kill value each). At 3 segments,
+Kills (and energy orbs on the hull run) charge three energy segments (600 kill value each). At 3 segments,
 Special fires the **Resonance Beam**: a 1.2–1.6 s screen-length beam that deals continuous heavy damage,
 erases enemy bullets and grants invulnerability while it fires.
 

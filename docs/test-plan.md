@@ -33,10 +33,9 @@ Each `tests/test_*.gd` extends `TestCase`; every `test_*` method runs on a fresh
 | Tutorial card completes on action, is remembered, can be disabled | `test_hud_tutorial.gd` | ✅ |
 | Pause opens the menu and freezes stage time; title → start → restart → quit | `test_main_boot.gd` | ✅ |
 | Mech: held jump ≈ 3u, tap lower, double jump once, coyote, dash distance, wall jump, SUPER gating, pit recovery | `test_mech_player.gd` | ✅ |
-| Bike: auto-run + speed ramp, duck hurtbox, barrier hurts / jump clears, boost smashes crates, gap recovery, gap/rise clearability | `test_bike_runner.gd` | ✅ |
-| Campaign chain S1 → cutscene → warship → cutscene → highway → title; cutscene end + skip | `test_campaign_flow.gd` | ✅ |
-| Warship boot, checkpoints, boss gate lock → Reactor Core → escape; checkpoint respawn | `test_campaign_flow.gd` | ✅ |
-| Reactor Core shielded during attacks, open between; highway finish → Mission Complete | `test_campaign_flow.gd` | ✅ |
+| Hull run: chase camera behind in perspective, auto-ride + steering limits, wall hurts / jump clears, gap recovery, bolts kill fighters, gunship + finish, gap clearability | `test_hull_run.gd` | ✅ |
+| Campaign: Start → campaign; shooter phase; drop transforms ship → mech on the roof without a scene change; resume at Stage 2 → escape → bike + 3D camera + roof blown; resume at Stage 3 → ending | `test_campaign_flow.gd` | ✅ |
+| Warship: roof-deck start, hatch drops into the bay, checkpoints, gate lock → Reactor Core → escape, respawn, blast roof, core damage window | `test_warship.gd` | ✅ |
 
 ## Movement instrumentation (F3 debug panel)
 - Ship: state, speed, time-to-max-speed, last dash distance, dash cooldown, invulnerability, last hit source + time.
@@ -54,16 +53,17 @@ Each `tests/test_*.gd` extends `TestCase`; every `test_*` method runs on a fresh
 - Web build (Chromium, Compatibility renderer): title → start → gameplay → pause with zero console errors.
 - Full-run bot: title → Stage 1 → Choir Engine → Stage 2 → Forge Dreadnought → title, zero errors.
 
-## Campaign v2 verification (latest)
-Scratch bots (not committed), headless:
-- Warship greedy bot (run right, jump at gaps/walls, double jump when falling): landing bay → boss gate in
-  ~50 s with zero pit falls. Found and fixed: a 3.0-high step equal to the jump apex, ceiling blocks that
-  could be wall-climbed over (added a hull roof), a floating arena ledge that pinned the mech.
-- Reactor Core bot (stand/jump in the arena, hold fire, no SUPER): defeated in ~62 s (was >5 min before the
-  hit-zone/HP retune: radius 1.6 → 2.3, core y 5 → 3.6, HP 260 → 170, rest 2.3/1.7 → 2.8/2.1 s).
-- Highway bot (jump gaps/barriers/mines, duck beams, boost crates/gates): finishes in ~56 s with 2 hits.
-  Fixed: bike hurtbox offset (ducking did nothing), jump-pad gap unclearable, barrier hitbox vs bike width.
-- Web build (Chromium, Compatibility renderer): title → Stage 1 → warship → highway via F2, zero console errors.
+## Campaign v3 verification (latest)
+Scratch bots and captures (not committed):
+- Full campaign flow (headless and rendered): title → shooter → boarding run → drop → platformer → escape →
+  camera swing → hull run → ending → title, zero script errors.
+- Warship bot: found a roof-running skip past the hatch (fixed with a bulkhead + gantry that also stops
+  wall-climbing); intended route roof → hatch → interior → boss gate verified.
+- Hull-run bot (steer around blocks/fences/blasts, jump walls/gaps, hold fire): finishes in ~69 s; the
+  pad gap was widened after the bot fell short.
+- Exported pack (`--main-pack build/web/index.pck`) and Chromium web build: found that binary scenes drop
+  cross-instance NodePath overrides and non-editable child overrides — fixed (group lookups + `[editable]`);
+  campaign, warship and hull run render with zero console errors.
 
 ## Full-run bot (manual tool)
 A scratch bot (not committed) played Stage 1 → Choir Engine → Stage 2 → Forge Dreadnought → MISSION

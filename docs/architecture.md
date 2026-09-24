@@ -134,7 +134,7 @@ Level (inherits graybox_room.tscn)
 ## UI and flow
 ```
 Main
-├── CurrentLevel      title → Stage 1 → transform_to_mech → warship → transform_to_bike → highway → title
+├── CurrentLevel      title → campaign (all three stages, seamless) → title
 ├── PostLayer         vignette
 ├── HUD (layer 10)    status + score clusters, TutorialCard, F3 debug panel — hidden on the title
 └── PauseMenu (15)    scrim + panel; process ALWAYS, gameplay frozen underneath
@@ -146,40 +146,55 @@ Main
 - UI never owns gameplay state: HUD reads RunSession; TutorialCard reads input + Settings; StageUI is
   driven by the LevelDirector and boss signals.
 
-## Platformer and runner stages (campaign v2)
+## Seamless campaign (levels/campaign/)
 ```
-WarshipLevel (levels/warship/warship_level.tscn)        HighwayLevel (levels/highway/highway_level.tscn)
-├── GameplayCamera   follow mode + limits + lock_to()   ├── GameplayCamera   follow, offset ahead of the bike
-├── InteriorBackdrop camera-relative parallax           ├── HighwayBackdrop  sky/warship, city, pylons, chase glow
-├── Effects / Projectiles / Enemies / Pickups           ├── Effects / Projectiles / Enemies / Pickups
-├── BossGate         sealed by the director             ├── Track            HighwayTrack (group runner_track)
-├── Layout           WarshipLayout (tables → solids,    ├── BikePlayer
-│                    hazards, enemies, items, checkpoints)├── StageUI
-├── MechPlayer                                           └── RunnerDirector   INTRO → RIDE → FINISH → DONE
-├── StageUI
-└── PlatformerDirector  INTRO → PLAY → BOSS_WARNING → BOSS → ESCAPE → DONE
+Campaign (campaign.tscn) — one world, one GameplayCamera, one WorldEnvironment
+├── Sky (CameraFollower, scales with ortho size) → SpaceBackdrop   side-view sky for Stages 1–2
+├── Effects / Projectiles / Pickups / StageUI (letterbox + flash)
+├── Players          ShipPlayer → MechPlayer → HullRider (swapped in-world at each transformation)
+├── Stage1           Enemies + LevelDirector (auto_start=false, hand_off=true) — camera at x −700
+├── Warship          warship_segment.tscn (x −130..346, roof deck y 30): InteriorBackdrop, ExteriorFollower
+│                    → WarshipExterior, Layout (WarshipLayout), BossGate, PlatformerDirector (hand_off)
+├── HullRun          hull_run_segment.tscn (deck y 30, x 300..2760): HullTrack, HullRunBackdrop, Enemies,
+│                    HullRunDirector (hand_off)
+└── CampaignDirector SHOOTER → DROP → PLATFORMER → ESCAPE → HULL_RUN → ENDING → DONE
 ```
-- Layout/Track nodes sit **before** their director so everything exists when the director wires up.
-- `GameplayCamera` follow mode: `follow_target`, `follow_offset`, `lookahead` (uses the target's `facing`),
-  vertical dead zone, `limits` (camera-centre clamp), `lock_to()` / `unlock()` for arenas, `snap_to_target()`.
-- Level kit (`levels/kit/`): `LevelKit.solid()` (StaticBody + chunk-tech visuals, Z depth 4),
-  `MovingPlatform` (AnimatableBody3D), `Hazard` (ELECTRIC / SPIKES / CRUSHER, NEUTRAL hitboxes),
-  `ItemPickup` (health / energy), `Checkpoint` (group `checkpoints`, `reached` signal).
-- Runner kit (`levels/highway/`): `TrackObstacle` (BARRIER, BEAM, MINE, CRATE, GATE, PAD, ORB — ENEMY-team
-  contact hitboxes; crates have a hurtbox + health), `HighwayTrack.recovery_point(x)` for gap falls.
-- `TransformCutscene` (`levels/transform/`): builds the from/to models, animates their named `PART_NAMES`
-  groups apart and back together, flash + banner, skippable, then `SceneRouter.go_to(next_level)`.
+- Stages are regions of one world; directors never change scenes when `hand_off` is set — they emit
+  `stage_cleared`/`finished` and the CampaignDirector runs the in-engine transition.
+- Transitions drive the camera through `GameplayCamera.rig_override`; the ortho→perspective cut uses
+  `GameplayCamera.fov_matching(size, distance)` so it is invisible, then orbits behind the bike.
+- Restart Stage reloads the campaign; the director reads `RunSession.checkpoint_id` ("STAGE 2"/"STAGE 3") and
+  starts at that stage directly.
+- Exported builds (web) do not resolve `NodePath` overrides that point outside an instanced sub-scene, and only
+  apply child overrides on instances marked `[editable]`: segments therefore find the level's camera, UI,
+  player, pickup root and environment by group (`GameplayCamera.find`, `StageUI.find`, `Players.find`,
+  `pickup_root`), and scenes that override segment children list them as editable.
+- Standalone dev rooms wrap each segment with its own camera/env/UI: `warship_level.tscn`, `hull_run_level.tscn`.
+
+## 3D hull run (levels/hull_run/)
+- `HullRider` (CharacterBody3D) + `HullRunDirector` chase rig (behind/above, lateral lag, bank, boost FOV).
+- 3D-only combat pieces: `Bolt3D` (free-velocity projectile), `ForwardBeam` (SUPER), `Explosion3D`
+  (billboarded flash/fire/smoke/sparks/ring), `additive_glow_billboard.gdshader`.
+- `RunEnemy` base (health, hurtbox, telegraphed bolts, cleanup) → `RunFighter`, `RunTurret`, `RunGunship`.
+- `HullTrack`: authored decks/obstacles/orbs/turrets tables, trench walls, racing rail lights, burning
+  superstructure; meshes use `visibility_range_end` so the 2.5 km deck stays cheap. `recovery_point(x)`.
+- `HullRunBackdrop.activate()` swaps a duplicated environment to the `space_sky.gdshader` sky and builds
+  planets/capital ships/streaks around the camera.
+
+## Side-view level kit (levels/kit/)
+`LevelKit.solid()` (StaticBody + chunk-tech visuals incl. seams, bolts, vents, ceiling lamps), `steam()`,
+`sparks()`, `MovingPlatform`, `Hazard` (ELECTRIC / SPIKES / CRUSHER), `ItemPickup`, `Checkpoint`.
 
 ## Players
 | Player | Scene | Body | States |
 |---|---|---|---|
 | Ship | `player/ship/ship_player.tscn` | Node3D, soft play-rect bounds | CONTROL, DASH, HIT, DISABLED, CINEMATIC |
 | Mech | `player/mech/mech_player.tscn` | CharacterBody3D (layer actors, mask world) | GROUND, AIR, DASH, WALL, HIT, SUPER, DISABLED, CINEMATIC |
-| Bike | `player/bike/bike_player.tscn` | CharacterBody3D, body/hurtbox shrink when ducking | RIDE, AIR, BOOST, SUPER, DISABLED, CINEMATIC |
+| Bike | `player/bike/hull_rider.tscn` | CharacterBody3D, 3D (forward +X, steer Z) | RIDE, AIR, BOOST, SUPER, DISABLED, CINEMATIC |
 - All three join group `player` (`Players.find()`), mirror health into `RunSession`, expose `facing`,
   `aim_offset` (enemies aim at the chest via `Players.aim_point()`), `grant_invulnerability()`,
   `collect_echo()` / `can_collect()`, `get_debug_lines()`, and optionally `tutorial_steps()` (TutorialCard).
-- Mech and bike reuse `ShipArsenal` (base gun + echo weapons, `facing` aware) and `MechInput`.
+- The mech reuses `ShipArsenal` (base gun + echo weapons, `facing` aware); mech and bike read `MechInput`.
 - SUPER: `RunSession.add_charge(points)` fills energy (600 per segment); `super_ready()` at 3; players spend
   it and spawn `PlayerBeam` (continuous PLAYER hitbox + bullet eraser) in the Effects root.
 - Physics layers: 1 world, 2 hurtbox, 3 hitbox, 4 pickup, 5 actors (character bodies collide with world only).

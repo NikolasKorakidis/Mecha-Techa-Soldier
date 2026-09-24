@@ -1,17 +1,20 @@
 # SHIFT//WING
 
 2.5D vertical slice in Godot 4.7: a horizontal space shooter that transforms into a Mega Man X-style mech
-platformer, then into a motorcycle for a highway escape. The link between both halves is **Echo Shift** — decode an enemy's combat pattern (Burst, Arc,
+platformer, then into a motorcycle racing along the top of the exploding warship (3D chase view). The link between both halves is **Echo Shift** — decode an enemy's combat pattern (Burst, Arc,
 Guard) and carry it through the ship-to-mech transformation.
 
-**Status:** full three-stage run — Stage 1 shooter (Choir Engine) → ship-to-mech transformation → Stage 2
-warship platformer (Reactor Core) → mech-to-bike transformation → Stage 3 highway runner → Mission Complete.
-SUPER beam in every form, elite weapon drops (Burst / Arc / Guard) that carry across forms, checkpoints,
-pause menu with accessibility options. Next up: audio.
+**Status:** one seamless campaign, no scene switches. Stage 1 side-view shooter (Choir Engine) → the Kestrel
+races to the enemy warship, transforms over its hull and the mech drops onto the roof → Stage 2 Mega Man X-style
+platformer through the warship (Reactor Core) → the roof blows out, the mech thrusts up, becomes the bike and the
+camera swings behind it → Stage 3 3D chase-view run along the burning warship's hull (fighters, turrets, trench
+run, pursuit gunship) → launch off the bow as the warship explodes → Mission Complete. SUPER beam in every form,
+elite weapon drops that carry across forms, checkpoints (restart resumes at the current stage), pause menu with
+accessibility options. Next up: audio.
 
 ## Play it
 **In the browser:** https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ (Chrome or Edge recommended;
-click the game once to give it keyboard focus). Cutscenes skip with Jump or Fire. Every push to the branch rebuilds it after the tests pass.
+click the game once to give it keyboard focus). Transitions play in-engine with letterbox bars. Every push to the branch rebuilds it after the tests pass.
 
 **Locally:**
 1. Install Godot 4.7.2 (standard build).
@@ -19,10 +22,10 @@ click the game once to give it keyboard focus). Cutscenes skip with Jump or Fire
 
 | Action | Keyboard | Controller | Ship | Mech | Bike |
 |---|---|---|---|---|---|
-| Move | WASD / arrows | Left stick / D-pad | Fly | Run | Throttle ± / hold down to duck |
+| Move | WASD / arrows | Left stick / D-pad | Fly | Run | Steer left/right, hold down to brake |
 | Fire (hold) | J / left mouse | Right trigger | Shoot | Shoot | Shoot |
 | Jump | Space | A / Cross | Vertical burst | Jump, press again to double jump | Jump / double jump |
-| Dash | K / Shift | B / Circle | Dash | Dash (dash + jump = long jump) | Boost (rams crates) |
+| Dash | K / Shift | B / Circle | Dash | Dash (dash + jump = long jump) | Boost (rams, i-frames; steer + boost = roll) |
 | SUPER (3 energy) | I / Q | Right bumper | Resonance Beam | Resonance Beam | Resonance Beam |
 | Pause menu (Resume / Restart Stage / Controls / Options / Quit) | Esc | Start | | | |
 | Next stage / debug panel | F2 / F3 | — | | | |

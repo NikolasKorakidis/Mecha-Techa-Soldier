@@ -25,7 +25,7 @@ func test_pause_opens_menu_and_freezes_the_tree() -> void:
 	main.set_paused(true)
 	assert_true(get_tree().paused, "tree paused")
 	assert_true(main.get_node("%PauseMenu").is_open, "pause menu open")
-	var director := SceneRouter.current_level.get_node("LevelDirector") as LevelDirector
+	var director := SceneRouter.current_level.get_node("Stage1/LevelDirector") as LevelDirector
 	var t := director.stage_time
 	await wait_physics_frames(20)
 	assert_eq(director.stage_time, t, "stage time frozen while paused")

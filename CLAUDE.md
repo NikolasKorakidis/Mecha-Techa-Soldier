@@ -12,7 +12,8 @@ transformation. Design source of truth: `docs/game-design.md`.
 - Godot 4.7 stable (project `config/features` = 4.7).
 - GDScript with static typing where it improves clarity.
 - Desktop Windows target first; macOS is used for development too.
-- 3D presentation constrained to the side-view gameplay plane (Z = 0).
+- 3D presentation constrained to the side-view gameplay plane (Z = 0) for Stages 1–2; Stage 3 (hull run)
+  is a full 3D chase view behind the bike. All stages live in one continuous campaign scene.
 
 ## Commands
 Exact executable paths per machine live in `docs/local-setup.md`. With `GODOT` pointing at the binary:

@@ -1,123 +1,73 @@
 extends TestCase
-## Stage 1 → ship→mech cutscene → warship (Reactor Core) → mech→bike cutscene → highway → title.
+## The seamless campaign: one scene, stages chained by in-world cinematics, checkpoint resume.
 
 const DT := 1.0 / 60.0
 
-
-func test_campaign_chain_is_wired() -> void:
-	var s1 := load("res://levels/orbital_riptide/stage_1.tres") as StageData
-	assert_eq(s1.next_level, "res://levels/transform/transform_to_mech.tscn", "stage 1 → mech cutscene")
-	var to_mech := (load("res://levels/transform/transform_to_mech.tscn") as PackedScene).instantiate() as TransformCutscene
-	assert_eq(to_mech.next_level, "res://levels/warship/warship_level.tscn", "mech cutscene → warship")
-	to_mech.free()
-	var warship := (load("res://levels/warship/warship_level.tscn") as PackedScene).instantiate()
-	var director := warship.get_node("PlatformerDirector") as PlatformerDirector
-	assert_eq(director.next_level, "res://levels/transform/transform_to_bike.tscn", "warship → bike cutscene")
-	warship.free()
-	var to_bike := (load("res://levels/transform/transform_to_bike.tscn") as PackedScene).instantiate() as TransformCutscene
-	assert_eq(to_bike.next_level, "res://levels/highway/highway_level.tscn", "bike cutscene → highway")
-	to_bike.free()
-	var highway := (load("res://levels/highway/highway_level.tscn") as PackedScene).instantiate()
-	assert_eq((highway.get_node("RunnerDirector") as RunnerDirector).restart_level, "res://ui/title/title_screen.tscn", "highway → title")
-	highway.free()
+var campaign: Node
+var cd: CampaignDirector
 
 
-func test_cutscene_runs_to_the_end_and_can_be_skipped() -> void:
-	var cut := (load("res://levels/transform/transform_to_mech.tscn") as PackedScene).instantiate() as TransformCutscene
-	cut.next_level = ""
-	add_autofree(cut)
-	cut.set_process(false)
-	var spy := SignalSpy.new(cut.finished)
-	for i in int(TransformCutscene.T_END / DT) + 2:
-		cut.tick(DT)
-	assert_eq(spy.count(), 1, "finished once at the end")
-	cut.tick(DT)
-	assert_eq(spy.count(), 1, "never twice")
-	var cut2 := (load("res://levels/transform/transform_to_bike.tscn") as PackedScene).instantiate() as TransformCutscene
-	cut2.next_level = ""
-	add_autofree(cut2)
-	cut2.set_process(false)
-	cut2.tick(0.5)
-	var ev := InputEventAction.new()
-	ev.action = &"jump"
-	ev.pressed = true
-	cut2._unhandled_input(ev)
-	assert_true(cut2.done, "jump skips the cutscene")
+func _load(checkpoint: String = "") -> void:
+	if not checkpoint.is_empty():
+		RunSession.save_checkpoint(StringName(checkpoint))
+	campaign = (load("res://levels/campaign/campaign.tscn") as PackedScene).instantiate()
+	add_autofree(campaign)
+	cd = campaign.get_node("CampaignDirector") as CampaignDirector
+	await wait_process_frames(3)
 
 
-func _warship() -> Node:
-	var level := (load("res://levels/warship/warship_level.tscn") as PackedScene).instantiate()
-	add_autofree(level)
-	await wait_physics_frames(2)
-	return level
+func _wait_phase(phase: CampaignDirector.Phase, max_seconds: float) -> bool:
+	var t := 0.0
+	while cd.phase != phase and t < max_seconds:
+		await get_tree().process_frame
+		t += get_process_delta_time()
+	return cd.phase == phase
 
 
-func test_warship_boots_with_mech_checkpoints_and_enemies() -> void:
-	var level: Node = await _warship()
-	var director := level.get_node("PlatformerDirector") as PlatformerDirector
-	assert_true(Players.find(get_tree()) is MechPlayer, "the player is the mech")
-	assert_true(get_tree().get_nodes_in_group(&"checkpoints").size() >= 3, "checkpoints placed")
-	assert_true(level.get_node("Enemies").get_child_count() >= 10, "enemies placed")
-	assert_false(level.get_node("BossGate").visible, "arena gate open before the fight")
-	assert_eq(director.camera.follow_target, level.get_node("MechPlayer"), "camera follows the mech")
+func test_campaign_is_the_start_stage() -> void:
+	var main := (load("res://main/main.tscn") as PackedScene).instantiate()
+	assert_eq(main.first_stage, "res://levels/campaign/campaign.tscn", "Start goes to the seamless campaign")
+	main.free()
 
 
-func test_warship_boss_gate_lock_and_escape() -> void:
-	var level: Node = await _warship()
-	var director := level.get_node("PlatformerDirector") as PlatformerDirector
-	director.warning_time = 0.1
-	director.intro_time = 0.0
-	await wait_physics_frames(2)
-	var mech := level.get_node("MechPlayer") as MechPlayer
-	mech.teleport(Vector3(director.boss_trigger_x + 1.0, 0.5, 0))
+func test_starts_in_the_shooter() -> void:
+	await _load()
+	assert_eq(cd.phase, CampaignDirector.Phase.SHOOTER, "shooter phase")
+	assert_true(Players.find(get_tree()) is ShipPlayer, "the ship flies")
+	assert_eq(cd.shooter_director.state, LevelDirector.State.INTRO, "stage 1 running")
+	assert_true(cd.shooter_director.hand_off, "stage 1 hands off instead of changing scenes")
+	assert_near(cd.camera.global_position.x, cd.shooter_camera.x, 0.5, "camera at the stage 1 origin")
+
+
+func test_drop_transforms_the_ship_and_lands_the_mech_on_the_hull() -> void:
+	await _load()
+	cd.flight_time = 0.6
+	var level_before := SceneRouter.current_level
+	cd.shooter_director.stage_cleared.emit()
+	assert_true(await _wait_phase(CampaignDirector.Phase.PLATFORMER, 12.0), "reached the platformer")
+	assert_true(Players.find(get_tree()) is MechPlayer, "the mech replaced the ship")
+	assert_true(cd.mech.global_position.y > 29.0 and cd.mech.is_on_floor(), "landed on the roof deck")
+	assert_eq(cd.warship_director.player, cd.mech, "stage 2 director drives the mech")
+	assert_eq(SceneRouter.current_level, level_before, "no scene change")
+
+
+func test_resume_at_stage_2_and_escape_into_the_hull_run() -> void:
+	await _load("STAGE 2")
+	assert_eq(cd.phase, CampaignDirector.Phase.PLATFORMER, "checkpoint resumes the platformer")
+	assert_true(Players.find(get_tree()) is MechPlayer, "mech spawned")
+	cd.warship_director.stage_cleared.emit()
+	assert_true(await _wait_phase(CampaignDirector.Phase.HULL_RUN, 16.0), "escape → hull run")
+	assert_true(Players.find(get_tree()) is HullRider, "the bike replaced the mech")
+	assert_eq(cd.camera.projection, Camera3D.PROJECTION_PERSPECTIVE, "camera swung into the 3D chase view")
+	assert_false(is_instance_valid(cd.warship_layout.blast_roof), "arena roof blown open")
+	assert_true(cd.hull_backdrop.active, "3D sky and planets active")
+
+
+func test_resume_at_stage_3_and_finish_plays_the_ending() -> void:
+	await _load("STAGE 3")
+	assert_eq(cd.phase, CampaignDirector.Phase.HULL_RUN, "checkpoint resumes the hull run")
+	cd.hull_director.intro_time = 0.0
 	await wait_physics_frames(3)
-	assert_eq(director.state, PlatformerDirector.State.BOSS_WARNING, "crossing the trigger starts the boss")
-	assert_true(director.camera.is_locked(), "camera locked to the arena")
-	assert_true(level.get_node("BossGate").visible, "gate sealed")
-	await wait_physics_frames(12)
-	assert_true(director.boss is ReactorCore, "reactor core spawned")
-	director.boss.defeated.emit()
-	assert_eq(director.state, PlatformerDirector.State.ESCAPE, "boss down → escape")
-
-
-func test_death_respawns_at_last_checkpoint() -> void:
-	var level: Node = await _warship()
-	var director := level.get_node("PlatformerDirector") as PlatformerDirector
-	director.respawn_delay = 0.05
-	var cp := get_tree().get_nodes_in_group(&"checkpoints")[0] as Checkpoint
-	cp.activate()
-	var mech := level.get_node("MechPlayer") as MechPlayer
-	mech.health.apply_damage(DamagePayload.create(99, Teams.Team.ENEMY), self)
-	assert_eq(mech.state, MechPlayer.State.DISABLED, "dead")
-	await wait_physics_frames(8)
-	assert_false(mech.health.is_depleted(), "respawned")
-	assert_near(mech.global_position.x, cp.global_position.x, 0.6, "at the checkpoint")
-
-
-func test_reactor_core_only_takes_damage_between_attacks() -> void:
-	LevelScaffold.build(self)
-	var boss := (load("res://enemies/bosses/reactor_core.tscn") as PackedScene).instantiate() as ReactorCore
-	add_autofree(boss)
-	boss.set_physics_process(false)
-	boss.debug_advance_phase()  # INTRO → PHASE_1
-	boss.current_attack = &"low_sweep"
-	boss._animate(DT)
-	assert_false(boss.hurtbox.receive_hit(DamagePayload.create(5, Teams.Team.PLAYER), self), "shielded while attacking")
-	boss.current_attack = &""
-	boss._animate(DT)
-	assert_true(boss.hurtbox.receive_hit(DamagePayload.create(5, Teams.Team.PLAYER), self), "open between attacks")
-
-
-func test_highway_finish_line_completes_the_mission() -> void:
-	var level := (load("res://levels/highway/highway_level.tscn") as PackedScene).instantiate()
-	add_autofree(level)
-	await wait_physics_frames(2)
-	var director := level.get_node("RunnerDirector") as RunnerDirector
-	director.restart_level = ""
-	director.intro_time = 0.0
-	assert_true(Players.find(get_tree()) is BikePlayer, "the player is the bike")
-	await wait_physics_frames(2)
-	assert_eq(director.state, RunnerDirector.State.RIDE, "riding")
-	(level.get_node("BikePlayer") as BikePlayer).teleport(Vector3(director.finish_x + 1.0, 0.5, 0))
-	await wait_physics_frames(2)
-	assert_eq(director.state, RunnerDirector.State.FINISH, "finish line → mission complete")
+	cd.rider.teleport(Vector3(cd.hull_director.track.finish_x + 1.0, HullTrack.DECK_Y + 0.6, 0))
+	assert_true(await _wait_phase(CampaignDirector.Phase.ENDING, 3.0), "finish → ending cinematic")
+	assert_true(cd.rider.in_cinematic(), "control handed to the ending cinematic")
