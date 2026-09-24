@@ -29,6 +29,7 @@ func _ready() -> void:
 func _on_health_changed(current: int, maximum: int) -> void:
 	if label:
 		label.text = "%d / %d" % [current, maximum]
+		label.visible = Settings.show_debug_labels
 
 
 func _on_damaged(_payload: DamagePayload, _source: Node) -> void:

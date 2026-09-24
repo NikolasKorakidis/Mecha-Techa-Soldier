@@ -19,7 +19,6 @@ enemy_scene = ExtResource("4_drone")
 count = 3
 interval = 0.8
 spawn_y = PackedFloat32Array(4.0, 0.0, -4.0)
-prompt = "HOLD FIRE TO SHOOT  ·  DASH THROUGH DANGER"
 
 [sub_resource type="Resource" id="Wave_1"]
 script = ExtResource("2_wave")

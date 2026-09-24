@@ -3,13 +3,14 @@ extends CanvasLayer
 ## Level-owned overlay: stage banners, WARNING, short prompts and the boss health bar.
 ## Reads only the level's own actors (director calls in, boss signals); owns no game state.
 
-const WARNING_RED := Color("ff3b4a")
+const WARNING_RED := Palette.DANGER
 
 var _banner: VBoxContainer
 var _banner_title: Label
 var _banner_subtitle: Label
 var _warning: VBoxContainer
 var _prompt: Label
+var _toast: PanelContainer
 var _boss_panel: PanelContainer
 var _boss_name: Label
 var _boss_bar: ProgressBar
@@ -28,7 +29,7 @@ func _ready() -> void:
 
 	_banner = _centered_column(root, 0.38)
 	_banner_title = _label(_banner, 96, Color.WHITE)
-	_banner_subtitle = _label(_banner, 34, Color("9fe8ff"))
+	_banner_subtitle = _label(_banner, 34, Palette.UI_MUTED_TEXT)
 	_banner.modulate.a = 0.0
 
 	_warning = _centered_column(root, 0.4)
@@ -36,14 +37,14 @@ func _ready() -> void:
 	_label(_warning, 30, Color("ffd0d4")).text = "HOSTILE GUARDIAN APPROACHING"
 	_warning.visible = false
 
-	_prompt = Label.new()
-	_prompt.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_prompt.position = Vector2(-600, 120)
-	_prompt.size = Vector2(1200, 60)
+	_toast = PanelContainer.new()
+	_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_toast.add_theme_stylebox_override(&"panel", UiStyle.panel(Palette.UI_GOLD, 0.0, 0.8))
+	_toast.modulate.a = 0.0
+	root.add_child(_toast)
+	_prompt = UiStyle.label("", ArtStyle.FONT_BODY, Palette.UI_GOLD)
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_style_label(_prompt, 34, Color("ffe08a"))
-	_prompt.modulate.a = 0.0
-	root.add_child(_prompt)
+	_toast.add_child(_prompt)
 
 	_build_boss_bar(root)
 
@@ -64,14 +65,18 @@ func show_warning(duration: float) -> void:
 	_warning_left = duration
 
 
+## Short informational toast, centered between the HUD clusters (never over them).
 func show_prompt(text: String) -> void:
 	_prompt.text = text
+	_toast.reset_size()
+	var view := _toast.get_viewport_rect().size
+	_toast.position = Vector2((view.x - _toast.size.x) * 0.5, 34)
 	if _prompt_tween:
 		_prompt_tween.kill()
 	_prompt_tween = create_tween()
-	_prompt_tween.tween_property(_prompt, "modulate:a", 1.0, 0.2)
+	_prompt_tween.tween_property(_toast, "modulate:a", 1.0, ArtStyle.T_MED)
 	_prompt_tween.tween_interval(2.4)
-	_prompt_tween.tween_property(_prompt, "modulate:a", 0.0, 0.5)
+	_prompt_tween.tween_property(_toast, "modulate:a", 0.0, ArtStyle.T_SLOW)
 
 
 func track_boss(boss: BossBase) -> void:
@@ -92,7 +97,8 @@ func is_warning_visible() -> bool:
 func _process(delta: float) -> void:
 	if _warning.visible:
 		_warning_left -= delta
-		_warning.modulate.a = 0.55 + 0.45 * absf(sin(_warning_left * 6.0))
+		var swing := 0.45 * ArtStyle.flash_scale()
+		_warning.modulate.a = 1.0 - swing + swing * absf(sin(_warning_left * 6.0))
 		if _warning_left <= 0.0:
 			_warning.visible = false
 	if _boss_panel.visible and _boss_ghost.value > _boss_bar.value:
@@ -111,7 +117,7 @@ func _build_boss_bar(root: Control) -> void:
 	_boss_panel.size = Vector2(1040, 80)
 	_boss_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.03, 0.02, 0.06, 0.7)
+	style.bg_color = Color(Palette.UI_DARK_PANEL, ArtStyle.UI_PANEL_ALPHA)
 	style.border_width_top = 3
 	style.border_color = WARNING_RED
 	style.set_corner_radius_all(6)

@@ -10,6 +10,9 @@ var _respawn_timer: Timer
 
 
 func _ready() -> void:
+	var title := get_node_or_null(^"Title") as Label3D
+	if title:
+		title.visible = title.visible and Settings.show_debug_labels
 	if player == null or spawn == null:
 		push_error("TestRoom '%s': player and spawn must be assigned." % name)
 		return

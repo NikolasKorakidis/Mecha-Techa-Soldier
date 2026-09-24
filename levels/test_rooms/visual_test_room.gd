@@ -20,8 +20,8 @@ var _stats: Label
 
 
 func _ready() -> void:
-	super._ready()
 	Settings.show_debug_labels = true
+	super._ready()
 	_build_overlay()
 	_build_lineup()
 

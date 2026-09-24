@@ -1,35 +1,8 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://ui/hud/hud.gd" id="1_hud"]
 [ext_resource type="Script" path="res://ui/hud/debug_panel.gd" id="2_debug"]
-
-[sub_resource type="StyleBoxFlat" id="Style_panel"]
-content_margin_left = 22.0
-content_margin_top = 8.0
-content_margin_right = 26.0
-content_margin_bottom = 8.0
-bg_color = Color(0.02, 0.06, 0.12, 0.62)
-border_width_bottom = 3
-border_color = Color(0.25, 0.78, 1, 0.9)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-skew = Vector2(0.28, 0)
-
-[sub_resource type="StyleBoxFlat" id="Style_score"]
-content_margin_left = 26.0
-content_margin_top = 4.0
-content_margin_right = 22.0
-content_margin_bottom = 4.0
-bg_color = Color(0.02, 0.06, 0.12, 0.62)
-border_width_bottom = 3
-border_color = Color(1, 0.77, 0.26, 0.9)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-skew = Vector2(-0.28, 0)
+[ext_resource type="Script" path="res://ui/tutorial/tutorial_card.gd" id="3_tutorial"]
 
 [node name="HUD" type="CanvasLayer"]
 process_mode = 3
@@ -37,6 +10,7 @@ layer = 10
 script = ExtResource("1_hud")
 
 [node name="Margin" type="MarginContainer" parent="."]
+unique_name_in_owner = true
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -44,74 +18,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 24
+theme_override_constants/margin_top = 28
 theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 24
-
-[node name="TopBar" type="HBoxContainer" parent="Margin"]
-layout_mode = 2
-size_flags_vertical = 0
-mouse_filter = 2
-theme_override_constants/separation = 28
-
-[node name="StatusPanel" type="PanelContainer" parent="Margin/TopBar"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("Style_panel")
-
-[node name="Row" type="HBoxContainer" parent="Margin/TopBar/StatusPanel"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 24
-
-[node name="HealthSegments" type="HBoxContainer" parent="Margin/TopBar/StatusPanel/Row"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-
-[node name="EnergySegments" type="HBoxContainer" parent="Margin/TopBar/StatusPanel/Row"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-
-[node name="EchoLabel" type="Label" parent="Margin/TopBar/StatusPanel/Row"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.54, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 26
-text = "ECHO: —"
-
-[node name="Spacer" type="Control" parent="Margin/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
-
-[node name="ScorePanel" type="PanelContainer" parent="Margin/TopBar"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("Style_score")
-
-[node name="Row" type="HBoxContainer" parent="Margin/TopBar/ScorePanel"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 14
-
-[node name="ScoreCaption" type="Label" parent="Margin/TopBar/ScorePanel/Row"]
-layout_mode = 2
-size_flags_vertical = 8
-theme_override_colors/font_color = Color(0.6, 0.75, 0.9, 1)
-theme_override_font_sizes/font_size = 18
-text = "SCORE"
-
-[node name="ScoreLabel" type="Label" parent="Margin/TopBar/ScorePanel/Row"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 38
-text = "00000000"
+theme_override_constants/margin_bottom = 28
 
 [node name="DebugPanel" type="Label" parent="Margin"]
 layout_mode = 2
@@ -125,10 +34,18 @@ script = ExtResource("2_debug")
 
 [node name="PauseLabel" type="Label" parent="Margin"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 12
-theme_override_font_sizes/font_size = 72
 text = "PAUSED"
+
+[node name="TutorialCard" type="Control" parent="."]
+process_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_tutorial")
