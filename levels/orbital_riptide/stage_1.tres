@@ -199,4 +199,4 @@ subtitle = "Answer ECHO-9's signal"
 waves = Array[ExtResource("2_wave")]([SubResource("Wave_0"), SubResource("Wave_1"), SubResource("Wave_2"), SubResource("Wave_3"), SubResource("Wave_4"), SubResource("Wave_5"), SubResource("Wave_6"), SubResource("Wave_7"), SubResource("Wave_8"), SubResource("Wave_9"), SubResource("Wave_10"), SubResource("Wave_11"), SubResource("Wave_12"), SubResource("Wave_13"), SubResource("Wave_14"), SubResource("Wave_15"), SubResource("Wave_16"), SubResource("Wave_17"), SubResource("Wave_18"), SubResource("Wave_19"), SubResource("Wave_20")])
 boss_scene = ExtResource("3_boss")
 clear_bonus = 10000
-next_level = "res://levels/transform/transform_to_mech.tscn"
+restart_level = "res://ui/title/title_screen.tscn"

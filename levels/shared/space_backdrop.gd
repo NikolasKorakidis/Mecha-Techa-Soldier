@@ -38,6 +38,9 @@ const WRAP_X := 26.0
 @export var ring_scroll_speed: float = 0.4
 ## Scripted scenery beats (solar array pass, orbital support, distant blasts, light chase).
 @export var authored_moments: bool = true
+## Extra depth: distant fleet battle, asteroid belt, sun with light shafts, warship reveal.
+@export var cinematic_depth: bool = true
+@export var fleet_speed: float = 0.35
 
 var _layers: Array[Node3D] = []
 var _structures: Array[Node3D] = []
@@ -53,6 +56,13 @@ var _events: Array[Dictionary] = []
 var _chase_lights: Array[StandardMaterial3D] = []
 var _blast_timer: float = 3.0
 var _rng := RandomNumberGenerator.new()
+var _fleet: Array[Node3D] = []
+var _asteroids: Array[Node3D] = []
+var _asteroid_speeds: PackedFloat32Array = []
+var _asteroid_spins: PackedVector3Array = []
+var _volley_timer: float = 2.0
+var _sun_rays: Array[MeshInstance3D] = []
+var _warship: Node3D
 
 
 func _ready() -> void:
@@ -71,6 +81,10 @@ func _ready() -> void:
 	_build_structures(_layers[2])
 	_build_wreckage(_layers[3])
 	_build_foreground(_layers[4])
+	if cinematic_depth:
+		_build_sun(_layers[1])
+		_build_fleet(_layers[2])
+		_build_asteroids(_layers[3])
 	if authored_moments and not Engine.is_editor_hint():
 		_schedule_moments()
 
@@ -283,6 +297,114 @@ func _build_foreground(layer: Node3D) -> void:
 	layer.add_child(dust)
 
 
+# --- Cinematic depth ---------------------------------------------------------------------
+
+func _build_sun(layer: Node3D) -> void:
+	var sun := ModelKit.group(layer, "Sun", Vector3(-19, 9.5, -84))
+	ModelKit.sphere(sun, 1.1, Vector3.ZERO, ModelKit.emissive(Color(1.0, 0.93, 0.8), 4.0))
+	ModelKit.quad(sun, Vector2.ONE * 9.0, Vector3(0, 0, 0.5), ModelKit.glow(Color(1.0, 0.8, 0.55), 0.9 * ArtStyle.flash_scale()))
+	ModelKit.quad(sun, Vector2.ONE * 22.0, Vector3(0, 0, 0.4), ModelKit.glow(Color(1.0, 0.55, 0.35), 0.25))
+	# Anamorphic streak + god rays fanning toward the play area.
+	ModelKit.quad(sun, Vector2(40.0, 0.7), Vector3(0, 0, 0.6), ModelKit.glow(Color(0.7, 0.85, 1.0), 0.5, ModelKit.GlowShape.RADIAL))
+	for k in 5:
+		var ray := ModelKit.quad(sun, Vector2(38.0, 3.5 + k), Vector3(0, 0, 0.3), ModelKit.glow(Color(1.0, 0.85, 0.6), 0.06, ModelKit.GlowShape.STREAK))
+		ray.rotation.z = deg_to_rad(-18.0 - k * 9.0) + PI
+		ray.position = Vector3(cos(ray.rotation.z) * -19.0, sin(ray.rotation.z) * -19.0, 0.3)
+		_sun_rays.append(ray)
+
+
+func _build_fleet(layer: Node3D) -> void:
+	var hull := _silhouette(Color("0e1527"))
+	var hull_light := _silhouette(Color("141d33"))
+	var windows := ModelKit.emissive(Color("ffd9a0"), 0.7)
+	var engine := Color("7fc8ff")
+	for k in 3:
+		var ship := ModelKit.group(layer, "CapitalShip%d" % k, Vector3(-18.0 + k * 19.0, [8.6, -8.2, 6.4][k], -40.0 - k * 5.0))
+		var length := 14.0 - k * 2.5
+		ModelKit.box(ship, Vector3(length, 1.3, 1.0), Vector3.ZERO, hull)
+		ModelKit.prism(ship, Vector3(1.3, 4.0, 1.0), Vector3(-length * 0.5 - 1.9, 0, 0), hull, Vector3(0, 0, 90))
+		ModelKit.box(ship, Vector3(length * 0.7, 0.6, 1.0), Vector3(length * 0.1, -0.9, 0), hull_light)
+		ModelKit.box(ship, Vector3(2.0, 1.6, 1.0), Vector3(length * 0.3, 1.3, 0), hull)
+		ModelKit.box(ship, Vector3(3.2, 0.5, 1.0), Vector3(length * 0.3, 2.3, 0), hull_light)
+		for w in int(length):
+			if w % 3 != 1:
+				ModelKit.box(ship, Vector3(0.35, 0.1, 0.1), Vector3(-length * 0.5 + 0.6 + w, 0.2, 0.55), windows)
+		for e in 2:
+			ModelKit.quad(ship, Vector2(2.6, 0.9), Vector3(length * 0.5 + 1.2, 0.3 - e * 0.7, 0.6), ModelKit.glow(engine, 0.9, ModelKit.GlowShape.STREAK), Vector3(0, 0, 180))
+		ship.scale = Vector3.ONE * (0.6 - k * 0.1)
+		_fleet.append(ship)
+
+
+func _build_asteroids(layer: Node3D) -> void:
+	var rock := ModelKit.toon(Color("1d1b26"), 0.3, 0.95, 0.05)
+	var rock_dark := ModelKit.toon(Color("131219"), 0.25, 0.95, 0.05)
+	for k in 8:
+		var a := ModelKit.group(layer, "Asteroid%d" % k)
+		var r := _rng.randf_range(0.45, 1.3)
+		var m := ModelKit.sphere(a, r, Vector3.ZERO, rock if k % 3 else rock_dark,
+				Vector3(_rng.randf_range(0.8, 1.4), _rng.randf_range(0.6, 1.0), _rng.randf_range(0.7, 1.2)))
+		(m.mesh as SphereMesh).radial_segments = 7
+		(m.mesh as SphereMesh).rings = 4
+		for c in 3:
+			ModelKit.sphere(a, r * 0.35, Vector3(_rng.randf_range(-r, r) * 0.6, _rng.randf_range(-r, r) * 0.5, r * 0.5), rock_dark, Vector3(1, 1, 0.5))
+		a.position = Vector3(_rng.randf_range(-WRAP_X, WRAP_X), _rng.randf_range(-9.0, 9.0), _rng.randf_range(-30.0, -19.0))
+		_asteroids.append(a)
+		_asteroid_speeds.append(_rng.randf_range(1.0, 2.2))
+		_asteroid_spins.append(Vector3(_rng.randf_range(-20, 20), _rng.randf_range(-30, 30), _rng.randf_range(-15, 15)))
+
+
+## A turbolaser exchange between two capital ships, with a flak burst at the target.
+func _fleet_volley() -> void:
+	if _fleet.size() < 2:
+		return
+	var a := _fleet[_rng.randi() % _fleet.size()]
+	var b := _fleet[(_fleet.find(a) + 1 + _rng.randi() % (_fleet.size() - 1)) % _fleet.size()]
+	var from := a.position + Vector3(0, 0.8, 0.8)
+	var to := b.position + Vector3(_rng.randf_range(-3, 3), _rng.randf_range(-0.5, 1.0), 0.8)
+	var color := Color(0.4, 1.0, 0.5) if _rng.randf() < 0.5 else Color(1.0, 0.35, 0.3)
+	for k in 3:
+		var bolt := ModelKit.quad(_layers[2], Vector2(2.6, 0.22), from, ModelKit.glow(color, 1.4, ModelKit.GlowShape.STREAK))
+		bolt.rotation.z = atan2(to.y - from.y, to.x - from.x)
+		var tween := create_tween()
+		tween.tween_interval(k * 0.12)
+		tween.tween_property(bolt, "position", to, 0.5)
+		tween.tween_callback(bolt.queue_free)
+	var flash := ModelKit.quad(_layers[2], Vector2.ONE * 1.8, to, ModelKit.glow(Color(1.0, 0.7, 0.35), 0.0))
+	var ft := create_tween()
+	ft.tween_interval(0.55)
+	ft.tween_property(flash.material_override, "shader_parameter/energy", 1.2 * ArtStyle.flash_scale(), 0.05)
+	ft.tween_property(flash, "scale", Vector3.ONE * 2.2, 0.4)
+	ft.parallel().tween_property(flash.material_override, "shader_parameter/energy", 0.0, 0.45)
+	ft.tween_callback(flash.queue_free)
+
+
+## The enemy warship looms in from the right late in the stage — the next destination.
+func reveal_warship() -> void:
+	if _warship:
+		return
+	var hull := _silhouette(Color("0e1526"))
+	var edge := _silhouette(Color("1a2440"))
+	_warship = ModelKit.group(_layers[2], "WarshipReveal", Vector3(46, -8.5, -36))
+	_warship.scale = Vector3.ONE * 0.7
+	ModelKit.box(_warship, Vector3(30.0, 3.2, 1.0), Vector3.ZERO, hull)
+	ModelKit.prism(_warship, Vector3(3.2, 8.0, 1.0), Vector3(-19.0, 0, 0), hull, Vector3(0, 0, 90))
+	ModelKit.box(_warship, Vector3(22.0, 1.0, 1.0), Vector3(2.0, -2.0, 0), edge)
+	ModelKit.box(_warship, Vector3(6.0, 3.0, 1.0), Vector3(6.0, 3.0, 0), hull)
+	ModelKit.box(_warship, Vector3(4.0, 2.0, 1.0), Vector3(6.0, 5.4, 0), edge)
+	for w in 26:
+		ModelKit.box(_warship, Vector3(0.5, 0.14, 0.1), Vector3(-13.0 + w, 0.6, 0.55), ModelKit.emissive(Color("ff9f4a"), 0.8))
+	for e in 3:
+		ModelKit.quad(_warship, Vector2(6.0, 1.6), Vector3(18.0, 1.0 - e * 1.2, 0.6), ModelKit.glow(Color("ff5a4e"), 1.2, ModelKit.GlowShape.STREAK), Vector3(0, 0, 180))
+	var tween := create_tween()
+	tween.tween_property(_warship, "position:x", 16.0, 40.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+
+## Campaign transitions: drop the wreckage/foreground layers once the ship leaves the battle.
+func set_battle_layers_visible(enabled: bool) -> void:
+	_layers[3].visible = enabled
+	_layers[4].visible = enabled
+
+
 # --- Authored moments -----------------------------------------------------------------
 
 func _schedule_moments() -> void:
@@ -290,6 +412,7 @@ func _schedule_moments() -> void:
 		{"t": 14.0, "kind": "solar_array"},
 		{"t": 32.0, "kind": "light_chase"},
 		{"t": 46.0, "kind": "orbital_support"},
+		{"t": 60.0, "kind": "warship_reveal"},
 		{"t": 70.0, "kind": "solar_array"},
 	]
 
@@ -316,6 +439,9 @@ func _run_moment(kind: String) -> void:
 			_moving_prop(support, 26.0, 60.0)
 		"light_chase":
 			_chase_lights_on(true)
+		"warship_reveal":
+			if cinematic_depth:
+				reveal_warship()
 
 
 func _moving_prop(node: Node3D, speed: float, distance: float) -> void:
@@ -364,6 +490,23 @@ func _process(delta: float) -> void:
 		if piece.position.x < -WRAP_X:
 			piece.position.x += WRAP_X * 2.0
 	_update_foreground(delta)
+	for ship in _fleet:
+		ship.position.x -= fleet_speed * delta
+		if ship.position.x < -WRAP_X - 14.0:
+			ship.position.x += WRAP_X * 2.0 + 28.0
+	for i in _asteroids.size():
+		var a := _asteroids[i]
+		a.position.x -= _asteroid_speeds[i] * delta
+		a.rotation_degrees += _asteroid_spins[i] * delta
+		if a.position.x < -WRAP_X - 3.0:
+			a.position.x += WRAP_X * 2.0 + 6.0
+	for i in _sun_rays.size():
+		(_sun_rays[i].material_override as ShaderMaterial).set_shader_parameter(&"energy", 0.05 + 0.03 * sin(_time * 0.7 + i * 1.3))
+	if cinematic_depth:
+		_volley_timer -= delta
+		if _volley_timer <= 0.0:
+			_volley_timer = _rng.randf_range(2.5, 5.0)
+			_fleet_volley()
 	if authored_moments:
 		while not _events.is_empty() and _time >= float(_events[0]["t"]):
 			_run_moment(_events.pop_front()["kind"])
