@@ -57,8 +57,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		set_paused(true)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed(&"debug_next_room") and not get_tree().paused:
-		next_dev_room()
 		get_viewport().set_input_as_handled()
+		# Deferred: never free the level while it is still handling this input event.
+		next_dev_room.call_deferred()
 	elif event.is_action_pressed(&"debug_cycle_echo") and not get_tree().paused:
 		cycle_debug_echo()
 		get_viewport().set_input_as_handled()

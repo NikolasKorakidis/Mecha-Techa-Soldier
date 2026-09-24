@@ -28,6 +28,9 @@ var trauma: float = 0.0
 ## Camera center is clamped to this rect (world units). Zero size = unlimited.
 @export var limits: Rect2 = Rect2()
 
+## Cinematics drive the transform directly (campaign transitions, chase cam).
+var rig_override: bool = false
+
 var _locked: bool = false
 var _lock_center: Vector2 = Vector2.ZERO
 var _lead: float = 0.0
@@ -72,6 +75,8 @@ func snap_to_target() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if rig_override:
+		return
 	if follow_target == null and not _locked:
 		return
 	var goal := _lock_center if _locked else _goal(delta)
@@ -116,9 +121,18 @@ func _process(delta: float) -> void:
 
 ## Visible gameplay area on the Z = 0 plane, in world units.
 func get_play_rect() -> Rect2:
+	if projection == PROJECTION_PERSPECTIVE:
+		# 3D chase view: no side-view plane; cleanup falls back to lifetimes and distances.
+		return Rect2(global_position.x - 600.0, global_position.y - 600.0, 1200.0, 1200.0)
 	var half := Vector2(size * 0.5 * ASPECT, size * 0.5)
 	var center := Vector2(global_position.x, global_position.y)
 	return Rect2(center - half, half * 2.0)
+
+
+## Perspective FOV (degrees) that frames the same height as an orthographic `ortho_size`
+## seen from `distance` — lets a cut from side-view ortho to perspective be invisible.
+static func fov_matching(ortho_size: float, distance: float) -> float:
+	return rad_to_deg(2.0 * atan(ortho_size * 0.5 / distance))
 
 
 static func find(tree: SceneTree) -> GameplayCamera:

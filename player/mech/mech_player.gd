@@ -298,6 +298,10 @@ func respawn(at: Vector3) -> void:
 	respawned.emit()
 
 
+func in_cinematic() -> bool:
+	return state == State.CINEMATIC
+
+
 func set_cinematic(enabled: bool) -> void:
 	if state == State.DISABLED:
 		return

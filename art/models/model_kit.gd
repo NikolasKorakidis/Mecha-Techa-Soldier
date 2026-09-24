@@ -3,6 +3,7 @@ extends RefCounted
 ## Builders for chunk-tech diorama models from primitives: toon-lit hulls,
 ## emissive accents and additive glow parts. Keeps model scripts declarative.
 
+const GLOW_BILLBOARD_SHADER := preload("res://art/shaders/additive_glow_billboard.gdshader")
 const GLOW_SHADER := preload("res://art/shaders/additive_glow.gdshader")
 
 enum GlowShape { RADIAL, STREAK, RING, FLAME }
@@ -60,6 +61,13 @@ static func glow(color: Color, energy: float = 1.5, shape: GlowShape = GlowShape
 	m.set_shader_parameter(&"tint", color)
 	m.set_shader_parameter(&"energy", energy)
 	m.set_shader_parameter(&"shape", shape)
+	return m
+
+
+## Camera-facing glow (3D views): always faces the camera whatever the angle.
+static func glow_billboard(color: Color, energy: float = 1.5, shape: GlowShape = GlowShape.RADIAL) -> ShaderMaterial:
+	var m := glow(color, energy, shape)
+	m.shader = GLOW_BILLBOARD_SHADER
 	return m
 
 

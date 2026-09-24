@@ -6,6 +6,8 @@ extends Node
 signal state_changed(state: State)
 signal boss_spawned(boss: BossBase)
 signal stage_cleared
+## Emitted instead of routing when `hand_off` is set (seamless campaign).
+signal finished
 
 enum State { INTRO, WAVES, BOSS_WARNING, BOSS, CLEAR, DONE }
 
@@ -16,6 +18,10 @@ enum State { INTRO, WAVES, BOSS_WARNING, BOSS, CLEAR, DONE }
 @export var clear_time: float = 4.5
 ## Safety net: the boss arrives this long after the last wave even if stragglers remain.
 @export var straggler_timeout: float = 12.0
+## False: wait for begin() (the campaign starts stages when the camera arrives).
+@export var auto_start: bool = true
+## True: never change scenes; show STAGE CLEAR and emit `finished` for the campaign.
+@export var hand_off: bool = false
 
 var state: State = State.INTRO
 var stage_time: float = 0.0
@@ -34,6 +40,16 @@ func _ready() -> void:
 		push_error("LevelDirector: stage, enemy_root and stage_ui must be assigned.")
 		set_physics_process(false)
 		return
+	if auto_start:
+		begin()
+	else:
+		set_physics_process(false)
+		set_process_unhandled_input(false)
+
+
+func begin() -> void:
+	set_physics_process(true)
+	set_process_unhandled_input(true)
 	stage_ui.show_banner(stage.stage_name, stage.subtitle, intro_time + 0.5)
 	if RunSession.checkpoint_id != StringName(stage.stage_name):
 		RunSession.save_checkpoint(StringName(stage.stage_name))
@@ -176,7 +192,7 @@ func _spawn_boss() -> void:
 func _on_boss_defeated() -> void:
 	RunSession.add_score(stage.clear_bonus)
 	_clear_hostiles()
-	var final := stage.next_level.is_empty()
+	var final := stage.next_level.is_empty() and not hand_off
 	stage_ui.show_banner("MISSION COMPLETE" if final else "STAGE CLEAR",
 			"SCORE  %08d" % RunSession.score, clear_time)
 	_set_state(State.CLEAR)
@@ -185,6 +201,9 @@ func _on_boss_defeated() -> void:
 
 func _leave_stage() -> void:
 	_set_state(State.DONE)
+	if hand_off:
+		finished.emit()
+		return
 	if stage.next_level.is_empty():
 		if stage.restart_level.is_empty():
 			return

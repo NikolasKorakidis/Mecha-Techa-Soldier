@@ -48,7 +48,7 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	var player := Players.find(get_tree())
-	if player == null or not Settings.tutorials_enabled:
+	if player == null or not Settings.tutorials_enabled or (player.has_method(&"in_cinematic") and player.call(&"in_cinematic")):
 		_hide()
 		return
 	if active_id.is_empty():
@@ -122,10 +122,10 @@ func _step_satisfied(delta: float) -> bool:
 		"fire":
 			if Input.is_action_pressed(&"fire"):
 				_progress += delta
-		"bike_duck":
-			if Input.is_action_pressed(&"move_down"):
+		"hull_steer":
+			if absf(Input.get_axis(&"move_left", &"move_right")) > 0.3:
 				_progress += delta
-		"dash", "mech_dash", "bike_boost":
+		"dash", "mech_dash", "hull_boost":
 			return Input.is_action_just_pressed(&"dash")
 		"mech_move":
 			if absf(Input.get_axis(&"move_left", &"move_right")) > 0.3:

@@ -18,6 +18,21 @@ var _boss_ghost: ProgressBar
 var _banner_tween: Tween
 var _prompt_tween: Tween
 var _warning_left: float = 0.0
+var _bars: Array[ColorRect] = []
+var _flash: ColorRect
+var _flash_tween: Tween
+var _bars_tween: Tween
+
+
+const GROUP := &"stage_ui"
+
+
+static func find(tree: SceneTree) -> StageUI:
+	return tree.get_first_node_in_group(GROUP) as StageUI
+
+
+func _enter_tree() -> void:
+	add_to_group(GROUP)
 
 
 func _ready() -> void:
@@ -47,6 +62,53 @@ func _ready() -> void:
 	_toast.add_child(_prompt)
 
 	_build_boss_bar(root)
+	for top in [true, false]:
+		var bar := ColorRect.new()
+		bar.color = Color(0, 0, 0, 1)
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bar.anchor_right = 1.0
+		if top:
+			bar.anchor_bottom = 0.0
+		else:
+			bar.anchor_top = 1.0
+			bar.anchor_bottom = 1.0
+		root.add_child(bar)
+		_bars.append(bar)
+	_set_bars(0.0)
+	_flash = ColorRect.new()
+	_flash.color = Color(1, 1, 1, 0)
+	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.add_child(_flash)
+
+
+## Full-screen white flash (transformations, big blasts), scaled by the reduced-flash option.
+func flash(strength: float = 0.9, fade: float = 0.6, color: Color = Color.WHITE) -> void:
+	if _flash_tween:
+		_flash_tween.kill()
+	_flash.color = Color(color.r, color.g, color.b, strength * ArtStyle.flash_scale())
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(_flash, "color:a", 0.0, fade)
+
+
+## Cinematic letterbox (≈11% of the height top and bottom).
+func letterbox(on: bool, duration: float = 0.6) -> void:
+	if _bars_tween:
+		_bars_tween.kill()
+	_bars_tween = create_tween()
+	_bars_tween.tween_method(_set_bars, _bars[0].offset_bottom / 1080.0, 0.11 if on else 0.0, duration)
+
+
+func is_letterboxed() -> bool:
+	return _bars[0].offset_bottom > 1.0
+
+
+func _set_bars(ratio: float) -> void:
+	var h := ratio * 1080.0
+	_bars[0].offset_top = 0.0
+	_bars[0].offset_bottom = h
+	_bars[1].offset_top = -h
+	_bars[1].offset_bottom = 0.0
 
 
 func show_banner(title: String, subtitle: String, duration: float) -> void:
@@ -88,6 +150,21 @@ func track_boss(boss: BossBase) -> void:
 	_boss_panel.visible = true
 	boss.health_changed.connect(_on_boss_health_changed)
 	boss.defeated.connect(func() -> void: _boss_panel.visible = false)
+
+
+## Boss bar for bosses that are not BossBase (hull-run gunship).
+func track_generic(title: String, maximum: int, changed: Signal) -> void:
+	_boss_name.text = title
+	_boss_bar.max_value = maximum
+	_boss_ghost.max_value = maximum
+	_boss_bar.value = maximum
+	_boss_ghost.value = maximum
+	_boss_panel.visible = true
+	changed.connect(_on_boss_health_changed)
+
+
+func hide_generic() -> void:
+	_boss_panel.visible = false
 
 
 func is_warning_visible() -> bool:

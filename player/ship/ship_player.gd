@@ -127,6 +127,10 @@ func respawn(at: Vector3) -> void:
 
 
 ## Locks control for cinematics (transformation bridge, boss intros).
+func in_cinematic() -> bool:
+	return state == State.CINEMATIC
+
+
 func set_cinematic(enabled: bool) -> void:
 	if state == State.DISABLED:
 		return
