@@ -8,6 +8,10 @@ extends MultiMeshInstance3D
 @export var extents: Vector2 = Vector2(20.0, 10.0)
 @export var depth: float = -12.0
 @export var star_color: Color = Color(0.75, 0.95, 1.0)
+@export var star_size: float = 0.08
+## Faster layers stretch horizontally to read as nearer / motion-streaked.
+@export var stretch_by_speed: bool = true
+@export var random_seed: int = 7
 
 var _positions: PackedVector2Array = []
 var _layers: PackedInt32Array = []
@@ -15,7 +19,7 @@ var _layers: PackedInt32Array = []
 
 func _ready() -> void:
 	var quad := QuadMesh.new()
-	quad.size = Vector2(0.08, 0.08)
+	quad.size = Vector2(star_size, star_size)
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.albedo_color = star_color
@@ -28,7 +32,7 @@ func _ready() -> void:
 
 	# Fixed seed keeps the background identical between runs.
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 7
+	rng.seed = random_seed
 	_positions.resize(star_count)
 	_layers.resize(star_count)
 	for i in star_count:
@@ -50,6 +54,6 @@ func _process(delta: float) -> void:
 func _update_transforms() -> void:
 	for i in star_count:
 		# Faster layers read as nearer: stretch them horizontally.
-		var stretch := 1.0 + float(_layers[i]) * 1.5
+		var stretch := 1.0 + float(_layers[i]) * 1.5 if stretch_by_speed else 1.0
 		var basis := Basis.from_scale(Vector3(stretch, 1.0, 1.0))
 		multimesh.set_instance_transform(i, Transform3D(basis, Vector3(_positions[i].x, _positions[i].y, depth)))

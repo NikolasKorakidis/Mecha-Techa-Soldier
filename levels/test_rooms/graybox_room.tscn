@@ -1,7 +1,6 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://core/gameplay_camera.gd" id="1_cam"]
-[ext_resource type="Script" path="res://levels/shared/starfield.gd" id="2_stars"]
 [ext_resource type="Script" path="res://levels/shared/space_backdrop.gd" id="3_backdrop"]
 [ext_resource type="Script" path="res://levels/test_rooms/test_room.gd" id="4_room"]
 [ext_resource type="PackedScene" path="res://player/ship/ship_player.tscn" id="5_ship"]
@@ -36,11 +35,6 @@ script = ExtResource("1_cam")
 
 [node name="SpaceBackdrop" type="Node3D" parent="."]
 script = ExtResource("3_backdrop")
-
-[node name="Starfield" type="MultiMeshInstance3D" parent="."]
-script = ExtResource("2_stars")
-star_count = 90
-layer_speeds = PackedFloat32Array(3, 8, 14)
 
 [node name="Title" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.5, -8.3, -2)
