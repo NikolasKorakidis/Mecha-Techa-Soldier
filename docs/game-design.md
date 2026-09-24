@@ -102,16 +102,47 @@ still planned (M2); drops are the first acquisition path.
 Every volley is preceded by a swelling telegraph flare. Whole formations destroyed award a
 **formation bonus**; one escapee voids it.
 
-### Stage structure
-Each stage: title banner → authored waves (`stage_*.tres`) → **WARNING** → boss → **STAGE CLEAR** → next.
+### Stage structure (campaign v2)
+Title → **Stage 1** shooter → transformation → **Stage 2** platformer → transformation → **Stage 3** runner →
+**MISSION COMPLETE** → title. Score, echo weapon and SUPER energy carry across all three forms.
 - **Stage 1 — Orbital Riptide** (~80 s of waves) → boss **The Choir Engine**.
-- **Stage 2 — Foundry Descent** (burning-atmosphere palette, 12% faster waves) → boss **Forge Dreadnought**.
-- After Stage 2: **MISSION COMPLETE**, then the run restarts at Stage 1.
+- **Ship → Mech** cutscene (~5 s, skippable with Jump/Fire): the Kestrel breaks into its parts and re-locks
+  as the mech ("MECH MODE — landing on the enemy warship").
+- **Stage 2 — Warship Infiltration** (Mega Man X-style platformer, ~3–5 min): landing bay → pit run → electric
+  corridor (timed floor panels) → tower climb → moving platforms over the reactor pit → crusher hall →
+  elite guard + dash-jump gap → boss arena. Three checkpoints; death respawns at the last one; pits cost
+  1 HP and return you to safe ground. Boss **Warship Reactor Core**. Then "CORE DESTROYED — ESCAPE".
+- **Mech → Bike** cutscene ("BIKE MODE — outrun the explosion").
+- **Stage 3 — Highway Escape** (auto-runner, ~60 s): gaps, barriers, duck beams, mines, breakable crates,
+  laser gates, jump pads, drones, energy-orb arcs; the warship burns on the horizon and explosions chase
+  the left edge. Cross the extraction gate → MISSION COMPLETE.
+- **Foundry Descent** (the second shooter stage) is kept as a dev room (F2), out of the main flow.
 
-Stage 2 is a shooter stage for now. The planned ship-to-mech transformation and the Foundry Run platformer
-(M5–M7) remain the intended second half; Stage 2 can become the approach before the transformation.
+### Mech (Stage 2)
+Run, variable-height jump, **double jump**, coyote time + jump buffer, ground/air **dash** (dash + jump keeps
+the dash speed for long gaps), wall slide + wall jump, hold-to-fire (echo weapons carry over and fire
+forward), **SUPER** = Resonance Beam. Tuning: `player/mech/mech_tuning.tres`
+(single jump ≈ 3 high / 6 wide, double ≈ 5.3 high / 10 wide, dash-jump ≈ 12 wide).
+
+Ground enemies: Walker (patrols, turns at ledges, fires forward), Hopper (leaps at you), Turret (aimed
+bursts), Flyer (sine hover, aimed shots), Elite Walker (drops BURST). All telegraph before firing.
+
+### Bike (Stage 3)
+Auto-runs; cruise speed ramps 14 → 22 u/s, forward/back throttles ±25%. Jump + double jump, **duck** (hold
+down) under beams, fast-fall (down in the air), **boost** (Dash) — 0.5 s of speed + i-frames that rams
+through crates and drones, 1.3 s cooldown — hold-to-fire, SUPER. Hits slow you down briefly.
+Tuning: `player/bike/bike_tuning.tres`.
+
+### SUPER (all forms)
+Kills (and crates/orbs on the highway) charge three energy segments (600 kill value each). At 3 segments,
+Special fires the **Resonance Beam**: a 1.2–1.6 s screen-length beam that deals continuous heavy damage,
+erases enemy bullets and grants invulnerability while it fires.
 
 ### Bosses (implemented)
+- **Warship Reactor Core** (170 HP, Stage 2): Mega Man-style rhythm — its shield plates close while it
+  attacks and open between attacks (the damage window; time the SUPER for it). Attacks: low sweep (jump),
+  high sweep (stay low), double sweep, bullet ring with a gap, falling rain with floor markers, drone
+  summons. A high ledge gives a better firing line but sits in the high-sweep lane.
 Both follow `.claude/rules/bosses.md`: explicit states, health floors so phases cannot be skipped, breaks
 that clear bullets and protect the player, no back-to-back attack repeats, slower first use.
 - **The Choir Engine** (420 HP): fan volleys, rotating spiral with safe lanes, drone summons; phase 2 adds

@@ -134,7 +134,7 @@ Level (inherits graybox_room.tscn)
 ## UI and flow
 ```
 Main
-├── CurrentLevel      title card (ui/title) → Stage 1 → Stage 2 → title
+├── CurrentLevel      title → Stage 1 → transform_to_mech → warship → transform_to_bike → highway → title
 ├── PostLayer         vignette
 ├── HUD (layer 10)    status + score clusters, TutorialCard, F3 debug panel — hidden on the title
 └── PauseMenu (15)    scrim + panel; process ALWAYS, gameplay frozen underneath
@@ -145,6 +145,44 @@ Main
   `user://settings.cfg`. `ArtStyle.flash_scale()` / `shake_scale()` read it.
 - UI never owns gameplay state: HUD reads RunSession; TutorialCard reads input + Settings; StageUI is
   driven by the LevelDirector and boss signals.
+
+## Platformer and runner stages (campaign v2)
+```
+WarshipLevel (levels/warship/warship_level.tscn)        HighwayLevel (levels/highway/highway_level.tscn)
+├── GameplayCamera   follow mode + limits + lock_to()   ├── GameplayCamera   follow, offset ahead of the bike
+├── InteriorBackdrop camera-relative parallax           ├── HighwayBackdrop  sky/warship, city, pylons, chase glow
+├── Effects / Projectiles / Enemies / Pickups           ├── Effects / Projectiles / Enemies / Pickups
+├── BossGate         sealed by the director             ├── Track            HighwayTrack (group runner_track)
+├── Layout           WarshipLayout (tables → solids,    ├── BikePlayer
+│                    hazards, enemies, items, checkpoints)├── StageUI
+├── MechPlayer                                           └── RunnerDirector   INTRO → RIDE → FINISH → DONE
+├── StageUI
+└── PlatformerDirector  INTRO → PLAY → BOSS_WARNING → BOSS → ESCAPE → DONE
+```
+- Layout/Track nodes sit **before** their director so everything exists when the director wires up.
+- `GameplayCamera` follow mode: `follow_target`, `follow_offset`, `lookahead` (uses the target's `facing`),
+  vertical dead zone, `limits` (camera-centre clamp), `lock_to()` / `unlock()` for arenas, `snap_to_target()`.
+- Level kit (`levels/kit/`): `LevelKit.solid()` (StaticBody + chunk-tech visuals, Z depth 4),
+  `MovingPlatform` (AnimatableBody3D), `Hazard` (ELECTRIC / SPIKES / CRUSHER, NEUTRAL hitboxes),
+  `ItemPickup` (health / energy), `Checkpoint` (group `checkpoints`, `reached` signal).
+- Runner kit (`levels/highway/`): `TrackObstacle` (BARRIER, BEAM, MINE, CRATE, GATE, PAD, ORB — ENEMY-team
+  contact hitboxes; crates have a hurtbox + health), `HighwayTrack.recovery_point(x)` for gap falls.
+- `TransformCutscene` (`levels/transform/`): builds the from/to models, animates their named `PART_NAMES`
+  groups apart and back together, flash + banner, skippable, then `SceneRouter.go_to(next_level)`.
+
+## Players
+| Player | Scene | Body | States |
+|---|---|---|---|
+| Ship | `player/ship/ship_player.tscn` | Node3D, soft play-rect bounds | CONTROL, DASH, HIT, DISABLED, CINEMATIC |
+| Mech | `player/mech/mech_player.tscn` | CharacterBody3D (layer actors, mask world) | GROUND, AIR, DASH, WALL, HIT, SUPER, DISABLED, CINEMATIC |
+| Bike | `player/bike/bike_player.tscn` | CharacterBody3D, body/hurtbox shrink when ducking | RIDE, AIR, BOOST, SUPER, DISABLED, CINEMATIC |
+- All three join group `player` (`Players.find()`), mirror health into `RunSession`, expose `facing`,
+  `aim_offset` (enemies aim at the chest via `Players.aim_point()`), `grant_invulnerability()`,
+  `collect_echo()` / `can_collect()`, `get_debug_lines()`, and optionally `tutorial_steps()` (TutorialCard).
+- Mech and bike reuse `ShipArsenal` (base gun + echo weapons, `facing` aware) and `MechInput`.
+- SUPER: `RunSession.add_charge(points)` fills energy (600 per segment); `super_ready()` at 3; players spend
+  it and spawn `PlayerBeam` (continuous PLAYER hitbox + bullet eraser) in the Effects root.
+- Physics layers: 1 world, 2 hurtbox, 3 hitbox, 4 pickup, 5 actors (character bodies collide with world only).
 
 ## Performance approach
 No pooling yet: instantiate + off-screen/lifetime cleanup. Build a stress room and profile a release

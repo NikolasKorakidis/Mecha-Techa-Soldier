@@ -174,8 +174,8 @@ func test_real_stages_load_and_chain() -> void:
 	var s1 := load("res://levels/orbital_riptide/stage_1.tres") as StageData
 	var s2 := load("res://levels/foundry_descent/stage_2.tres") as StageData
 	assert_true(s1.waves.size() > 10 and s2.waves.size() > 10, "stages have authored waves")
-	assert_eq(s1.next_level, "res://levels/foundry_descent/foundry_descent.tscn", "stage 1 leads to stage 2")
-	assert_true(s2.next_level.is_empty(), "stage 2 is final")
+	assert_eq(s1.next_level, "res://levels/transform/transform_to_mech.tscn", "stage 1 leads to the mech transformation")
+	assert_true(s2.next_level.is_empty(), "foundry descent (dev room) is final")
 	assert_eq(s2.restart_level, "res://ui/title/title_screen.tscn", "final stage returns to the title card")
 	for stage in [s1, s2]:
 		var last := -1.0
