@@ -55,12 +55,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not is_open:
 		return
 	if event.is_action_pressed(&"ui_cancel") or event.is_action_pressed(&"pause"):
+		get_viewport().set_input_as_handled()
 		if _main_page.visible:
 			resume_requested.emit()
 		else:
 			_show_page(_main_page)
 			_resume.grab_focus()
-		get_viewport().set_input_as_handled()
 
 
 func _show_page(page: Control) -> void:

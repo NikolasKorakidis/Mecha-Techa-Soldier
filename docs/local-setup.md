@@ -45,7 +45,7 @@ $GODOT --headless --path . --quit-after 180 2>&1 | tee /tmp/boot.log && ! grep -
 ## Dev keys
 | Key | Action |
 |---|---|
-| F2 | Next developer room |
+| F2 | Next stage / developer room (test rooms only in debug builds, incl. the visual test room) |
 | F3 | Toggle debug telemetry panel |
 | F6 | Skip to the stage boss |
 | F7 | Cycle echo weapon (none → Burst → Arc → Guard) |

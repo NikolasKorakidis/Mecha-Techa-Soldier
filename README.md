@@ -4,7 +4,7 @@
 platformer. The link between both halves is **Echo Shift** — decode an enemy's combat pattern (Burst, Arc,
 Guard) and carry it through the ship-to-mech transformation.
 
-**Status:** two playable shooter stages with bosses, 8 enemy types, elite weapon drops (Burst / Arc / Guard), procedural visuals. Next up: Echo Energy meter + tether decode, audio, then the ship-to-mech transformation.
+**Status:** title card, two playable shooter stages with bosses, 8 enemy types, elite weapon drops (Burst / Arc / Guard), chunk-tech arcade visuals (see [art direction](docs/art-direction.md)), pause menu with accessibility options. Next up: audio, Echo Energy meter + tether decode, then the ship-to-mech transformation.
 
 ## Play it
 **In the browser:** https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ (Chrome or Edge recommended;
@@ -20,14 +20,15 @@ click the game once to give it keyboard focus). Every push to the branch rebuild
 | Fire (hold) | J / left mouse | Right trigger |
 | Vertical burst | Space | A / Cross |
 | Dash | K / Shift | B / Circle |
-| Pause | Esc | Start |
+| Pause menu (Resume / Restart Stage / Controls / Options / Quit) | Esc | Start |
 | Next stage / debug panel | F2 / F3 | — |
 | Skip to boss / cycle weapon / next boss phase | F6 / F7 / F8 | — |
 
 ## Docs
 - [Game design](docs/game-design.md) — loop, Echo Shift, levels, bosses, milestones
 - [Architecture](docs/architecture.md) — scene tree, state ownership, damage contract
-- [Art bible](docs/art-bible.md) — shape language, color language, VFX budget
+- [Art direction](docs/art-direction.md) — palette, style tokens, accessibility, visual test room
+- [Art bible](docs/art-bible.md) — original shape language and VFX budget
 - [Test plan](docs/test-plan.md) — automated coverage and manual regression
 - [Local setup](docs/local-setup.md) — engine path, import/test/boot commands
 - [CLAUDE.md](CLAUDE.md) — rules for Claude Code sessions

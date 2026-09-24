@@ -11,6 +11,8 @@ const STEPS: Array[Dictionary] = [
 ]
 const ECHO_STEP := {"id": "echo_core", "text": "FLY INTO THE CORE TO STEAL ITS WEAPON", "key": "", "pad": "", "hold": 0.0}
 const START_DELAY := 2.8
+## An ignored card steps aside after this long and returns later (never marked done).
+const TIMEOUT := 25.0
 const LOW_Y := 0.78
 const HIGH_Y := 0.16
 
@@ -25,6 +27,7 @@ var _progress: float = 0.0
 var _delay: float = START_DELAY
 var _tween: Tween
 var _step: Dictionary = {}
+var _shown_for: float = 0.0
 
 
 func _ready() -> void:
@@ -51,9 +54,13 @@ func _process(delta: float) -> void:
 			_pick_next()
 		return
 	_avoid_player(player)
+	_shown_for += delta
 	if _step_satisfied(delta):
 		Settings.mark_tutorial_done(active_id)
 		_dismiss()
+	elif _shown_for >= TIMEOUT:
+		_dismiss()
+		_delay = 45.0
 
 
 func _reset_for_level() -> void:
@@ -77,6 +84,7 @@ func _show(step: Dictionary) -> void:
 	_step = step
 	active_id = step["id"]
 	_progress = 0.0
+	_shown_for = 0.0
 	_text.text = step["text"]
 	_refresh_glyph()
 	if _tween:

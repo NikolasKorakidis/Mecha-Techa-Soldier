@@ -45,7 +45,7 @@ func _flash() -> void:
 
 
 func _fireball() -> void:
-	var p := _emitter(22, 0.85, ModelKit.glow(Color.WHITE, 2.0))
+	var p := _emitter(22, 0.85, ModelKit.glow(Color.WHITE, 2.0 * lerpf(0.55, 1.0, ArtStyle.flash_scale())))
 	(p.mesh as QuadMesh).size = Vector2.ONE * 1.7 * size
 	p.initial_velocity_min = 1.0 * size
 	p.initial_velocity_max = 4.5 * size

@@ -26,12 +26,28 @@ Each `tests/test_*.gd` extends `TestCase`; every `test_*` method runs on a fresh
 | Dreadnought core armored until turrets die | `test_stage_flow.gd` | ✅ |
 | Echo ammo, replacement, loss on death; Burst/Arc/Guard behavior; elite drops | `test_echo_weapons.gd` | ✅ |
 | Enemy aim, fan count, hold/exit, charge lock-on; all enemy scenes wired | `test_enemy_patterns.gd` | ✅ |
-| Save data loads defaults when absent or incompatible | M9 | ⬜ |
+| Settings load defaults when absent or incompatible; round trip | `test_settings.gd` | ✅ |
+| Reduced flash / shake scale feedback; trauma cap; hit stop restores time | `test_settings.gd`, `test_visual_feedback.gd` | ✅ |
+| Overlay flash strobes (never solid) under sustained fire; sparks follow impact direction | `test_visual_feedback.gd` | ✅ |
+| HUD shows ECHO: NONE / name + ammo; last health segment pulses | `test_hud_tutorial.gd` | ✅ |
+| Tutorial card completes on action, is remembered, can be disabled | `test_hud_tutorial.gd` | ✅ |
+| Pause opens the menu and freezes stage time; title → start → restart → quit | `test_main_boot.gd` | ✅ |
 
 ## Movement instrumentation (F3 debug panel)
 - Ship: state, speed, time-to-max-speed, last dash distance, dash cooldown, invulnerability, last hit source + time.
 - Mech (M5): run speed, jump apex, airtime, coyote use, buffered jump use, dash distance, landing recovery.
 - Boss (M4/M7): attack selected, state transition reason.
+
+## Visual pass 2 verification (latest)
+- Collision: no Shape3D/hitbox/hurtbox values changed since the pre-pass baseline (`git diff bbcca39`);
+  gameplay scripts (hurtbox, hitbox, health, movement, enemy stats) untouched.
+- Resolutions 1920×1080, 1600×900, 1280×720: HUD margins scale proportionally (canvas_items + keep).
+- Reduced flash: explosion region mean luminance 138 → 92 on the same frame.
+- Busiest encounters (headless CPU, sandbox): Stage 2 dense waves avg 6.0 ms / peak 16.1 ms per frame;
+  Forge Dreadnought avg 4.4 ms / peak 12.5 ms; peaks ≈1,050 nodes, 22 emitters, 59 projectiles.
+  GPU cost must be measured on target hardware.
+- Web build (Chromium, Compatibility renderer): title → start → gameplay → pause with zero console errors.
+- Full-run bot: title → Stage 1 → Choir Engine → Stage 2 → Forge Dreadnought → title, zero errors.
 
 ## Full-run bot (manual tool)
 A scratch bot (not committed) played Stage 1 → Choir Engine → Stage 2 → Forge Dreadnought → MISSION

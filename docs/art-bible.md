@@ -14,6 +14,8 @@ character design.
 - **UI:** rounded rectangles and wedge motifs derived from Kestrel's wing silhouette.
 
 ## Gameplay color language
+> Superseded by `docs/art-direction.md` (visual pass 2 palette and style tokens). Kept for history.
+
 Color alone is never enough — every state also gets a shape, motion or audio cue.
 These colors do not change between levels. Source of truth in code: `core/palette.gd`.
 

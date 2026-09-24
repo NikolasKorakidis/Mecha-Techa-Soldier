@@ -78,8 +78,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed(&"fire"):
-		start_requested.emit()
 		get_viewport().set_input_as_handled()
+		start_requested.emit()
 
 
 func _open_options() -> void:

@@ -82,3 +82,36 @@ The planet is the compositional anchor: lower-right, rim-lit, broad cloud bands,
 - Grayscale screenshot: player, enemies, elites, hostile bullets still distinguishable.
 - Hostile magenta visible over navy, violet, black and the planet.
 - Verify in the **web build** (Compatibility renderer) — glow behaves differently there.
+
+## Accessibility
+| Option (Settings → Options, pause menu or title) | Effect |
+|---|---|
+| Reduced flash | Explosion/muzzle/impact/collect flashes, enemy hit overlay, player hit tint, elite ring pulse, WARNING pulse, distant blasts scaled to ~30%; fireball dimmed |
+| Reduced camera shake | All camera impulses scaled to 15% |
+| Reduced menu motion | No menu slides/scales, no title prompt pulse |
+| Glow | Environment glow on/off |
+| Tutorial cards | Contextual tutorial cards on/off |
+Settings persist in `user://settings.cfg`; a missing or incompatible file loads defaults.
+
+## Implementation map (visual pass 2)
+| Piece | Where |
+|---|---|
+| Palette, style tokens | `core/palette.gd`, `core/art_style.gd` |
+| Outline shells (scaled back-face copies) | `ModelKit.with_outline()` / `hull()` in `art/models/model_kit.gd` |
+| Kestrel (part groups, recoil, sputter, breakup) | `art/models/kestrel_model.gd`, `vfx/fragment_burst.gd`, `vfx/afterimage.gd` |
+| Enemy family + echo carrier marker | `art/models/enemy_model.gd`, `vfx/core_collapse.gd`, `vfx/muzzle_flash.gd` |
+| Projectile visuals | `vfx/projectile_visual.gd` (player / burst / orb / hostile / heavy) |
+| Five-layer backdrop, planet, authored moments | `levels/shared/space_backdrop.gd`, `art/shaders/gas_giant.gdshader` |
+| Hit stop, directional sparks, collect burst | `core/hit_stop.gd`, `vfx/impact_spark.gd`, `vfx/collect_burst.gd` |
+| HUD, tutorial card, toasts | `ui/hud/`, `ui/tutorial/tutorial_card.gd`, `ui/stage/stage_ui.gd`, `ui/ui_style.gd` |
+| Pause menu, title card, options | `ui/pause/`, `ui/title/`, `ui/menus/` |
+
+## Visual test room (debug builds only; F2 to reach it)
+`levels/test_rooms/visual_test_room.tscn` — enemy lineup (regular row + echo carriers), plus:
+`1-8` spawn enemy · `0` clear · `9` lineup · `Z` damage player · `X` refill health · `C` refill energy ·
+`V` cycle echo · `B`/`Y` explosion small/big · `N` impact sparks · `M` lightning lane · `P` projectile
+samples · `U` weapon cores · `G` glow · `R` reduced flash · `T` reduced shake · `H` debug labels ·
+`F1–F5` toggle background layer · `Esc` pause. Overlay shows FPS, active emitters and node count.
+
+## Before / after
+`docs/reference/current/` (before) and `docs/reference/after/` hold matching screenshot sets.

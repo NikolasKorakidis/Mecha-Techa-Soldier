@@ -62,7 +62,8 @@ func _hostile_orb(scale_factor: float) -> void:
 	var ring := StandardMaterial3D.new()
 	ring.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.albedo_color = Color("16020f")
-	ModelKit.sphere(self, r * 1.65, Vector3(0, 0, -0.15), ring)
+	# Flattened and pushed behind the core so it frames it at every size.
+	ModelKit.sphere(self, r * 1.65, Vector3(0, 0, -r * 1.2), ring, Vector3(1, 1, 0.3))
 	var core := StandardMaterial3D.new()
 	core.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	core.albedo_color = Palette.HOSTILE_PROJECTILE.lerp(Color.WHITE, 0.3)

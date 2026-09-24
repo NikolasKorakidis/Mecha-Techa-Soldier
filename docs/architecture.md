@@ -131,6 +131,21 @@ Level (inherits graybox_room.tscn)
   monitorable on the hitbox layer so orbs can see them). `EchoPickup` magnetizes to the player and calls
   `ShipPlayer.collect_echo()`.
 
+## UI and flow
+```
+Main
+├── CurrentLevel      title card (ui/title) → Stage 1 → Stage 2 → title
+├── PostLayer         vignette
+├── HUD (layer 10)    status + score clusters, TutorialCard, F3 debug panel — hidden on the title
+└── PauseMenu (15)    scrim + panel; process ALWAYS, gameplay frozen underneath
+```
+- `Main.start_game()`, `restart_stage()` (restores the stage-entry checkpoint the LevelDirector saves),
+  `quit_to_title()`. Scene changes triggered from UI input are connected deferred.
+- `Settings` autoload (reduced flash/shake/motion, glow, tutorials, debug labels) persisted to
+  `user://settings.cfg`. `ArtStyle.flash_scale()` / `shake_scale()` read it.
+- UI never owns gameplay state: HUD reads RunSession; TutorialCard reads input + Settings; StageUI is
+  driven by the LevelDirector and boss signals.
+
 ## Performance approach
 No pooling yet: instantiate + off-screen/lifetime cleanup. Build a stress room and profile a release
 build before pooling anything; pool only proven hotspots.

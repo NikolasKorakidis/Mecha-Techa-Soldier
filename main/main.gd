@@ -16,9 +16,10 @@ func _ready() -> void:
 	RunSession.reset_run()
 	SceneRouter.register_level_root(_level_root)
 	SceneRouter.level_changed.connect(_on_level_changed)
-	_pause_menu.resume_requested.connect(set_paused.bind(false))
-	_pause_menu.restart_requested.connect(restart_stage)
-	_pause_menu.quit_requested.connect(quit_to_title)
+	# Deferred: scene changes must not free a node while it is still handling input.
+	_pause_menu.resume_requested.connect(set_paused.bind(false), CONNECT_DEFERRED)
+	_pause_menu.restart_requested.connect(restart_stage, CONNECT_DEFERRED)
+	_pause_menu.quit_requested.connect(quit_to_title, CONNECT_DEFERRED)
 	SceneRouter.go_to(start_level)
 
 
@@ -48,7 +49,7 @@ func is_in_gameplay() -> bool:
 func _on_level_changed(level: Node) -> void:
 	_hud.visible = level.has_node(^"ShipPlayer")
 	if level.has_signal(&"start_requested"):
-		level.start_requested.connect(start_game)
+		level.start_requested.connect(start_game, CONNECT_DEFERRED)
 
 
 func _unhandled_input(event: InputEvent) -> void:
