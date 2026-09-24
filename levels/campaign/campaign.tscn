@@ -1,0 +1,108 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://core/gameplay_camera.gd" id="1_cam"]
+[ext_resource type="Environment" path="res://art/environments/space.tres" id="2_env"]
+[ext_resource type="Script" path="res://art/environments/environment_binder.gd" id="3_envbind"]
+[ext_resource type="Script" path="res://core/camera_follower.gd" id="4_follower"]
+[ext_resource type="Script" path="res://levels/shared/space_backdrop.gd" id="5_backdrop"]
+[ext_resource type="PackedScene" path="res://player/ship/ship_player.tscn" id="6_ship"]
+[ext_resource type="Script" path="res://directors/level_director.gd" id="7_level_director"]
+[ext_resource type="Resource" path="res://levels/orbital_riptide/stage_1.tres" id="8_stage1"]
+[ext_resource type="PackedScene" path="res://levels/warship/warship_segment.tscn" id="9_warship"]
+[ext_resource type="PackedScene" path="res://levels/hull_run/hull_run_segment.tscn" id="10_hull"]
+[ext_resource type="Script" path="res://ui/stage/stage_ui.gd" id="11_ui"]
+[ext_resource type="Script" path="res://levels/campaign/campaign_director.gd" id="12_campaign"]
+[ext_resource type="PackedScene" path="res://player/mech/mech_player.tscn" id="13_mech"]
+[ext_resource type="PackedScene" path="res://player/bike/hull_rider.tscn" id="14_rider"]
+
+[node name="Campaign" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("2_env")
+script = ExtResource("3_envbind")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 0, 10)
+light_color = Color(0.82, 0.9, 1, 1)
+light_energy = 1.15
+
+[node name="RimLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866, 0.25, -0.433, 0, 0.866, 0.5, 0.5, 0.433, -0.75, 0, 0, -10)
+light_color = Color(1, 0.62, 0.38, 1)
+light_energy = 0.9
+
+[node name="GameplayCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -700, 0, 30)
+projection = 1
+size = 18.0
+far = 400.0
+script = ExtResource("1_cam")
+lookahead = 3.5
+
+[node name="Sky" type="Node3D" parent="."]
+script = ExtResource("4_follower")
+reference_size = 18.0
+
+[node name="SpaceBackdrop" type="Node3D" parent="Sky"]
+script = ExtResource("5_backdrop")
+
+[node name="Effects" type="Node3D" parent="." groups=["vfx_root"]]
+
+[node name="Projectiles" type="Node3D" parent="." groups=["projectile_root"]]
+
+[node name="Pickups" type="Node3D" parent="." groups=["pickup_root"]]
+
+[node name="Players" type="Node3D" parent="."]
+
+[node name="ShipPlayer" parent="Players" instance=ExtResource("6_ship")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -712, 0, 0)
+
+[node name="StageUI" type="CanvasLayer" parent="."]
+script = ExtResource("11_ui")
+
+[node name="Stage1" type="Node3D" parent="."]
+
+[node name="Enemies" type="Node3D" parent="Stage1"]
+
+[node name="LevelDirector" type="Node" parent="Stage1" node_paths=PackedStringArray("enemy_root", "stage_ui")]
+script = ExtResource("7_level_director")
+stage = ExtResource("8_stage1")
+enemy_root = NodePath("../Enemies")
+stage_ui = NodePath("../../StageUI")
+auto_start = false
+hand_off = true
+
+[node name="Warship" parent="." instance=ExtResource("9_warship")]
+
+[node name="InteriorBackdrop" parent="Warship"]
+own_sky = false
+
+[node name="PlatformerDirector" parent="Warship"]
+hand_off = true
+
+[node name="HullRun" parent="." instance=ExtResource("10_hull")]
+
+[node name="HullRunDirector" parent="HullRun"]
+hand_off = true
+
+[node name="CampaignDirector" type="Node" parent="." node_paths=PackedStringArray("camera", "stage_ui", "sky", "space_backdrop", "ship", "shooter_director", "warship_director", "warship_layout", "warship_exterior", "warship_spawn", "hull_director", "hull_backdrop", "hull_spawn", "player_root")]
+script = ExtResource("12_campaign")
+camera = NodePath("../GameplayCamera")
+stage_ui = NodePath("../StageUI")
+sky = NodePath("../Sky")
+space_backdrop = NodePath("../Sky/SpaceBackdrop")
+ship = NodePath("../Players/ShipPlayer")
+shooter_director = NodePath("../Stage1/LevelDirector")
+warship_director = NodePath("../Warship/PlatformerDirector")
+warship_layout = NodePath("../Warship/Layout")
+warship_exterior = NodePath("../Warship/ExteriorFollower")
+warship_spawn = NodePath("../Warship/PlayerSpawn")
+hull_director = NodePath("../HullRun/HullRunDirector")
+hull_backdrop = NodePath("../HullRun/Backdrop")
+hull_spawn = NodePath("../HullRun/PlayerSpawn")
+player_root = NodePath("../Players")
+mech_scene = ExtResource("13_mech")
+rider_scene = ExtResource("14_rider")
+
+[editable path="Warship"]
+[editable path="HullRun"]

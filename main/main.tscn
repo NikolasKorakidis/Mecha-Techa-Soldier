@@ -12,8 +12,8 @@ shader = ExtResource("3_vignette")
 process_mode = 3
 script = ExtResource("1_main")
 start_level = "res://ui/title/title_screen.tscn"
-first_stage = "res://levels/orbital_riptide/orbital_riptide.tscn"
-dev_rooms = Array[String](["res://levels/orbital_riptide/orbital_riptide.tscn", "res://levels/warship/warship_level.tscn", "res://levels/highway/highway_level.tscn", "res://levels/foundry_descent/foundry_descent.tscn", "res://levels/test_rooms/visual_test_room.tscn", "res://levels/test_rooms/combat_test_room.tscn", "res://levels/test_rooms/graybox_room.tscn"])
+first_stage = "res://levels/campaign/campaign.tscn"
+dev_rooms = Array[String](["res://levels/campaign/campaign.tscn", "res://levels/orbital_riptide/orbital_riptide.tscn", "res://levels/warship/warship_level.tscn", "res://levels/hull_run/hull_run_level.tscn", "res://levels/foundry_descent/foundry_descent.tscn", "res://levels/test_rooms/visual_test_room.tscn", "res://levels/test_rooms/combat_test_room.tscn", "res://levels/test_rooms/graybox_room.tscn"])
 
 [node name="CurrentLevel" type="Node" parent="."]
 unique_name_in_owner = true
