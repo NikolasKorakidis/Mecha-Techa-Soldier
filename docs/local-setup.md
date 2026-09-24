@@ -48,3 +48,13 @@ $GODOT --headless --path . --quit-after 180 2>&1 | tee /tmp/boot.log && ! grep -
 | F2 | Next developer room |
 | F3 | Toggle debug telemetry panel |
 | Esc / Start | Pause |
+
+## Web build (GitHub Pages)
+`.github/workflows/deploy-web.yml` imports, tests, boot-checks, exports the `Web` preset and deploys
+to https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ on every push to `main` or the working branch.
+- Single-threaded export (`variant/thread_support=false`), so no COOP/COEP headers are needed.
+- Web uses the Compatibility renderer (`rendering_method.web`); desktop keeps Forward+.
+- Local export (needs the 4.7.2 web templates installed):
+  `$GODOT --headless --path . --export-release "Web" build/web/index.html`, then serve it with
+  `python3 -m http.server 8000 -d build/web` and open http://localhost:8000.
+- One-time repo setting: Settings → Pages → Build and deployment → Source: **GitHub Actions**.

@@ -121,4 +121,6 @@ debug_next_room={
 
 [rendering]
 
+renderer/rendering_method.web="gl_compatibility"
+
 anti_aliasing/quality/msaa_3d=2

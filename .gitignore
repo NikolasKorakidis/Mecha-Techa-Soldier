@@ -20,3 +20,4 @@ Thumbs.db
 # Local machine config (paths live in docs/local-setup.md, not in files)
 .env
 *.local.cfg
+/build/

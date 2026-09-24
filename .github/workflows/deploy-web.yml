@@ -1,0 +1,89 @@
+name: Deploy web build
+
+# Builds the Godot web export and publishes it to GitHub Pages.
+# Tests and the boot check gate the deploy, so a broken build never goes live.
+
+on:
+  push:
+    branches: [main, claude/fervent-hamilton-btpyms]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.7.2
+  GODOT_RELEASE: 4.7.2-stable
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot and web templates
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_RELEASE }}-web
+
+      - name: Install Godot and web export templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_RELEASE}"
+          mkdir -p ~/godot
+          curl -sSL -o godot.zip "$base/Godot_v${GODOT_RELEASE}_linux.x86_64.zip"
+          unzip -q godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_RELEASE}_linux.x86_64 ~/godot/godot
+          chmod +x ~/godot/godot
+          # The template bundle is ~1.3 GB; keep only the single-threaded web templates.
+          curl -sSL -o templates.tpz "$base/Godot_v${GODOT_RELEASE}_export_templates.tpz"
+          dest=~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mkdir -p "$dest"
+          unzip -q -j templates.tpz \
+            templates/version.txt \
+            templates/web_nothreads_release.zip \
+            templates/web_nothreads_debug.zip \
+            -d "$dest"
+          rm godot.zip templates.tpz
+
+      - name: Import project
+        run: ~/godot/godot --headless --path . --import
+
+      - name: Run tests
+        run: ~/godot/godot --headless --path . --script res://tests/run_tests.gd
+
+      - name: Boot check
+        run: |
+          ~/godot/godot --headless --path . --quit-after 180 2>&1 | tee boot.log
+          ! grep -E "SCRIPT ERROR|Parse Error|ERROR:" boot.log
+
+      - name: Export web build
+        run: |
+          mkdir -p build/web
+          ~/godot/godot --headless --path . --export-release "Web" build/web/index.html 2>&1 | tee export.log
+          test -f build/web/index.wasm
+          ! grep -E "SCRIPT ERROR|Parse Error|ERROR:" export.log
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
