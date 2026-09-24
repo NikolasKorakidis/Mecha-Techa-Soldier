@@ -4,7 +4,7 @@
 platformer. The link between both halves is **Echo Shift** — decode an enemy's combat pattern (Burst, Arc,
 Guard) and carry it through the ship-to-mech transformation.
 
-**Status:** M0 foundation + M1 ship feel (graybox). Next up: M2 Echo lab.
+**Status:** M0 foundation + M1 ship feel + visual pass v1 (procedural models, VFX, space backdrop). Next up: M2 Echo lab.
 
 ## Play it
 **In the browser:** https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ (Chrome or Edge recommended;

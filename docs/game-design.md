@@ -217,7 +217,7 @@ Build prompts from the plan map onto milestones as shown. One milestone per sess
 | M5 Transformation | 6 | Cinematic bridge and mech movement | State carries correctly between modes | |
 | M6 Ground graybox | 7 | Full pre-boss platform level | All critical jumps and hazards pass | |
 | M7 Ground boss | 8 | Forge Regent and ending | Complete two-level run | |
-| M8 Art/audio | 9 | Original low-poly art and feedback | Readability review and stable performance | |
+| M8 Art/audio | 9 | Original low-poly art and feedback | Readability review and stable performance | Visual pass v1 pulled forward (procedural models, VFX, backdrop); audio + final art pending |
 | M9 RC | 10 | Settings, accessibility, bug fixes, export | Three clean full runs on target hardware | |
 
 **Cut order if time slips:** optional route → Collector enemy → pursuit complexity → advanced score

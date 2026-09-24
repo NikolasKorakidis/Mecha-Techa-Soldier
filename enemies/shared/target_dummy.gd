@@ -7,6 +7,7 @@ extends Node3D
 @export var flash: FlashComponent
 @export var model: Node3D
 @export var label: Label3D
+@export var death_effect: PackedScene
 @export var score_value: int = 50
 @export var respawn_delay: float = 2.0
 
@@ -36,6 +37,7 @@ func _on_damaged(_payload: DamagePayload, _source: Node) -> void:
 
 func _on_depleted(_source: Node) -> void:
 	RunSession.add_score(score_value)
+	Vfx.spawn(get_tree(), death_effect, global_position, 1.4)
 	flash.stop()
 	model.visible = false
 	_respawn_timer.start()

@@ -15,6 +15,9 @@ func _setup_ship() -> void:
 	var projectiles := Node3D.new()
 	projectiles.add_to_group(Projectile.ROOT_GROUP)
 	add_autofree(projectiles)
+	var effects := Node3D.new()
+	effects.add_to_group(Vfx.ROOT_GROUP)
+	add_autofree(effects)
 	ship = (load("res://player/ship/ship_player.tscn") as PackedScene).instantiate() as ShipPlayer
 	ship.read_devices = false
 	add_autofree(ship)

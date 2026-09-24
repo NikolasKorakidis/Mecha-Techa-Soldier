@@ -54,3 +54,19 @@ Bright synth percussion + mechanical found-sound. Space music wide and rhythmic;
 melody with heavier drums and metallic pulses. Functional layers: enemy pre-fire chirp; distinct player-hit
 vs shield-hit; tether start/progress/success/interrupt; energy segment gained; boss counter opportunity;
 jump, dash, landing, low-health. No copyrighted samples; no imitation of Darius, Split Fiction or Brawl Stars audio.
+
+## Implementation (visual pass v1)
+All art is procedural so it runs on the web Compatibility renderer and needs no asset pipeline yet.
+| Piece | Where |
+|---|---|
+| Model builder (toon hulls, glossy canopy, emissive, additive glow parts) | `art/models/model_kit.gd` |
+| Kestrel, drone, pylon models (`@tool`, visible in editor) | `art/models/*_model.gd` |
+| Additive glow shapes (radial, streak, ring) | `art/shaders/additive_glow.gdshader` |
+| Nebula, gas giant, vignette | `art/shaders/` |
+| Shared environment (filmic tonemap, restrained glow, grading) | `art/environments/space.tres` |
+| Backdrop layers: nebula → gas giant → Kharon Ring silhouette → wreckage → stars | `levels/shared/space_backdrop.gd`, `starfield.gd` |
+| Explosion, impact spark, engine trail | `vfx/` |
+| Screen shake (trauma², capped, `shake_scale` accessibility, never moves the play rect) | `core/gameplay_camera.gd` |
+
+Rules learned: backdrop objects stay dark/unlit so they never compete with gameplay; any glow must be
+checked in the web build (Compatibility renderer), where bloom behaves differently from Forward+.

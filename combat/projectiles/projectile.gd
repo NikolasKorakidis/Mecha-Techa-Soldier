@@ -7,6 +7,7 @@ const ROOT_GROUP := &"projectile_root"
 
 @export var hitbox: HitboxComponent
 @export var lifetime: float = 3.0
+@export var impact_effect: PackedScene
 
 var velocity: Vector3 = Vector3.ZERO
 
@@ -33,6 +34,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_hit_landed(_hurtbox: HurtboxComponent) -> void:
+	if impact_effect:
+		Vfx.spawn(get_tree(), impact_effect, global_position)
 	queue_free()
 
 

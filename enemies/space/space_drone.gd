@@ -7,6 +7,7 @@ extends Node3D
 @export var weapon: WeaponComponent
 @export var flash: FlashComponent
 @export var telegraph: Node3D
+@export var death_effect: PackedScene
 
 @export var speed: float = 4.0
 @export var bob_amplitude: float = 1.2
@@ -44,6 +45,9 @@ func tick(delta: float) -> void:
 
 	if _telegraph_left >= 0.0:
 		_telegraph_left -= delta
+		# Flare swells toward the shot so the timing reads at a glance.
+		var charge := 1.0 - clampf(_telegraph_left / telegraph_time, 0.0, 1.0)
+		telegraph.scale = Vector3.ONE * (0.4 + charge * 0.9)
 		if _telegraph_left <= 0.0:
 			telegraph.visible = false
 			_telegraph_left = -1.0
@@ -67,4 +71,5 @@ func _on_damaged(_payload: DamagePayload, _source: Node) -> void:
 
 func _on_depleted(_source: Node) -> void:
 	RunSession.add_score(score_value)
+	Vfx.spawn(get_tree(), death_effect, global_position)
 	queue_free()

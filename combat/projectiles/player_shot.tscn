@@ -1,22 +1,31 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://combat/projectiles/projectile.gd" id="1_proj"]
 [ext_resource type="Script" path="res://components/hitbox_component.gd" id="2_hit"]
 [ext_resource type="Script" path="res://components/offscreen_cleanup.gd" id="3_clean"]
+[ext_resource type="Shader" path="res://art/shaders/additive_glow.gdshader" id="4_glow"]
+[ext_resource type="PackedScene" path="res://vfx/impact_spark.tscn" id="5_spark"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_core"]
 shading_mode = 0
-albedo_color = Color(0.62, 0.95, 1, 1)
-emission_enabled = true
-emission = Color(0.25, 0.78, 1, 1)
-emission_energy_multiplier = 2.0
+albedo_color = Color(0.85, 1, 1, 1)
 
 [sub_resource type="CapsuleMesh" id="Mesh_core"]
 material = SubResource("Mat_core")
-radius = 0.12
-height = 0.7
+radius = 0.09
+height = 0.6
 radial_segments = 8
 rings = 2
+
+[sub_resource type="ShaderMaterial" id="Mat_streak"]
+shader = ExtResource("4_glow")
+shader_parameter/tint = Color(0.3, 0.8, 1, 1)
+shader_parameter/energy = 2.2
+shader_parameter/shape = 1
+
+[sub_resource type="QuadMesh" id="Mesh_streak"]
+material = SubResource("Mat_streak")
+size = Vector2(1.8, 0.42)
 
 [sub_resource type="SphereShape3D" id="Shape_hit"]
 radius = 0.22
@@ -25,9 +34,16 @@ radius = 0.22
 script = ExtResource("1_proj")
 hitbox = NodePath("Hitbox")
 lifetime = 1.5
+impact_effect = ExtResource("5_spark")
 
-[node name="Mesh" type="MeshInstance3D" parent="."]
+[node name="Streak" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0, -0.1)
+cast_shadow = 0
+mesh = SubResource("Mesh_streak")
+
+[node name="Core" type="MeshInstance3D" parent="."]
 transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0)
+cast_shadow = 0
 mesh = SubResource("Mesh_core")
 
 [node name="Hitbox" type="Area3D" parent="."]

@@ -19,6 +19,7 @@ Main (main/main.tscn, process_mode ALWAYS — owns pause + dev-room cycling)
 │       ├── PlayerSpawn      (Marker3D)
 │       ├── ShipPlayer       (later: MechPlayer)
 │       ├── Enemies
+│       ├── Effects          (group "vfx_root" — Vfx.spawn target)
 │       └── Projectiles      (group "projectile_root")
 └── HUD (CanvasLayer, process_mode ALWAYS)
 ```
@@ -88,6 +89,14 @@ ShipPlayer (Node3D, ship_player.gd) — state: CONTROL, DASH, HIT, DISABLED, CIN
 - `levels/test_rooms/graybox_room.tscn` — movement sandbox (base scene).
 - `levels/test_rooms/combat_test_room.tscn` — inherits the graybox room; adds a target dummy and a
   deterministic drone spawner. This is Main's start level until the real flow exists.
+
+## Visual feedback
+- `Vfx.spawn(tree, scene, position, size)` instantiates one-shot effects under the level's Effects node.
+- Projectiles spawn their `impact_effect`; actors spawn `death_effect` on depletion.
+- Camera shake: `GameplayCamera.add_trauma()`; offsets use `h_offset`/`v_offset`, so the play rect is untouched.
+- `FlashComponent.Mode.BLINK` (player i-frames) vs `OVERLAY` (white flash on enemy hits).
+- Models are `@tool` scripts that build primitives at runtime via `ModelKit`; scenes keep gameplay nodes
+  (hurtboxes, muzzles, telegraphs) as real scene nodes so exported references resolve.
 
 ## Performance approach
 No pooling yet: instantiate + off-screen/lifetime cleanup. Build a stress room and profile a release

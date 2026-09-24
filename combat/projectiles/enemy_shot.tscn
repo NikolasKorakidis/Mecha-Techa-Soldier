@@ -1,33 +1,41 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://combat/projectiles/projectile.gd" id="1_proj"]
 [ext_resource type="Script" path="res://components/hitbox_component.gd" id="2_hit"]
 [ext_resource type="Script" path="res://components/offscreen_cleanup.gd" id="3_clean"]
+[ext_resource type="Shader" path="res://art/shaders/additive_glow.gdshader" id="4_glow"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_core"]
 shading_mode = 0
-albedo_color = Color(1, 0.18, 0.7, 1)
-emission_enabled = true
-emission = Color(1, 0.18, 0.7, 1)
-emission_energy_multiplier = 1.5
+albedo_color = Color(1, 0.55, 0.88, 1)
 
 [sub_resource type="SphereMesh" id="Mesh_core"]
 material = SubResource("Mat_core")
-radius = 0.26
-height = 0.52
+radius = 0.2
+height = 0.4
 radial_segments = 12
 rings = 6
 
 [sub_resource type="StandardMaterial3D" id="Mat_outline"]
 shading_mode = 0
-albedo_color = Color(0.12, 0.02, 0.1, 1)
+albedo_color = Color(0.1, 0.0, 0.08, 1)
 
 [sub_resource type="SphereMesh" id="Mesh_outline"]
 material = SubResource("Mat_outline")
-radius = 0.36
-height = 0.72
+radius = 0.34
+height = 0.68
 radial_segments = 12
 rings = 6
+
+[sub_resource type="ShaderMaterial" id="Mat_halo"]
+shader = ExtResource("4_glow")
+shader_parameter/tint = Color(1, 0.18, 0.7, 1)
+shader_parameter/energy = 1.6
+shader_parameter/shape = 0
+
+[sub_resource type="QuadMesh" id="Mesh_halo"]
+material = SubResource("Mat_halo")
+size = Vector2(1.3, 1.3)
 
 [sub_resource type="SphereShape3D" id="Shape_hit"]
 radius = 0.2
@@ -37,11 +45,18 @@ script = ExtResource("1_proj")
 hitbox = NodePath("Hitbox")
 lifetime = 4.0
 
+[node name="Halo" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.4)
+cast_shadow = 0
+mesh = SubResource("Mesh_halo")
+
 [node name="Outline" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
+cast_shadow = 0
 mesh = SubResource("Mesh_outline")
 
 [node name="Core" type="MeshInstance3D" parent="."]
+cast_shadow = 0
 mesh = SubResource("Mesh_core")
 
 [node name="Hitbox" type="Area3D" parent="."]

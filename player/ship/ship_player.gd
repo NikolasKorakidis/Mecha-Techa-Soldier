@@ -16,8 +16,10 @@ const GROUP := &"player"
 @export var health: HealthComponent
 @export var hurtbox: HurtboxComponent
 @export var flash: FlashComponent
-@export var model: Node3D
+@export var model: KestrelModel
 @export var dash_meter: MeshInstance3D
+@export var muzzle_flash: Node3D
+@export var death_effect: PackedScene
 
 ## When false, the ship ignores devices (tests and cinematics drive tick() directly).
 @export var read_devices: bool = true
@@ -28,6 +30,7 @@ var _camera: GameplayCamera
 var _invulnerable_left: float = 0.0
 var _hit_left: float = 0.0
 var _dash_meter_material: StandardMaterial3D
+var _muzzle_flash_left: float = 0.0
 
 # Telemetry (F3 debug panel).
 var _accel_timer: float = -1.0
@@ -52,6 +55,9 @@ func _ready() -> void:
 	var start_health := RunSession.health if RunSession.health > 0 else RunSession.max_health
 	health.setup(RunSession.max_health, start_health)
 
+	weapon.fired.connect(_on_weapon_fired)
+	if muzzle_flash:
+		muzzle_flash.visible = false
 	if dash_meter:
 		_dash_meter_material = dash_meter.get_active_material(0).duplicate() as StandardMaterial3D
 		dash_meter.material_override = _dash_meter_material
@@ -94,7 +100,7 @@ func tick(delta: float, input: ShipInput) -> void:
 
 	weapon.tick(delta, input.fire and controllable)
 	_update_invulnerability()
-	_update_visuals()
+	_update_visuals(delta)
 	_update_accel_telemetry(delta, move)
 
 
@@ -147,11 +153,16 @@ func _update_invulnerability() -> void:
 	)
 
 
-func _update_visuals() -> void:
+func _update_visuals(delta: float) -> void:
 	if model:
 		# Bank into vertical motion; squash along the dash.
 		model.rotation.x = -movement.velocity.y / tuning.max_speed * 0.45
 		model.scale = Vector3(1.25, 0.8, 1.0) if movement.is_dashing else Vector3.ONE
+		model.set_thrust(2.0 if movement.is_dashing else 0.6 + movement.velocity.x / tuning.max_speed * 0.5)
+		model.set_dashing(movement.is_dashing)
+	if muzzle_flash:
+		_muzzle_flash_left -= delta
+		muzzle_flash.visible = _muzzle_flash_left > 0.0
 	if dash_meter:
 		var ready := movement.dash_cooldown_left <= 0.0
 		dash_meter.scale.x = maxf(0.05, 1.0 - movement.dash_cooldown_ratio())
@@ -171,6 +182,17 @@ func _update_accel_telemetry(delta: float, move: Vector2) -> void:
 		_accel_timer = -1.0
 
 
+func _on_weapon_fired(_projectile: Projectile) -> void:
+	if muzzle_flash:
+		_muzzle_flash_left = 0.045
+		muzzle_flash.scale = Vector3.ONE * randf_range(0.8, 1.2)
+
+
+func _shake(amount: float) -> void:
+	if _camera:
+		_camera.add_trauma(amount)
+
+
 func _on_health_changed(current: int, _maximum: int) -> void:
 	RunSession.set_health(current)
 
@@ -181,6 +203,7 @@ func _on_damaged(payload: DamagePayload, source: Node) -> void:
 	flash.flash(tuning.hit_invulnerability)
 	movement.cancel_dash()
 	movement.velocity += Vector2(payload.knockback.x, payload.knockback.y)
+	_shake(0.45)
 	if not health.is_depleted():
 		state = State.HIT
 		_hit_left = tuning.hit_stun
@@ -195,4 +218,5 @@ func _on_depleted(_source: Node) -> void:
 	weapon.reset()
 	hurtbox.set_deferred(&"monitorable", false)
 	_update_invulnerability()
+	Vfx.spawn(get_tree(), death_effect, global_position, 1.8)
 	died.emit()

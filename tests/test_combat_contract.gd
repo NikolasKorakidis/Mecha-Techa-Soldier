@@ -29,6 +29,9 @@ func _make_level_scaffold() -> void:
 	var projectiles := Node3D.new()
 	projectiles.add_to_group(Projectile.ROOT_GROUP)
 	add_autofree(projectiles)
+	var effects := Node3D.new()
+	effects.add_to_group(Vfx.ROOT_GROUP)
+	add_autofree(effects)
 
 
 func test_friendly_fire_is_rejected() -> void:
