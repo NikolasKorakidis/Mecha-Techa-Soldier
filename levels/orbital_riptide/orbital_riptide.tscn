@@ -1,14 +1,18 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="PackedScene" path="res://levels/test_rooms/graybox_room.tscn" id="1_base"]
 [ext_resource type="Script" path="res://directors/level_director.gd" id="2_director"]
 [ext_resource type="Resource" path="res://levels/orbital_riptide/stage_1.tres" id="3_stage"]
 [ext_resource type="Script" path="res://ui/stage/stage_ui.gd" id="4_ui"]
+[ext_resource type="Script" path="res://levels/shared/perspective_backdrop.gd" id="5_persp"]
 
 [node name="OrbitalRiptide" instance=ExtResource("1_base")]
 
 [node name="Title" parent="."]
 visible = false
+
+[node name="SpaceBackdrop" parent="."]
+far_layers = false
 
 [node name="Enemies" type="Node3D" parent="."]
 
@@ -22,3 +26,8 @@ script = ExtResource("2_director")
 stage = ExtResource("3_stage")
 enemy_root = NodePath("../Enemies")
 stage_ui = NodePath("../StageUI")
+
+[node name="PerspectiveBackdrop" type="Node3D" parent="." node_paths=PackedStringArray("director", "space_backdrop")]
+script = ExtResource("5_persp")
+director = NodePath("../LevelDirector")
+space_backdrop = NodePath("../SpaceBackdrop")

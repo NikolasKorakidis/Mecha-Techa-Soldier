@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://core/gameplay_camera.gd" id="1_cam"]
 [ext_resource type="Environment" path="res://art/environments/space.tres" id="2_env"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://levels/campaign/campaign_director.gd" id="12_campaign"]
 [ext_resource type="PackedScene" path="res://player/mech/mech_player.tscn" id="13_mech"]
 [ext_resource type="PackedScene" path="res://player/bike/hull_rider.tscn" id="14_rider"]
+[ext_resource type="Script" path="res://levels/shared/perspective_backdrop.gd" id="15_persp"]
 
 [node name="Campaign" type="Node3D"]
 
@@ -43,8 +44,14 @@ lookahead = 3.5
 script = ExtResource("4_follower")
 reference_size = 18.0
 
+[node name="PerspectiveBackdrop" type="Node3D" parent="Sky" node_paths=PackedStringArray("director", "space_backdrop")]
+script = ExtResource("15_persp")
+director = NodePath("../../Stage1/LevelDirector")
+space_backdrop = NodePath("../SpaceBackdrop")
+
 [node name="SpaceBackdrop" type="Node3D" parent="Sky"]
 script = ExtResource("5_backdrop")
+far_layers = false
 
 [node name="Effects" type="Node3D" parent="." groups=["vfx_root"]]
 
@@ -85,12 +92,13 @@ hand_off = true
 [node name="HullRunDirector" parent="HullRun"]
 hand_off = true
 
-[node name="CampaignDirector" type="Node" parent="." node_paths=PackedStringArray("camera", "stage_ui", "sky", "space_backdrop", "ship", "shooter_director", "warship_director", "warship_layout", "warship_exterior", "warship_spawn", "hull_director", "hull_backdrop", "hull_spawn", "player_root")]
+[node name="CampaignDirector" type="Node" parent="." node_paths=PackedStringArray("camera", "stage_ui", "sky", "space_backdrop", "perspective_backdrop", "ship", "shooter_director", "warship_director", "warship_layout", "warship_exterior", "warship_spawn", "hull_director", "hull_backdrop", "hull_spawn", "player_root")]
 script = ExtResource("12_campaign")
 camera = NodePath("../GameplayCamera")
 stage_ui = NodePath("../StageUI")
 sky = NodePath("../Sky")
 space_backdrop = NodePath("../Sky/SpaceBackdrop")
+perspective_backdrop = NodePath("../Sky/PerspectiveBackdrop")
 ship = NodePath("../Players/ShipPlayer")
 shooter_director = NodePath("../Stage1/LevelDirector")
 warship_director = NodePath("../Warship/PlatformerDirector")

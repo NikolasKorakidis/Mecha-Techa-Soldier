@@ -41,6 +41,8 @@ const WRAP_X := 26.0
 ## Extra depth: distant fleet battle, asteroid belt, sun with light shafts, warship reveal.
 @export var cinematic_depth: bool = true
 @export var fleet_speed: float = 0.35
+## Off when a PerspectiveBackdrop provides the far sky (stars, nebula, planet, orbital structures).
+@export var far_layers: bool = true
 
 var _layers: Array[Node3D] = []
 var _structures: Array[Node3D] = []
@@ -87,6 +89,9 @@ func _ready() -> void:
 		_build_asteroids(_layers[3])
 	if authored_moments and not Engine.is_editor_hint():
 		_schedule_moments()
+	if not far_layers:
+		for k in 3:
+			_layers[k].visible = false
 
 
 ## Debug (visual test room): show/hide a layer by index 0..4.
@@ -401,6 +406,8 @@ func reveal_warship() -> void:
 
 ## Campaign transitions: drop the wreckage/foreground layers once the ship leaves the battle.
 func set_battle_layers_visible(enabled: bool) -> void:
+	if _layers.size() < 5:
+		return
 	_layers[3].visible = enabled
 	_layers[4].visible = enabled
 
