@@ -5,12 +5,20 @@ extends Node3D
 ##   planets at "infinity" (follow the camera): ringed gas giant, red moon, the blue world below
 ##   distant capital ships trading turbolaser fire, fighters streaking past, burning hull
 ##   explosions ahead of the bike, speed streaks around the camera.
+##   The warship itself (WarshipModel at track scale) spreads out under and around the deck, so
+##   the run reads as racing along the spine of a 3.6 km capital ship.
 ## Inactive (hidden, no processing) until activate() — the side-view stages never see it.
 
 @export var world_environment: WorldEnvironment
 @export var active_on_ready: bool = false
 
+## WarshipModel scale and placement: stern at x 150, bow tip at x 3750, dorsal deck just under
+## the track plates.
+const WARSHIP_SCALE := 3.6
+const WARSHIP_CENTER_X := 1950.0
+
 var active: bool = false
+var warship: WarshipModel
 
 var _sky_root: Node3D
 var _ships: Array[Node3D] = []
@@ -38,7 +46,7 @@ func activate() -> void:
 	set_process(true)
 	_camera = GameplayCamera.find(get_tree())
 	if _camera:
-		_camera.far = 2400.0
+		_camera.far = 9000.0
 	if world_environment == null:
 		var found := get_tree().root.find_children("*", "WorldEnvironment", true, false)
 		if not found.is_empty():
@@ -54,6 +62,11 @@ func activate() -> void:
 		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 		world_environment.environment = env
 	_sky_root = ModelKit.group(self, "SkyRoot")
+	warship = WarshipModel.new()
+	warship.clear_lane = 13.0
+	warship.scale = Vector3.ONE * WARSHIP_SCALE
+	warship.position = Vector3(WARSHIP_CENTER_X, HullTrack.DECK_Y - 0.08, 0.0)
+	add_child(warship)
 	_build_planets()
 	_build_ships()
 	_build_streaks()
@@ -187,6 +200,8 @@ func _process(delta: float) -> void:
 		_hull_explosion(px)
 		if _rng.randf() < 0.35 + 0.4 * collapse:
 			_deck_edge_blast(px)
+		if _rng.randf() < 0.5:
+			_skyline_explosion(px)
 
 
 ## Turbolaser exchange between two capital ships (or into the warship).
@@ -224,6 +239,17 @@ func _deck_edge_blast(px: float) -> void:
 	var at := Vector3(px + _rng.randf_range(8.0, 60.0), HullTrack.DECK_Y + _rng.randf_range(0.5, 3.0), side * _rng.randf_range(9.5, 13.0))
 	Explosion3D.spawn(get_tree(), at, _rng.randf_range(2.0, 3.5), 0.12)
 	Explosion3D.spawn(get_tree(), at + Vector3(_rng.randf_range(-2, 2), _rng.randf_range(2, 5), side * 2.0), 1.4)
+
+
+## Big blasts out on the wide hull and the superstructure islands; some leave fires burning.
+func _skyline_explosion(px: float) -> void:
+	var side := -1.0 if _rng.randf() < 0.5 else 1.0
+	var at := Vector3(px + _rng.randf_range(60.0, 500.0), HullTrack.DECK_Y + _rng.randf_range(0.0, 30.0), side * _rng.randf_range(50.0, 300.0))
+	Explosion3D.spawn(get_tree(), at, _rng.randf_range(6.0, 14.0))
+	if warship and _rng.randf() < 0.3 and warship.get_child_count() < 400:
+		var local := warship.to_local(at)
+		local.y = 0.5
+		warship.add_fire(local, _rng.randf_range(0.8, 1.6))
 
 
 ## Explosions tearing through the warship's hull beside and ahead of the bike.

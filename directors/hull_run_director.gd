@@ -33,7 +33,7 @@ const WAVE_DISTANCE := 150.0
 @export_file("*.tscn") var restart_level: String = ""
 
 ## Chase camera framing.
-@export var chase_offset: Vector3 = Vector3(-9.0, 4.0, 0.0)
+@export var chase_offset: Vector3 = Vector3(-9.5, 5.0, 0.0)
 @export var look_ahead: float = 18.0
 @export var chase_fov: float = 70.0
 ## Extra field of view at top speed (sense of speed).

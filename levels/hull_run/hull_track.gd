@@ -147,13 +147,14 @@ func _build_deck(x0: float, x1: float) -> void:
 	shape.shape = box
 	body.add_child(shape)
 	add_child(body)
-	var plate := ModelKit.toon(Color("2a3754"), 0.35, 0.65, 0.45)
-	var plate_b := ModelKit.toon(Color("24304a"), 0.3, 0.7, 0.4)
+	# The run strip is the ship's dorsal spine: armour plating a shade lighter than the hull
+	# around it, panel seams, flush guidance lights and hazard chevrons — no road markings.
+	var plate := ModelKit.toon(Color("2c3856"), 0.35, 0.65, 0.45)
+	var plate_b := ModelKit.toon(Color("27324e"), 0.3, 0.7, 0.4)
 	var seam := ModelKit.toon(Color("121a2b"), 0.2, 0.9, 0.2)
-	var rail := ModelKit.hull(Color("3d4a66"), ArtStyle.OUTLINE_THIN, 0.4)
-	var side := ModelKit.toon(Color("1b2438"), 0.3, 0.75, 0.35)
-	var stripe := ModelKit.toon(Palette.INTERACTABLE.darkened(0.25), 0.3, 0.6, 0.2)
-	var warm := ModelKit.emissive(Color("ffc46b"), 1.2)
+	var edge := ModelKit.toon(Color("1a2338"), 0.3, 0.8, 0.3)
+	var hazard := ModelKit.toon(Palette.INTERACTABLE.darkened(0.35), 0.3, 0.6, 0.2)
+	var hatch := ModelKit.toon(Color("202a44"), 0.3, 0.7, 0.4)
 	var chunk := 20.0
 	var x := x0
 	var index := 0
@@ -164,24 +165,38 @@ func _build_deck(x0: float, x1: float) -> void:
 		add_child(node)
 		# Plating in two tones with cross seams and dashed lane lines.
 		_d(ModelKit.box(node, Vector3(len, 0.4, DECK_HALF * 2.0), Vector3(0, -0.2, 0), plate if index % 2 == 0 else plate_b))
-		for sx in range(0, int(len), 4):
-			_d(ModelKit.box(node, Vector3(0.08, 0.02, DECK_HALF * 2.0), Vector3(-len * 0.5 + sx, 0.01, 0), seam))
-		for lz: float in [-3.0, 3.0]:
-			_d(ModelKit.box(node, Vector3(len * 0.45, 0.02, 0.25), Vector3(0, 0.02, lz), stripe))
-		# Edge rails with racing lights.
+		for sx in range(0, int(len), 5):
+			_d(ModelKit.box(node, Vector3(0.1, 0.02, DECK_HALF * 2.0), Vector3(-len * 0.5 + sx, 0.01, 0), seam))
+		_d(ModelKit.box(node, Vector3(len, 0.02, 0.1), Vector3(0, 0.01, 0), seam))
+		# Access hatches and a vent grille every other plate.
+		if index % 2 == 0:
+			_d(ModelKit.box(node, Vector3(3.0, 0.06, 2.2), Vector3(-len * 0.25, 0.03, 5.0 if index % 4 == 0 else -5.0), hatch))
+			for g in 5:
+				_d(ModelKit.box(node, Vector3(0.18, 0.05, 2.6), Vector3(len * 0.2 + g * 0.5, 0.03, -5.0 if index % 4 == 0 else 5.0), seam))
+		if index % 5 == 2:
+			for c in 6:
+				_d(ModelKit.box(node, Vector3(0.7, 0.03, 1.4), Vector3(-2.5 + c * 1.0, 0.02, 0), hazard, Vector3(0, 35, 0)))
+		# Spine edge: a dark chamfer strip with flush guidance lights racing toward the bow.
 		for sgn: float in [-1.0, 1.0]:
-			_d(ModelKit.box(node, Vector3(len, 0.6, 0.6), Vector3(0, 0.3, sgn * (DECK_HALF + 0.3)), rail))
+			_d(ModelKit.box(node, Vector3(len, 0.35, 1.2), Vector3(0, -0.1, sgn * (DECK_HALF + 0.6)), edge))
 			for li in 4:
-				_d(ModelKit.box(node, Vector3(1.6, 0.12, 0.1), Vector3(-len * 0.5 + 2.5 + li * 5.0, 0.45, sgn * (DECK_HALF - 0.02)), _chase_lights[li]))
-			# Sloped hull side falling away from the deck, with lit windows.
-			_d(ModelKit.box(node, Vector3(len, 10.0, 0.8), Vector3(0, -4.0, sgn * (DECK_HALF + 3.6)), side, Vector3(sgn * 35.0, 0, 0)))
-			if index % 2 == 0:
-				for w in 4:
-					_d(ModelKit.box(node, Vector3(1.2, 0.3, 0.1), Vector3(-len * 0.5 + 2.0 + w * 5.0, -3.0, sgn * (DECK_HALF + 3.0)), warm, Vector3(sgn * 35.0, 0, 0)))
+				_d(ModelKit.box(node, Vector3(1.4, 0.06, 0.3), Vector3(-len * 0.5 + 2.5 + li * 5.0, 0.1, sgn * (DECK_HALF + 0.4)), _chase_lights[li]))
 		_superstructure(node, x, len, index)
 		x += len
 		index += 1
-	# Gap glow: the burning interior shows through the break after this deck.
+	# Breach after this deck: a torn hole in the hull with the interior burning below.
+	var next := x1
+	for d: Array in DECKS:
+		if d[0] > x1:
+			next = d[0]
+			break
+	if next > x1:
+		var breach := ModelKit.group(self, "Breach", Vector3((x1 + next) * 0.5, DECK_Y, 0))
+		_d(ModelKit.box(breach, Vector3(next - x1, 0.1, DECK_HALF * 2.0 + 10.0), Vector3(0, -0.03, 0), ModelKit.emissive(Color("3a0d06"), 1.0)), 400.0)
+		_d(ModelKit.box(breach, Vector3(next - x1 - 2.0, 0.12, DECK_HALF * 2.0 + 6.0), Vector3(0, -0.02, 0), ModelKit.emissive(Color("ff5a1e"), 0.6)), 400.0)
+		for k in 8:
+			var jag := ModelKit.prism(breach, Vector3(2.0, 1.2, 3.0), Vector3((k % 2) * (next - x1) - (next - x1) * 0.5, 0.3, -DECK_HALF - 4.0 + k * 3.5), edge, Vector3(0, k * 40.0, 90))
+			_d(jag, 400.0)
 	var fire := ModelKit.group(self, "GapFire", Vector3(x1 + 7.0, DECK_Y - 5.0, 0))
 	var glow := MeshInstance3D.new()
 	glow.mesh = QuadMesh.new()

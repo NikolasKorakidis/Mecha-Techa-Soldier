@@ -96,7 +96,8 @@ func _run_drop() -> void:
 	ship.set_cinematic(true)
 	await _wait(1.6)
 	space_backdrop.set_battle_layers_visible(false)
-	perspective_backdrop.set_zone(PerspectiveBackdrop.Zone.SPACE, 4.0)
+	perspective_backdrop.cut_to_open_space(0.4)
+	perspective_backdrop.approach_warship(flight_time + 1.2)
 	AudioService.play_music(&"title", 2.5)
 	AudioService.play(&"boost")
 	stage_ui.show_banner("ENEMY WARSHIP VX-07", "BOARDING RUN — GET ON THAT HULL", 3.4)
@@ -331,7 +332,7 @@ func _run_ending() -> void:
 	while rider.global_position.x < hull_director.track.bow_x() - 10.0 and guard < 4.0:
 		await get_tree().physics_frame
 		guard += get_physics_process_delta_time()
-	# Leap into space: the bike glides out along a rising arc toward the ringed giant.
+	# Leap into space: the bike glides out along a long rising arc away from the ship.
 	hull_director.camera_enabled = false
 	rider.set_physics_process(false)
 	rider.launch(0.0)
@@ -339,32 +340,53 @@ func _run_ending() -> void:
 	var glide := create_tween()
 	glide.tween_method(func(k: float) -> void:
 		if is_instance_valid(rider):
-			rider.global_position = from + Vector3(k * 200.0, sin(minf(k, 0.5) * PI) * 9.0 + k * 5.0, k * 26.0)
-			rider.model.rotation.z = lerpf(0.25, 0.05, k), 0.0, 1.0, 7.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	# Wide shot: the bow and the doomed warship on the left, the bike flying out on the right.
+			rider.global_position = from + Vector3(k * 520.0, sin(minf(k, 0.5) * PI) * 14.0 + k * 90.0, k * 420.0)
+			rider.model.rotation.z = lerpf(0.25, 0.05, k), 0.0, 1.0, 9.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Beat 1: hold at the bow and watch the bike leap. Beat 2: pull far out to a wide
+	# three-quarter view looking back, until the whole 3.6 km warship fills the frame.
+	var ship := hull_backdrop.warship
+	var ship_center := Vector3(HullRunBackdrop.WARSHIP_CENTER_X, HullTrack.DECK_Y - 70.0, 0.0)
 	var cam_from := camera.global_position
-	var cam_to := Vector3(finish + 108.0, HullTrack.DECK_Y + 8.0, 26.0)
-	var look_from := rider.global_position + Vector3(16.0, 0, 0)
+	var cam_mid := Vector3(finish + 70.0, HullTrack.DECK_Y + 16.0, 40.0)
+	var cam_to := Vector3(finish + 420.0, HullTrack.DECK_Y + 190.0, 820.0)
+	camera.far = 12000.0
 	_ending_t = 0.0
 	_cam_update = func(delta: float) -> void:
-		_ending_t = minf(1.0, _ending_t + delta / 2.2)
-		var e := _ending_t * _ending_t * (3.0 - 2.0 * _ending_t)
-		camera.global_position = cam_from.lerp(cam_to, e)
-		var focus := Vector3(finish - 60.0, HullTrack.DECK_Y + 4.0, 0.0)
-		if is_instance_valid(rider) and _ending_t < 0.8:
-			focus = focus.lerp(rider.global_position, 0.3 * (1.0 - _ending_t))
-		camera.look_at(look_from.lerp(focus, e), Vector3.UP)
-		camera.fov = lerpf(camera.fov, 58.0, clampf(delta * 2.0, 0.0, 1.0))
+		_ending_t += delta
+		var bike := rider.global_position if is_instance_valid(rider) else cam_mid
+		if _ending_t < 1.4:
+			var e := smoothstep(0.0, 1.4, _ending_t)
+			camera.global_position = cam_from.lerp(cam_mid, e)
+			camera.look_at(bike, Vector3.UP)
+			camera.fov = lerpf(camera.fov, 62.0, clampf(delta * 2.0, 0.0, 1.0))
+		else:
+			var e := smoothstep(0.0, 1.0, minf(1.0, (_ending_t - 1.4) / 3.4))
+			camera.global_position = cam_mid.lerp(cam_to, e) + Vector3(0, 0, sin(_ending_t * 0.3) * 20.0)
+			camera.look_at(bike.lerp(ship_center, e), Vector3.UP)
+			camera.fov = lerpf(camera.fov, 58.0, clampf(delta * 2.0, 0.0, 1.0))
+	# The whole hull is burning by now.
+	for n in 36:
+		ship.add_fire(ship.random_surface_point(), randf_range(1.5, 3.5))
+	await _wait(3.2)
+	# The track details and hazards would float in front of the dying hull: drop them.
+	hull_director.track.visible = false
+	for enemy in get_tree().get_nodes_in_group(SpaceEnemy.GROUP):
+		if enemy is Node3D and not (enemy as Node3D).is_queued_for_deletion():
+			(enemy as Node3D).visible = false
 	await _wait(1.6)
-	# The warship blows apart behind the bike, stern to bow.
-	for n in 16:
-		var x := finish - 320.0 + n * 24.0
-		Explosion3D.spawn(get_tree(), Vector3(x, HullTrack.DECK_Y + randf_range(0.0, 10.0), randf_range(-16.0, 16.0)), randf_range(10.0, 18.0), 0.25 if n > 12 else 0.08)
-		await _wait(0.11)
+	# Beat 3: the warship tears itself apart stern to bow, the sections break away, core flash.
+	AudioService.play(&"explosion_huge")
+	camera.add_trauma(0.25)
+	ship.explosion_scale = 34.0
+	ship.destroy(4.0)
+	await _wait(2.0)
+	AudioService.play(&"explosion_huge")
+	await ship.destroyed
 	stage_ui.flash(1.0, 1.6)
 	camera.add_trauma(ArtStyle.SHAKE_MAX_TRAUMA)
-	for n in 7:
-		Explosion3D.spawn(get_tree(), Vector3(finish + 20.0 - n * 60.0, HullTrack.DECK_Y + 4.0, 0.0), 26.0)
+	AudioService.play(&"explosion_huge")
+	for n in 5:
+		Explosion3D.spawn(get_tree(), ship.to_global(Vector3(-400.0 + n * 200.0, -30.0, 0.0)), 160.0)
 	await _wait(0.8)
 	stage_ui.show_banner("MISSION COMPLETE", "SCORE  %08d" % RunSession.score, 6.0)
 	AudioService.play_music(&"mission_complete", 1.0)
