@@ -105,22 +105,28 @@ Every volley is preceded by a swelling telegraph flare. Whole formations destroy
 ### Stage structure (campaign v3 — seamless)
 The whole run is one continuous world (`levels/campaign/campaign.tscn`): one camera, one sky, no loading between
 stages. Score, echo weapon and SUPER energy carry across all three forms.
-- **Stage 1 — Orbital Riptide** (side-view shooter, ~80 s of waves) → **The Choir Engine**. Depth: distant
-  capital-ship battle trading turbolaser fire, drifting asteroid belt, sun with light shafts, and the enemy
-  warship looming in late in the stage.
+- **Stage 1 — Orbital Riptide** (side-view shooter, ~80 s of waves) → **The Choir Engine**. G-Darius-style
+  depth: a real 3D world renders behind the play plane (`PerspectiveBackdrop`, SubViewport) and the camera
+  flies through it — ringed planet, capital fleet and asteroids in open space → a space-station trench
+  mid-stage (modules, arches) → a sunset cloud sea with spires for the boss. Zones blend sky and fog presets.
+  Flat layers on top: capital-ship battle trading turbolaser fire, sun shafts, the warship looming in late.
 - **Boarding run** (in-engine, letterboxed): the Kestrel breaks off, races across space to the warship VX-07
   (camera pulls wide to show it), transforms above the roof and the **mech drops onto the hull**.
 - **Stage 2 — Warship Infiltration** (Mega Man X-style platformer): roof deck drop zone → entry hatch (a
   bulkhead + gantry block roof-running) → landing bay → pit run → electric corridor → tower climb → moving
-  platforms over the reactor pit → crusher hall → elite guard + dash-jump gap → **Warship Reactor Core**.
-  Four checkpoints; pits cost 1 HP. Detail: parallax back wall (window bays onto space, pipes, screens,
+  platforms over the reactor pit → crusher hall → **Bulkhead Sentinel** mid-boss room → elite guard +
+  dash-jump gap → **Warship Reactor Core**. Five checkpoints; pits cost 1 HP. Secrets (Metroid layer): a
+  wall-kick shaft above the high walkway leads to a hidden roof pocket with a **Heart Tank**; an **Energy
+  Tank** floats above the vertical lift over the reactor pit. Detail: parallax back wall (window bays onto space, pipes, screens,
   fans, beacons, generators), mid-layer pillars/cables/catwalks, foreground girders, steam and sparks,
   coloured light pools, a far superstructure (command tower, dishes, batteries, engines) outside.
 - **Escape** (in-engine): slow motion, the arena roof blows out, the mech thrusts up to the top hull, turns into
   the bike, and the camera swings from the side view to a chase view behind it (ortho → matched-FOV
   perspective → orbit).
-- **Stage 3 — Hull Run** (3D, camera behind the bike, ~70 s): warm-up → blast field → **trench run** (walls
-  with turrets) → burning deck with jump pads → **pursuit gunship** mini boss → the bow. Around you: ringed
+- **Stage 3 — Hull Run** (3D, camera behind the bike, ~65–75 s at 42–60 u/s): warm-up → blast field →
+  **trench run** (walls with turrets) → burning deck with jump pads → **pursuit gunship** mini boss →
+  **collapse run** (debris rains, the deck blows apart around you) → the bow. Explosions erupt along the
+  route the whole way and intensify toward the bow. Around you: ringed
   gas giant, red moon, the blue world below, capital ships fighting, explosions tearing through the hull.
 - **Ending**: the bike launches off the bow and glides out while the warship explodes → MISSION COMPLETE → title.
 - Restart Stage resumes at the current stage inside the campaign. Standalone dev rooms (F2) exist for each
@@ -129,19 +135,29 @@ stages. Score, echo weapon and SUPER energy carry across all three forms.
 ### Mech (Stage 2)
 Run, variable-height jump, **double jump**, coyote time + jump buffer, ground/air **dash** (dash + jump keeps
 the dash speed for long gaps), wall slide + wall jump, hold-to-fire (echo weapons carry over and fire
-forward), **SUPER** = Resonance Beam. Tuning: `player/mech/mech_tuning.tres`
+forward), **charge shot** (keep holding fire: the buster keeps shooting while the cannon charges; release at
+level 1 (0.75 s, 4 damage) or level 2 (1.6 s, 10 damage) for a piercing plasma ball — base buster only),
+**SUPER** = Resonance Beam. Tuning: `player/mech/mech_tuning.tres`
 (single jump ≈ 3 high / 6 wide, double ≈ 5.3 high / 10 wide, dash-jump ≈ 12 wide).
 
 Ground enemies: Walker (patrols, turns at ledges, fires forward), Hopper (leaps at you), Turret (aimed
-bursts), Flyer (sine hover, aimed shots), Elite Walker (drops BURST). All telegraph before firing.
+bursts), Flyer (sine hover, aimed shots), Shield Guard (Sniper Joe-style: front shield blocks shots, drops it
+only to fire a 3-burst, turns slowly so jumping over opens its back), Swooper (hangs from the ceiling, dives
+at you, climbs back), Elite Walker (drops BURST). All telegraph before firing.
+
+Pickups: health capsule (+2), energy cell (+1 SUPER segment), **Heart Tank** (+1 max health for the run,
+full refill), **Energy Tank** (SUPER fully charged).
 
 ### Bike (Stage 3, 3D)
-Rides forward on its own (cruise 30 → 40 u/s), steer across the 18-wide deck, hold down to brake. Jump + double
+Rides forward on its own (42 → 60 u/s ramp), steer across the 18-wide deck, hold down to brake. Jump + double
 jump over walls and gaps, **boost** (Dash): speed + i-frames + ram, and steering while boosting does a
-sidestep roll. Hold fire for twin cannons with light aim assist; echo weapons carry over (BURST 5-way fan,
+sidestep roll. Hold fire for fast twin cannons (bolts inherit the bike's speed) with aim assist and a gold
+lock-on reticle on the assisted target; echo weapons carry over (BURST 5-way fan,
 ARC strong homing, GUARD heavy twin bolts). SUPER fires the beam straight down the track.
 Hazards: machinery blocks, low walls, flame vents, laser fences with one gap, blast zones that erupt when you
-get close, deck gaps into the burning interior. Enemies: Talon interceptors (elite variant), hull turrets,
+get close, deck gaps into the burning interior, falling debris (ring telegraph on the deck), sweeping low bars.
+Enemies: Talon interceptors (dive in ahead, overtake from behind, or strafe across from the side; elite
+variant), hull turrets,
 pursuit gunship (lead-flies ahead, triple volleys, drops blast mines, calls fighters).
 Tuning: `player/bike/hull_rider_tuning.tres`.
 
@@ -151,6 +167,9 @@ Special fires the **Resonance Beam**: a 1.2–1.6 s screen-length beam that deal
 erases enemy bullets and grants invulnerability while it fires.
 
 ### Bosses (implemented)
+- **Bulkhead Sentinel** (80 HP, Stage 2 mid-boss): sealed room, both doors shut and the camera locks. Aimed
+  volley (3 → 5 shots), leap onto your position with a floor shockwave both ways (jump it), telegraphed
+  wall-to-wall dash (jump over). Dying resets the room; beating it opens the way and drops a Heart Tank.
 - **Warship Reactor Core** (170 HP, Stage 2): Mega Man-style rhythm — its shield plates close while it
   attacks and open between attacks (the damage window; time the SUPER for it). Attacks: low sweep (jump),
   high sweep (stay low), double sweep, bullet ring with a gap, falling rain with floor markers, drone

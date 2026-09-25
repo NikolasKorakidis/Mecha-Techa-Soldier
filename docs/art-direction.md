@@ -90,6 +90,7 @@ The planet is the compositional anchor: lower-right, rim-lit, broad cloud bands,
 | Reduced camera shake | All camera impulses scaled to 15% |
 | Reduced menu motion | No menu slides/scales, no title prompt pulse |
 | Glow | Environment glow on/off |
+| High graphics (desktop only) | Key-light shadows, SSAO, 4x MSAA, ~1.75x effect particles; hidden on web/mobile |
 | Tutorial cards | Contextual tutorial cards on/off |
 Settings persist in `user://settings.cfg`; a missing or incompatible file loads defaults.
 

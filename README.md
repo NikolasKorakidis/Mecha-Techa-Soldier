@@ -6,12 +6,13 @@ Guard) and carry it through the ship-to-mech transformation.
 
 **Status:** one seamless campaign, no scene switches. Stage 1 side-view shooter (Choir Engine) → the Kestrel
 races to the enemy warship, transforms over its hull and the mech drops onto the roof → Stage 2 Mega Man X-style
-platformer through the warship (Reactor Core) → the roof blows out, the mech thrusts up, becomes the bike and the
+platformer through the warship (charge shot, Heart/Energy Tanks, secrets, Bulkhead Sentinel mid-boss, Reactor Core) → the roof blows out, the mech thrusts up, becomes the bike and the
 camera swings behind it → Stage 3 3D chase-view run along the burning warship's hull (fighters, turrets, trench
 run, pursuit gunship) → launch off the bow as the warship explodes → Mission Complete. SUPER beam in every form,
 elite weapon drops that carry across forms, checkpoints (restart resumes at the current stage), pause menu with
 accessibility options. Original 16-bit-style soundtrack and sound effects, generated in code
-([audio](docs/audio.md)), with music/effects volume in Options.
+([audio](docs/audio.md)), with music/effects volume in Options. Desktop builds default to **High graphics**
+(shadows, SSAO, 4x MSAA, denser particles; toggle in Options); the web build runs the standard setup.
 
 ## Play it
 **In the browser:** https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ (Chrome or Edge recommended;
@@ -24,7 +25,7 @@ click the game once to give it keyboard focus). Transitions play in-engine with 
 | Action | Keyboard | Controller | Ship | Mech | Bike |
 |---|---|---|---|---|---|
 | Move | WASD / arrows | Left stick / D-pad | Fly | Run | Steer left/right, hold down to brake |
-| Fire (hold) | J / left mouse | Right trigger | Shoot | Shoot | Shoot |
+| Fire (hold) | J / left mouse | Right trigger | Shoot | Shoot; keep holding to charge, release for a charge shot | Shoot |
 | Jump | Space | A / Cross | Vertical burst | Jump, press again to double jump | Jump / double jump |
 | Dash | K / Shift | B / Circle | Dash | Dash (dash + jump = long jump) | Boost (rams, i-frames; steer + boost = roll) |
 | SUPER (3 energy) | I / Q | Right bumper | Resonance Beam | Resonance Beam | Resonance Beam |

@@ -141,8 +141,14 @@ Main
 ```
 - `Main.start_game()`, `restart_stage()` (restores the stage-entry checkpoint the LevelDirector saves),
   `quit_to_title()`. Scene changes triggered from UI input are connected deferred.
-- `Settings` autoload (reduced flash/shake/motion, glow, tutorials, debug labels) persisted to
-  `user://settings.cfg`. `ArtStyle.flash_scale()` / `shake_scale()` read it.
+- `Settings` autoload (reduced flash/shake/motion, glow, high graphics, tutorials, debug labels) persisted to
+  `user://settings.cfg`. `ArtStyle.flash_scale()` / `shake_scale()` read it. `high_graphics` is only offered
+  where Forward+ runs (desktop): the scene's `environment_binder` then enables KeyLight shadows, SSAO and 4x
+  MSAA, and `Settings.particle_amount()` scales effect particle counts.
+- Stage 2 mid-boss: `WarshipLayout` builds a `MidBossZone` (code-built doors, trigger, camera lock) that
+  spawns `SentinelBoss` (a `BossBase` subclass) and resets itself on player death. Stage 1 depth:
+  `PerspectiveBackdrop` renders its own 3D world (`own_world_3d` SubViewport) onto a screen quad under
+  the sky follower; zone changes are driven by stage time and the director's `boss_spawned`.
 - UI never owns gameplay state: HUD reads RunSession; TutorialCard reads input + Settings; StageUI is
   driven by the LevelDirector and boss signals.
 
