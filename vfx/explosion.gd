@@ -103,7 +103,7 @@ func _emitter(amount: int, particle_lifetime: float, material: Material) -> CPUP
 	var mesh := QuadMesh.new()
 	mesh.material = material
 	p.mesh = mesh
-	p.amount = amount
+	p.amount = Settings.particle_amount(amount)
 	p.lifetime = particle_lifetime
 	p.one_shot = true
 	p.explosiveness = 1.0

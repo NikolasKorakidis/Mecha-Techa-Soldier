@@ -9,6 +9,15 @@ func test_missing_file_loads_defaults() -> void:
 	assert_false(Settings.reduced_flash, "default reduced_flash")
 	assert_true(Settings.glow_enabled, "default glow")
 	assert_false(Settings.show_debug_labels, "debug labels off by default")
+	assert_eq(Settings.high_graphics, Settings.supports_high_graphics(), "high graphics defaults on only where supported")
+
+
+func test_particle_amount_follows_graphics_quality() -> void:
+	Settings.high_graphics = false
+	assert_eq(Settings.particle_amount(8), 8, "standard keeps base counts")
+	Settings.high_graphics = true
+	assert_true(Settings.particle_amount(8) > 8, "high adds particles")
+	Settings.reset_defaults()
 
 
 func test_incompatible_version_loads_defaults() -> void:

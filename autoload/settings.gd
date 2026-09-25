@@ -11,6 +11,9 @@ var reduced_shake: bool = false
 ## Disables decorative UI motion (menu slides, pulses).
 var reduced_motion: bool = false
 var glow_enabled: bool = true
+## HIGH (desktop Forward+ only): real-time shadows, SSAO, 4x MSAA, denser particles.
+## STANDARD keeps the light setup used by the web build and future mobile builds.
+var high_graphics: bool = true
 var music_volume: float = 0.8
 var sfx_volume: float = 0.9
 ## Test-room and debug labels (HP numbers, room titles). Off in normal play.
@@ -47,12 +50,24 @@ func reset_defaults() -> void:
 	reduced_shake = false
 	reduced_motion = false
 	glow_enabled = true
+	high_graphics = supports_high_graphics()
 	music_volume = 0.8
 	sfx_volume = 0.9
 	show_debug_labels = false
 	tutorials_enabled = true
 	tutorials_done = PackedStringArray()
 	changed.emit()
+
+
+## HIGH needs the Forward+ renderer (desktop); web and mobile run Compatibility/Mobile.
+func supports_high_graphics() -> bool:
+	return RenderingServer.get_current_rendering_method() == "forward_plus" \
+			and not OS.has_feature("web") and not OS.has_feature("mobile")
+
+
+## Particle count for decorative effects at the current quality.
+func particle_amount(base: int) -> int:
+	return int(round(base * (1.75 if high_graphics else 1.0)))
 
 
 ## Tests call this so they never touch the player's real settings file.
@@ -71,6 +86,7 @@ func load_settings(path: String = PATH) -> void:
 	reduced_shake = bool(file.get_value("accessibility", "reduced_shake", reduced_shake))
 	reduced_motion = bool(file.get_value("accessibility", "reduced_motion", reduced_motion))
 	glow_enabled = bool(file.get_value("video", "glow_enabled", glow_enabled))
+	high_graphics = bool(file.get_value("video", "high_graphics", high_graphics)) and supports_high_graphics()
 	music_volume = clampf(float(file.get_value("audio", "music_volume", music_volume)), 0.0, 1.0)
 	sfx_volume = clampf(float(file.get_value("audio", "sfx_volume", sfx_volume)), 0.0, 1.0)
 	tutorials_enabled = bool(file.get_value("gameplay", "tutorials_enabled", tutorials_enabled))
@@ -88,6 +104,7 @@ func save_settings(path: String = PATH) -> void:
 	file.set_value("accessibility", "reduced_shake", reduced_shake)
 	file.set_value("accessibility", "reduced_motion", reduced_motion)
 	file.set_value("video", "glow_enabled", glow_enabled)
+	file.set_value("video", "high_graphics", high_graphics)
 	file.set_value("audio", "music_volume", music_volume)
 	file.set_value("audio", "sfx_volume", sfx_volume)
 	file.set_value("gameplay", "tutorials_enabled", tutorials_enabled)

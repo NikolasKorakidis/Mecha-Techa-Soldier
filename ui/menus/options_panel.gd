@@ -9,6 +9,7 @@ const OPTIONS: Array[Array] = [
 	[&"reduced_shake", "Reduced camera shake"],
 	[&"reduced_motion", "Reduced menu motion"],
 	[&"glow_enabled", "Glow"],
+	[&"high_graphics", "High graphics (shadows, SSAO, more particles)"],
 	[&"tutorials_enabled", "Tutorial cards"],
 ]
 
@@ -40,6 +41,8 @@ func _ready() -> void:
 		if _first == null:
 			_first = slider
 	for option in OPTIONS:
+		if option[0] == &"high_graphics" and not Settings.supports_high_graphics():
+			continue
 		var toggle := CheckButton.new()
 		toggle.text = option[1]
 		toggle.button_pressed = bool(Settings.get(option[0]))

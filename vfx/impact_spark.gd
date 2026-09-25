@@ -19,7 +19,7 @@ func _ready() -> void:
 	mesh.size = Vector2(0.05, 0.35) * size
 	mesh.material = ModelKit.glow(color, 2.0, ModelKit.GlowShape.STREAK)
 	p.mesh = mesh
-	p.amount = 6
+	p.amount = Settings.particle_amount(6)
 	p.lifetime = 0.22
 	p.one_shot = true
 	p.explosiveness = 1.0

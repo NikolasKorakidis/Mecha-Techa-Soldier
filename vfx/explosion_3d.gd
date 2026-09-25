@@ -57,7 +57,7 @@ func _ready() -> void:
 
 func _burst(mat: Material, amount: int, life: float, speed: float, scale_range: Vector2, gravity_y: float, explosiveness: float) -> void:
 	var p := CPUParticles3D.new()
-	p.amount = amount
+	p.amount = Settings.particle_amount(amount)
 	p.lifetime = life
 	p.one_shot = true
 	p.explosiveness = explosiveness
