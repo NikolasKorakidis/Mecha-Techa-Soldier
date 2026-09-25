@@ -166,14 +166,20 @@ Run, variable-height jump, **double jump**, coyote time + jump buffer, ground/ai
 the dash speed for long gaps), wall slide + wall jump, hold-to-fire (echo weapons carry over and fire
 forward), **charge shot** (keep holding fire: the buster keeps shooting while the cannon charges; release at
 level 1 (0.75 s, 4 damage) or level 2 (1.6 s, 10 damage) for a piercing plasma ball — base buster only),
-**SUPER** = Resonance Beam. Look: Mega Man X-style side profile (helmet with crest, visor and ear discs,
-chest core, pauldron, buster forearm, chunky boots, twin-nozzle pack). Tuning: `player/mech/mech_tuning.tres`
-(single jump ≈ 3 high / 6 wide, double ≈ 5.3 high / 10 wide, dash-jump ≈ 12 wide).
+**SUPER** = Resonance Beam. Look: Mega Man X / Gundam build turned three-quarters to the camera (domed
+helmet with a gold V-fin, white mask, twin visor eyes, red brow sensor, V chest plates over the core, layered
+pauldron with red trim, ringed buster, greaves with knee fins, backpack with twin thrusters and wing binders
+that spread in the air and while dashing). The Stage 2 camera is framed tighter (ortho 13.5) so it reads.
+Tuning: `player/mech/mech_tuning.gd` (single jump ≈ 3.7 high / 7 wide, double ≈ 6.3 high / 11 wide,
+dash ≈ 6 wide, dash-jump ≈ 14 wide).
 
-Ground enemies: Walker (patrols, turns at ledges, fires forward), Hopper (leaps at you), Turret (aimed
-bursts), Flyer (sine hover, aimed shots), Shield Guard (Sniper Joe-style: front shield blocks shots, drops it
-only to fire a 3-burst, turns slowly so jumping over opens its back), Swooper (hangs from the ceiling, dives
-at you, climbs back), Elite Walker (drops BURST). All telegraph before firing.
+Ground enemies are warship security robots — crimson armour over gunmetal, hot orange sensors, turned
+three-quarters to the camera: Walker (digitigrade security walker with a mono-eye and shoulder gun; patrols,
+turns at ledges, fires forward), Hopper (spring frog-bot; leaps at you), Turret (deck sentry with a tracking
+twin cannon; aimed bursts), Flyer (rotor hover drone with a big mono-eye; sine hover, aimed shots), Shield
+Guard (mono-eye trooper, Sniper Joe-style: front shield blocks shots, drops it only to fire a 3-burst, turns
+slowly so jumping over opens its back), Swooper (bat drone with flapping wings; hangs from the ceiling, dives
+at you, climbs back), Elite Walker (drops BURST). Legs walk with real movement. All telegraph before firing.
 
 Pickups: health capsule (+2), energy cell (+1 SUPER segment), **Heart Tank** (+1 max health for the run,
 full refill), **Energy Tank** (SUPER fully charged).
@@ -197,10 +203,13 @@ Special fires the **Resonance Beam**: a 1.2–1.6 s screen-length beam that deal
 erases enemy bullets and grants invulnerability while it fires.
 
 ### Bosses (implemented)
-- **Bulkhead Sentinel** (80 HP, Stage 2 mid-boss): sealed room, both doors shut and the camera locks. Aimed
+- **Bulkhead Sentinel** (80 HP, Stage 2 mid-boss): a heavy digitigrade walker (hunched mono-eye head,
+  shoulder cannon, shield pauldron, pistoned legs with clawed feet, reactor pack). Sealed room, both doors shut and the camera locks. Aimed
   volley (3 → 5 shots), leap onto your position with a floor shockwave both ways (jump it), telegraphed
   wall-to-wall dash (jump over). Dying resets the room; beating it opens the way and drops a Heart Tank.
-- **Warship Reactor Core** (170 HP, Stage 2): Mega Man-style rhythm — its shield plates close while it
+- **Warship Reactor Core** (170 HP, Stage 2): a machine in a recessed socket — coolant conduits, clamp arms,
+  a heavy ring with emitter turrets, two gyro rings spinning round the blazing core. Mega Man-style rhythm —
+  its six armoured shield petals close over the core while it
   attacks and open between attacks (the damage window; time the SUPER for it). Attacks: low sweep (jump),
   high sweep (stay low), double sweep, bullet ring with a gap, falling rain with floor markers, drone
   summons. A high ledge gives a better firing line but sits in the high-sweep lane.

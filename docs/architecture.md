@@ -158,7 +158,13 @@ Main
   (`destroy()` chains explosions and drifts the sections apart). Stage 1 depth:
   `PerspectiveBackdrop` renders its own 3D world (`own_world_3d` SubViewport) onto a screen quad under
   the sky follower; the warship approach runs on stage time (`approach_time`) and finishes early on the
-  director's `boss_spawned`. `SpacePlanets` builds the shared planet set (layouts `ORBIT`, `HULL_RUN`).
+  director's `boss_spawned`. Space rendering: `space_vista.gdshaderinc` (stars, nebula, galactic band,
+  sun, and the planets ray-traced as spheres at infinity — no meshes) is used by the `space_vista` sky
+  shader (Stage 1 backdrop, boarding dive, Stage 3) and the `space_window` spatial shader (Stage 2 window
+  glass, fake perspective from the camera offset). `SpacePlanets` sets the planet uniforms per layout
+  (`ORBIT`, `HULL_RUN`, optionally rotated by a view basis). `SpaceRocks` caches lumpy asteroid meshes;
+  the backdrop also streams dust (MultiMesh) and distant low-detail `WarshipModel` cruisers, renders at
+  window resolution with MSAA and glow.
 - Boarding dive: `CampaignDirector._run_drop` drives the camera (`rig_override`, perspective during the
   dive); `DropCinematic` owns the temporary dive world and restores the environment; `MangaFx`
   (CanvasLayer 7, under StageUI) draws speed lines and impact frames. The mech's physics is paused while
@@ -210,8 +216,8 @@ Campaign (campaign.tscn) — one world, one GameplayCamera, one WorldEnvironment
 - `RunEnemy` base (health, hurtbox, telegraphed bolts, cleanup) → `RunFighter`, `RunTurret`, `RunGunship`.
 - `HullTrack`: authored decks/obstacles/orbs/turrets tables, trench walls, racing rail lights, burning
   superstructure; meshes use `visibility_range_end` so the 2.5 km deck stays cheap. `recovery_point(x)`.
-- `HullRunBackdrop.activate()` swaps a duplicated environment to the `space_sky.gdshader` sky and builds
-  planets/capital ships/streaks around the camera.
+- `HullRunBackdrop.activate()` swaps a duplicated environment to the space_vista sky
+  (`SpacePlanets.make_sky(HULL_RUN)`) and builds capital ships/streaks around the camera.
 
 ## Side-view level kit (levels/kit/)
 `LevelKit.solid()` (StaticBody + chunk-tech visuals incl. seams, bolts, vents, ceiling lamps), `steam()`,
