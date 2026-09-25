@@ -21,3 +21,6 @@ Thumbs.db
 .env
 *.local.cfg
 /build/
+
+# Python caches (tools/audio)
+__pycache__/
