@@ -14,7 +14,7 @@ death_size = 1.2
 health_drop_chance = 0.3
 
 [node name="Model" parent="Facing"]
-kind = 8
+kind = 13
 
 [node name="Muzzle" parent="Facing"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 1.2, 0)

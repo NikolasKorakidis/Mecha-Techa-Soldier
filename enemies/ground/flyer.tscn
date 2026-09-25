@@ -9,7 +9,7 @@ score_value = 250
 health_drop_chance = 0.1
 
 [node name="Model" parent="Facing"]
-kind = 0
+kind = 11
 
 [node name="Muzzle" parent="Facing"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, 0.0, 0)
