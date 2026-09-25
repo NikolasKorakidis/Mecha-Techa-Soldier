@@ -16,12 +16,17 @@ QOA-compressed streams; music `.import` files set `edit/loop_mode=2` (forward lo
 the renderer folds echo/reverb tails back onto the start.
 
 ## Tracks
+Supplied tracks (`stage1`, `boss1`, `stage2`) are listed in `USER_TRACKS` in `build.py`, which never
+overwrites them. Loops whose last sample did not meet the first got a 20 ms equal-power crossfade of
+the tail into the head so they wrap without a click.
+
 | Id | Title | Key / tempo | Used for |
 |---|---|---|---|
 | `title` | Echoes of Kharon | D minor, 80 bpm | Title screen, boarding-run flight |
-| `stage1` | Space Music Loop 1 (supplied track, 57.6 s stereo seamless loop; `build.py` never overwrites it) | — | Stage 1 |
-| `boss` | Guardian | C minor, 162 bpm | Choir Engine, Reactor Core |
-| `stage2` | Warship Infiltration | A minor, 150 bpm | Stage 2 |
+| `stage1` | Space Music Loop 1 (supplied track, 57.6 s stereo seamless loop) | — | Stage 1 |
+| `boss` | Guardian | C minor, 162 bpm | Reactor Core, Sentinel |
+| `boss1` | Battle Music Loop 1 (supplied track, 52.3 s stereo loop, seam crossfaded) | — | Stage 1 boss (Choir Colossus) |
+| `stage2` | Action Game Music Loop 1 (supplied track, 29.5 s stereo loop, seam crossfaded) | — | Stage 2 |
 | `stage3` | Hull Run | B minor, 178 bpm | Escape + Stage 3 |
 | `stage_clear` | — | D major | Jingle after each boss (music ducks) |
 | `mission_complete` | — | D major, 88 bpm | Ending |

@@ -74,6 +74,7 @@ script = ExtResource("11_ui")
 
 [node name="LevelDirector" type="Node" parent="Stage1" node_paths=PackedStringArray("enemy_root", "stage_ui")]
 script = ExtResource("7_level_director")
+boss_music = &"boss1"
 stage = ExtResource("8_stage1")
 enemy_root = NodePath("../Enemies")
 stage_ui = NodePath("../../StageUI")

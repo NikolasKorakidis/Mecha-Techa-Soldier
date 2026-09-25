@@ -6,7 +6,7 @@ extends Node
 const MUSIC_DIR := "res://assets/audio/music/%s.wav"
 const SFX_DIR := "res://assets/audio/sfx/%s.wav"
 const MUSIC := [&"title", &"stage1", &"boss", &"stage2", &"stage3", &"stage_clear", &"mission_complete",
-		&"stage4", &"boss8", &"clear8"]
+		&"stage4", &"boss8", &"clear8", &"boss1"]
 const SFX := [
 	&"shot_player", &"shot_enemy", &"shot_heavy", &"laser", &"explosion_small", &"explosion_large",
 	&"explosion_huge", &"hit", &"armor_ping", &"player_hurt", &"player_death", &"jump", &"double_jump",
