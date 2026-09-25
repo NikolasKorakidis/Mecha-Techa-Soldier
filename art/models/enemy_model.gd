@@ -1,14 +1,15 @@
 @tool
 class_name EnemyModel
 extends Node3D
-## Foundry enemy family (all face -X). Coral armor over dark-red undersides, a readable sensor
-## "face" on the camera side, chunky outlines. Echo carriers (elites) add a gold-white core,
+## Enemy family (all face -X). Space kinds are real ships — nose, canopy light, swept wings or
+## pylons, glowing rear thrusters — in coral armour over dark-red undersides with chunky outlines. Echo carriers (elites) add a gold-white core,
 ## orbiting gold fragments, a slow pulsing ring and a faint vertical beacon — never color alone.
 
 enum Kind { DRONE, NEEDLE, LANCER, GUNPOD, RAMMER, GUNSHIP, TESLA, WARDEN, WALKER, HOPPER }
 
 const SENSOR := Color("ffc36a")
 const METAL := Color("3d2f45")
+const ENGINE := Color("ff6a3c")
 
 @export var kind: Kind = Kind.DRONE:
 	set(value):
@@ -32,6 +33,7 @@ var _body: Node3D
 var _time: float = 0.0
 var _recoil: float = 0.0
 var _charge: float = 0.0
+var _flames: Array[MeshInstance3D] = []
 
 
 func _ready() -> void:
@@ -77,6 +79,7 @@ func _build() -> void:
 	_fragments = null
 	_shield_rim = null
 	_barrel_pivot = null
+	_flames.clear()
 	var elite := is_elite_kind()
 	var line := ArtStyle.OUTLINE_THICK if elite else ArtStyle.OUTLINE_THIN
 	# Low rim keeps the coral saturated instead of washing toward pink.
@@ -92,79 +95,110 @@ func _build() -> void:
 
 	match kind:
 		Kind.NEEDLE:
-			# Narrow arrowhead, two small fins, sensor near the tip.
-			ModelKit.cone_x(_body, 0.26, 1.5, Vector3(-0.35, 0.02, 0.0), coral, 4, true)
-			ModelKit.box(_body, Vector3(0.7, 0.2, 0.38), Vector3(0.6, 0.02, 0.0), coral)
-			ModelKit.box(_body, Vector3(1.3, 0.1, 0.34), Vector3(0.05, -0.16, 0.0), under)
+			# STILETTO: long needle fighter, forward canards, dorsal fin, one big engine.
+			ModelKit.hex_x(_body, 0.13, 1.2, Vector3(0.1, 0, 0), coral, 8)
+			ModelKit.cone_x(_body, 0.13, 0.6, Vector3(-0.8, 0, 0), metal, 8, true)
+			ModelKit.prism(_body, Vector3(0.5, 0.3, 0.06), Vector3(0.45, 0.2, 0), under, Vector3(0, 0, 90))
 			for side: float in [1.0, -1.0]:
-				ModelKit.prism(_body, Vector3(0.26, 0.5, 0.16), Vector3(0.78, 0.24 * side, 0.0), under,
-						Vector3(0, 0, -135.0 if side > 0 else -45.0))
-			core_pos = Vector3(-0.35, 0.05, 0.22)
-			core_radius = 0.1
+				ModelKit.box(_body, Vector3(0.32, 0.05, 0.1), Vector3(-0.35, 0.12 * side, 0), armor, Vector3(0, 0, -30.0 * side))
+				ModelKit.box(_body, Vector3(0.5, 0.06, 0.12), Vector3(0.45, 0.14 * side, 0), coral, Vector3(0, 0, 38.0 * side))
+			_engine(Vector3(0.72, 0, 0), 0.13, 1.2)
+			core_pos = Vector3(-0.3, 0.1, 0.14)
+			core_radius = 0.07
 		Kind.DRONE:
-			ModelKit.prism(_body, Vector3(1.0, 1.3, 0.7), Vector3(-0.1, 0.05, 0), coral, Vector3(0, 0, 90))
-			ModelKit.box(_body, Vector3(0.55, 0.85, 0.8), Vector3(0.45, 0, 0), armor)
-			ModelKit.box(_body, Vector3(0.9, 0.18, 0.72), Vector3(0.05, -0.42, 0), under)
+			# HORNET: light interceptor — pointed nose, bubble canopy, swept wings, twin engines.
+			ModelKit.hex_x(_body, 0.22, 0.9, Vector3(0.1, 0, 0), coral, 8, 1.1)
+			ModelKit.cone_x(_body, 0.22, 0.45, Vector3(-0.56, 0, 0), coral, 8, true)
+			ModelKit.box(_body, Vector3(0.95, 0.08, 0.46), Vector3(0.1, -0.18, 0), under)
 			for side: float in [1.0, -1.0]:
-				ModelKit.prism(_body, Vector3(0.45, 0.8, 0.28), Vector3(0.6, 0.55 * side, 0), coral,
-						Vector3(0, 0, -150.0 if side > 0 else -30.0))
+				ModelKit.box(_body, Vector3(0.7, 0.1, 0.36), Vector3(0.32, 0.33 * side, 0), coral, Vector3(0, 0, 42.0 * side))
+				ModelKit.box(_body, Vector3(0.22, 0.12, 0.38), Vector3(0.55, 0.58 * side, 0), armor, Vector3(0, 0, 42.0 * side))
+				ModelKit.sphere(_body, 0.04, Vector3(0.62, 0.62 * side, 0.2), ModelKit.emissive(Color("ff5a3c") if side > 0 else Color("7dff8a"), 2.6))
+				_engine(Vector3(0.58, 0.1 * side, 0), 0.08, 0.8)
+			core_pos = Vector3(-0.2, 0.17, 0.12)
+			core_radius = 0.13
 		Kind.LANCER:
-			ModelKit.box(_body, Vector3(0.9, 0.7, 0.7), Vector3(0.3, 0, 0), armor)
-			ModelKit.prism(_body, Vector3(0.7, 0.7, 0.72), Vector3(-0.35, 0, 0), coral, Vector3(0, 0, 90))
+			# LANCER: armoured cockpit pod carrying two long lance cannons on pylons.
+			ModelKit.box(_body, Vector3(0.9, 0.5, 0.6), Vector3(0.2, 0, 0), armor)
+			ModelKit.prism(_body, Vector3(0.5, 0.5, 0.6), Vector3(-0.45, 0, 0), coral, Vector3(0, 0, 90))
+			ModelKit.box(_body, Vector3(0.5, 0.12, 0.62), Vector3(0.2, 0.3, 0), coral)
 			for side: float in [1.0, -1.0]:
-				ModelKit.box(_body, Vector3(1.6, 0.16, 0.3), Vector3(-0.35, 0.5 * side, 0), under)
-				ModelKit.cone_x(_body, 0.14, 0.5, Vector3(-1.4, 0.5 * side, 0), coral, 4, true)
-			core_pos = Vector3(0.3, 0, 0.38)
+				ModelKit.box(_body, Vector3(0.14, 0.34, 0.2), Vector3(0.1, 0.36 * side, 0), metal)
+				ModelKit.hex_x(_body, 0.1, 1.5, Vector3(-0.35, 0.5 * side, 0), metal, 6)
+				ModelKit.hex_x(_body, 0.14, 0.4, Vector3(0.25, 0.5 * side, 0), coral, 6)
+				ModelKit.cone_x(_body, 0.1, 0.3, Vector3(-1.2, 0.5 * side, 0), coral, 6, true)
+			_engine(Vector3(0.68, 0.12, 0), 0.12, 1.0)
+			_engine(Vector3(0.68, -0.12, 0), 0.12, 1.0)
+			core_pos = Vector3(-0.2, 0.12, 0.32)
 		Kind.GUNPOD:
-			ModelKit.sphere(_body, 0.75, Vector3(0.1, 0, 0), ModelKit.hull(Palette.ENEMY_DARK_RED, line, 0.4), Vector3(1.0, 0.85, 0.9))
-			ModelKit.box(_body, Vector3(1.3, 0.35, 1.1), Vector3(0.2, -0.55, 0), under)
-			ModelKit.box(_body, Vector3(1.0, 0.25, 1.0), Vector3(0.2, 0.62, 0), coral)
-			_barrel_pivot = ModelKit.group(_body, "Barrel", Vector3(-0.1, 0, 0.3))
-			ModelKit.hex_x(_barrel_pivot, 0.16, 1.0, Vector3(-0.55, 0, 0), metal, 6, 0.8)
-			ModelKit.hex_x(_barrel_pivot, 0.19, 0.12, Vector3(-1.05, 0, 0), coral, 6)
-			core_pos = Vector3(0.35, 0.1, 0.62)
-			core_radius = 0.18
+			# FRIGATE: stubby gunboat — slanted bow, keel, rotating turret on the back, engine block.
+			ModelKit.box(_body, Vector3(1.1, 0.7, 0.8), Vector3(0.15, -0.05, 0), ModelKit.hull(Palette.ENEMY_DARK_RED, line, 0.4))
+			ModelKit.prism(_body, Vector3(0.7, 0.4, 0.8), Vector3(-0.58, -0.05, 0), coral, Vector3(0, 0, 90))
+			ModelKit.box(_body, Vector3(1.2, 0.18, 0.5), Vector3(0.1, -0.48, 0), under)
+			ModelKit.box(_body, Vector3(0.7, 0.16, 0.82), Vector3(0.25, 0.34, 0), coral)
+			ModelKit.sphere(_body, 0.3, Vector3(0.05, 0.42, 0), armor, Vector3(1.2, 0.7, 1.0))
+			_barrel_pivot = ModelKit.group(_body, "Barrel", Vector3(0.0, 0.5, 0.25))
+			ModelKit.hex_x(_barrel_pivot, 0.1, 0.9, Vector3(-0.5, 0, 0), metal, 6, 0.8)
+			ModelKit.hex_x(_barrel_pivot, 0.13, 0.1, Vector3(-0.95, 0, 0), coral, 6)
+			for y: float in [0.12, -0.22]:
+				_engine(Vector3(0.75, y, 0), 0.13, 1.0)
+			core_pos = Vector3(-0.3, 0.12, 0.42)
+			core_radius = 0.12
 		Kind.RAMMER:
-			ModelKit.cone_x(_body, 0.55, 1.1, Vector3(-0.55, 0, 0), metal, 5, true)
-			ModelKit.box(_body, Vector3(0.9, 0.9, 0.8), Vector3(0.35, 0, 0), coral)
-			ModelKit.box(_body, Vector3(0.9, 0.2, 0.82), Vector3(0.35, -0.45, 0), under)
+			# RAM: armoured wedge prow, spiked cheeks, three heavy thrusters — built to collide.
+			ModelKit.cone_x(_body, 0.5, 0.9, Vector3(-0.5, 0, 0), metal, 5, true)
+			ModelKit.box(_body, Vector3(0.8, 0.8, 0.75), Vector3(0.3, 0, 0), coral)
+			ModelKit.box(_body, Vector3(0.82, 0.18, 0.77), Vector3(0.3, -0.36, 0), under)
 			for side: float in [1.0, -1.0]:
-				ModelKit.prism(_body, Vector3(0.35, 0.8, 0.3), Vector3(-0.3, 0.55 * side, 0), armor,
+				ModelKit.prism(_body, Vector3(0.3, 0.6, 0.3), Vector3(-0.15, 0.5 * side, 0), armor,
 						Vector3(0, 0, 120.0 if side > 0 else 60.0))
-			ModelKit.quad(_body, Vector2(1.2, 0.7), Vector3(1.2, 0, 0), ModelKit.glow(SENSOR, ArtStyle.GLOW_STANDARD, ModelKit.GlowShape.STREAK), Vector3(0, 0, 180))
-			core_pos = Vector3(0.4, 0.05, 0.42)
+			for y: float in [0.24, 0.0, -0.24]:
+				_engine(Vector3(0.75, y, 0), 0.1, 1.3)
+			core_pos = Vector3(0.1, 0.12, 0.4)
 		Kind.GUNSHIP:
-			ModelKit.box(_body, Vector3(2.6, 1.1, 1.2), Vector3(0.3, 0.05, 0), coral)
-			ModelKit.cone_x(_body, 0.62, 1.2, Vector3(-1.55, 0.05, 0), coral, 6, true)
-			ModelKit.box(_body, Vector3(2.8, 0.25, 1.3), Vector3(0.3, 0.64, 0), armor)
-			ModelKit.box(_body, Vector3(2.8, 0.3, 1.3), Vector3(0.3, -0.6, 0), under)
+			# DESTROYER: long hull with a bridge tower, triple bow cannons, dorsal fin, engine block.
+			ModelKit.hex_x(_body, 0.62, 2.8, Vector3(0.3, 0, 0), coral, 8)
+			ModelKit.cone_x(_body, 0.62, 1.0, Vector3(-1.6, 0, 0), coral, 8, true)
+			ModelKit.box(_body, Vector3(3.2, 0.26, 1.0), Vector3(0.2, -0.62, 0), under)
+			ModelKit.box(_body, Vector3(2.4, 0.2, 1.1), Vector3(0.4, 0.55, 0), armor)
+			# Bridge tower with lit windows.
+			ModelKit.box(_body, Vector3(0.8, 0.5, 0.7), Vector3(0.9, 0.85, 0), armor)
+			ModelKit.box(_body, Vector3(0.5, 0.3, 0.6), Vector3(0.75, 1.2, 0), coral)
+			ModelKit.box(_body, Vector3(0.46, 0.08, 0.02), Vector3(0.72, 1.2, 0.31), ModelKit.emissive(SENSOR, 2.0))
+			ModelKit.prism(_body, Vector3(0.9, 0.5, 0.12), Vector3(1.5, 0.7, 0), under, Vector3(0, 0, 90))
+			for y: float in [0.3, 0.0, -0.3]:
+				ModelKit.hex_x(_body, 0.1, 0.9, Vector3(-2.2, y, 0.3), metal, 6)
+			for y: float in [0.3, -0.3]:
+				ModelKit.cylinder(_body, 0.18, 0.18, 0.2, Vector3(-0.2, y * 1.6, 0.55), metal, Vector3(90, 0, 0), 8)
 			for y: float in [0.35, 0.0, -0.35]:
-				ModelKit.hex_x(_body, 0.11, 0.9, Vector3(-2.1, y, 0.25), metal, 6)
-			for side: float in [1.0, -1.0]:
-				ModelKit.prism(_body, Vector3(0.9, 1.2, 0.4), Vector3(1.1, 1.0 * side, 0), coral,
-						Vector3(0, 0, -150.0 if side > 0 else -30.0))
-				ModelKit.hex_x(_body, 0.3, 0.5, Vector3(1.75, 0.35 * side, 0), metal, 8)
-			core_pos = Vector3(0.3, 0.05, 0.68)
-			core_radius = 0.34
+				_engine(Vector3(1.75, y, 0), 0.2, 1.6)
+			for k in 5:
+				ModelKit.box(_body, Vector3(0.14, 0.06, 0.02), Vector3(-0.8 + k * 0.38, 0.12, 0.63), ModelKit.emissive(SENSOR, 1.6))
+			core_pos = Vector3(0.1, 0.1, 0.66)
+			core_radius = 0.3
 		Kind.TESLA:
-			ModelKit.sphere(_body, 0.85, Vector3(0.1, 0, 0), ModelKit.hull(Palette.ENEMY_DARK_RED, line, 0.4), Vector3(1, 1, 0.9))
-			ModelKit.box(_body, Vector3(1.0, 2.4, 0.5), Vector3(0.45, 0, -0.1), coral)
+			# ARC CRUISER: round hull with twin forward prongs wrapped in violet coils.
+			ModelKit.sphere(_body, 0.75, Vector3(0.35, 0, 0), ModelKit.hull(Palette.ENEMY_DARK_RED, line, 0.4), Vector3(1.3, 0.9, 0.9))
+			ModelKit.box(_body, Vector3(1.4, 0.3, 0.8), Vector3(0.45, -0.7, 0), under)
+			ModelKit.box(_body, Vector3(0.6, 1.9, 0.4), Vector3(0.7, 0, -0.1), coral)
 			for side: float in [1.0, -1.0]:
-				ModelKit.hex_x(_body, 0.2, 1.3, Vector3(-0.6, 0.85 * side, 0), metal, 6, 0.7)
+				ModelKit.hex_x(_body, 0.18, 1.4, Vector3(-0.55, 0.85 * side, 0), metal, 6, 0.7)
 				for i in 3:
-					ModelKit.cylinder(_body, 0.25, 0.25, 0.08, Vector3(-0.3 - i * 0.35, 0.85 * side, 0),
+					ModelKit.cylinder(_body, 0.24, 0.24, 0.08, Vector3(-0.25 - i * 0.35, 0.85 * side, 0),
 							ModelKit.emissive(Palette.RESONANCE_VIOLET, 2.0), Vector3(0, 0, 90))
 				ModelKit.quad(_body, Vector2(1.0, 1.0), Vector3(-1.3, 0.85 * side, 0.3), ModelKit.glow(Palette.RESONANCE_VIOLET, ArtStyle.GLOW_STANDARD * 0.8))
-			core_pos = Vector3(0.1, 0, 0.8)
-			core_radius = 0.32
+				_engine(Vector3(1.25, 0.3 * side, 0), 0.16, 1.2)
+			core_pos = Vector3(0.0, 0, 0.72)
+			core_radius = 0.3
 		Kind.WARDEN:
-			# Wide shield silhouette with heavy side plates.
-			ModelKit.box(_body, Vector3(1.4, 1.7, 1.0), Vector3(0.55, 0, 0), coral)
-			ModelKit.box(_body, Vector3(1.4, 0.3, 1.02), Vector3(0.55, -0.72, 0), under)
+			# BULWARK: shield cruiser pushing a huge deflector dish ahead of its hull.
+			ModelKit.hex_x(_body, 0.7, 1.6, Vector3(0.75, 0, 0), coral, 8)
+			ModelKit.box(_body, Vector3(1.6, 0.3, 1.0), Vector3(0.75, -0.72, 0), under)
 			ModelKit.cylinder(_body, 1.3, 1.3, 0.32, Vector3(-0.45, 0, 0), metal, Vector3(0, 0, 90), 6)
 			ModelKit.cylinder(_body, 0.95, 0.95, 0.36, Vector3(-0.47, 0, 0), ModelKit.hull(Palette.PLAYER_GOLD.darkened(0.15), ArtStyle.OUTLINE_THIN), Vector3(0, 0, 90), 6)
 			for side: float in [1.0, -1.0]:
 				ModelKit.box(_body, Vector3(1.1, 0.42, 1.1), Vector3(0.9, 0.95 * side, 0), armor)
+				_engine(Vector3(1.6, 0.4 * side, 0), 0.2, 1.4)
 			_shield_rim = ModelKit.quad(_body, Vector2.ONE * 3.0, Vector3(-0.7, 0, 0.3), ModelKit.glow(Palette.ECHO_GOLD, ArtStyle.GLOW_SUBTLE, ModelKit.GlowShape.RING))
 			core_pos = Vector3(-0.62, 0, 0.12)
 			core_radius = 0.3
@@ -193,6 +227,15 @@ func _build() -> void:
 		_build_echo_marker(core_pos, core_radius)
 
 
+## Rear thruster: dark nozzle, hot core disc and an exhaust flame streaming back (+X).
+func _engine(at: Vector3, radius: float, flame: float) -> void:
+	var nozzle := ModelKit.hull(METAL.darkened(0.3), ArtStyle.OUTLINE_THIN, 0.3)
+	ModelKit.hex_x(_body, radius, radius * 1.6, at, nozzle, 8, 1.2)
+	ModelKit.cylinder(_body, radius * 0.8, radius * 0.8, 0.02, at + Vector3(radius * 0.82, 0, 0), ModelKit.emissive(ENGINE, 3.0), Vector3(0, 0, 90), 8)
+	var plume := ModelKit.quad(_body, Vector2(flame, radius * 2.4), at + Vector3(radius + flame * 0.5, 0, 0.02), ModelKit.glow(ENGINE, 1.4, ModelKit.GlowShape.STREAK), Vector3(0, 0, 180))
+	_flames.append(plume)
+
+
 ## Echo carrier marker: pulsing ring, three orbiting gold fragments, faint vertical beacon.
 func _build_echo_marker(core_pos: Vector3, core_radius: float) -> void:
 	_elite_ring = ModelKit.quad(self, Vector2.ONE * core_radius * 7.0, core_pos + Vector3(0, 0, 0.15),
@@ -211,6 +254,8 @@ func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or _core_material == null:
 		return
 	_time += delta
+	for i in _flames.size():
+		_flames[i].scale = Vector3(0.85 + 0.25 * sin(_time * 34.0 + i * 1.7), 1.0, 1.0)
 	_core_material.emission_energy_multiplier = 2.2 + 1.3 * sin(_time * 6.0) + _charge * 2.0
 	var flash := ArtStyle.flash_scale()
 	if _elite_ring:
