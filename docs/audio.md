@@ -38,13 +38,26 @@ noise, 16-level quantized envelopes, no echo or reverb. Effects: `retro_shot`, `
 - `AudioService.play(id)` — 24-voice pool, per-effect minimum gap (rapid fire, explosion spam), per-effect trim,
   slight pitch variation.
 - `play_music(id, fade)` crossfades (same id = no restart), `stop_music`, `play_jingle` ducks the loop.
+- `start_loop(id)` / `stop_loop(player)` — held loops on their own player (ids in `LOOPS`, e.g. the bike
+  engine, whose pitch and volume the rider drives from speed, boost and airtime).
 - `play_explosion(size)` picks small/large/huge; 3D explosions far from the camera stay silent.
 - Headless runs (tests, CI, boot check) track state but never start voices (no audio device).
 
+## Effects pass 2 (`tools/audio/sfx_v2.py`)
+Overrides the first-pass effects with layered, loudness-matched designs (`_loud()` targets an RMS per
+effect so nothing sits under the music) and adds: `wall_jump`, `mech_step`, `whoosh`, `bike_engine`
+(seamless 1 s loop: every partial completes whole cycles), `bike_crash`, `bike_land`, `boss_roar`,
+`boss_break`.
+
 ## Where sounds fire
-Weapons (`WeaponComponent`, `Bolt3D`, arc), hits/armor pings/player hurt (`HurtboxComponent`), explosions,
-jumps/double jumps/dash/landing/boost/death/SUPER (players), pickups, checkpoints, WARNING, gates,
-transformations and heavy landing (campaign), UI focus/confirm. Directors choose music per stage/boss.
+- Stage 1: ship shots/lasers, enemy shots, hits, explosions, dash, hurt, death, pickups; boss roar on entry,
+  a heavy crash at each phase break and on defeat; the boarding dive whooshes.
+- Stage 2: mech footsteps, jump / double jump / wall kick, dash, landing, charge shot, hits, pickups,
+  checkpoints, doors, boss roar and breaks.
+- Stage 3: bike engine loop (pitch follows speed, revs on boost and in the air), jump, boost, landing thud,
+  crash on every hit, crash + death on wreck, gunship roar.
+- Stage 4: its own 8-bit set. Everywhere: UI focus/confirm, WARNING, transformations.
+Directors choose music per stage/boss (music is untouched by the effects pass).
 
 ## Replacing with produced audio later
 Drop same-named files into `assets/audio/` (e.g. `stage1.ogg` → update `MUSIC_DIR` extension) — gameplay only
