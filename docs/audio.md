@@ -39,7 +39,7 @@ noise, 16-level quantized envelopes, no echo or reverb. Effects: `retro_shot`, `
 `retro_power`, `retro_1up`.
 
 ## Runtime (`autoload/audio_service.gd`)
-- Buses `Music` (−7 dB base), `SFX`, `UI`, defined in `default_bus_layout.tres` (the web build's sample
+- Buses `Music` (−8 dB base), `SFX`, `UI`, defined in `default_bus_layout.tres` (the web build's sample
   playback only routes buses from the project layout; buses added in code play silently there); Options → Music / Effects volume sliders (saved in settings).
 - `AudioService.play(id)` — 24-voice pool, per-effect minimum gap (rapid fire, explosion spam), per-effect trim,
   slight pitch variation.
@@ -49,11 +49,19 @@ noise, 16-level quantized envelopes, no echo or reverb. Effects: `retro_shot`, `
 - `play_explosion(size)` picks small/large/huge; 3D explosions far from the camera stay silent.
 - Headless runs (tests, CI, boot check) track state but never start voices (no audio device).
 
-## Effects pass 2 (`tools/audio/sfx_v2.py`)
-Overrides the first-pass effects with layered, loudness-matched designs (`_loud()` targets an RMS per
-effect so nothing sits under the music) and adds: `wall_jump`, `mech_step`, `whoosh`, `bike_engine`
-(seamless 1 s loop: every partial completes whole cycles), `bike_crash`, `bike_land`, `boss_roar`,
-`boss_break`.
+## Effects: studio pass (`tools/audio/sfx_hq.py`)
+48 kHz stereo, rendered from code with proper band-limited oscillators, Butterworth filters, FM for metal and
+bells, and a generated stereo room impulse (early reflections + decorrelated tail that darkens as it decays)
+convolved onto each effect. No hard saturation: a soft knee only above −3 dBFS. Loudness targets (RMS of the
+audible part) are authored per effect and deliberately soft — shots −22, hits −24, footsteps −27, jumps −22,
+explosions −18 … −15, UI −24 … −28 dBFS — so the mix balance lives in the files, not in runtime trims.
+Frequent effects ship several takes (`id.wav`, `id_2.wav` …; `AudioService.VARIANTS`) and `play()` never
+repeats the previous take. Width comes from a ≤ 2.5 ms decorrelating delay blended with the dry signal, so
+everything folds to mono cleanly. The bike engine is a seamless 2 s loop (every partial completes whole
+cycles; the noise layer is filtered circularly). Stage 4 keeps its lo-fi 32 kHz mono NES set (`nes.py`).
+
+Buses (`default_bus_layout.tres`): Master has a hard limiter (−0.8 dBFS ceiling), SFX a gentle glue compressor.
+The web build's sample playback ignores bus effects (the files are already levelled for that).
 
 ## Where sounds fire
 - Stage 1: ship shots/lasers, enemy shots, hits, explosions, dash, hurt, death, pickups; boss roar on entry,

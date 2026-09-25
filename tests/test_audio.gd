@@ -53,3 +53,16 @@ func test_engine_loop_loops_and_stops() -> void:
 	AudioService.stop_loop(engine)
 	await wait_process_frames(2)
 	assert_false(is_instance_valid(engine), "stopped loop player is freed")
+
+
+func test_frequent_effects_have_takes_and_never_repeat() -> void:
+	for id: StringName in AudioService.VARIANTS:
+		var takes: Array = AudioService._sfx_takes.get(id, [])
+		assert_eq(takes.size(), int(AudioService.VARIANTS[id]), "'%s' has every take" % id)
+		for take in takes:
+			assert_true(take is AudioStream, "'%s' takes load" % id)
+	var last: AudioStream = null
+	for i in 12:
+		var take := AudioService._pick_take(&"hit", null)
+		assert_true(take != last, "a take is never played twice in a row")
+		last = take

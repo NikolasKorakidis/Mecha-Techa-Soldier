@@ -1,6 +1,24 @@
-[gd_resource type="AudioBusLayout" format=3]
+[gd_resource type="AudioBusLayout" load_steps=3 format=3]
+
+[sub_resource type="AudioEffectHardLimiter" id="MasterLimiter"]
+ceiling_db = -0.8
+release = 0.12
+
+[sub_resource type="AudioEffectCompressor" id="SfxGlue"]
+threshold = -14.0
+ratio = 2.5
+attack_us = 2000.0
+release_ms = 180.0
 
 [resource]
+bus/0/name = &"Master"
+bus/0/solo = false
+bus/0/mute = false
+bus/0/bypass_fx = false
+bus/0/volume_db = 0.0
+bus/0/send = &""
+bus/0/effect/0/effect = SubResource("MasterLimiter")
+bus/0/effect/0/enabled = true
 bus/1/name = &"Music"
 bus/1/solo = false
 bus/1/mute = false
@@ -13,6 +31,8 @@ bus/2/mute = false
 bus/2/bypass_fx = false
 bus/2/volume_db = 0.0
 bus/2/send = &"Master"
+bus/2/effect/0/effect = SubResource("SfxGlue")
+bus/2/effect/0/enabled = true
 bus/3/name = &"UI"
 bus/3/solo = false
 bus/3/mute = false

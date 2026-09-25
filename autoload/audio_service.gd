@@ -18,25 +18,32 @@ const SFX := [
 ]
 ## Effects that loop while a caller holds them (start_loop / stop_loop).
 const LOOPS := [&"bike_engine"]
+## Frequent effects ship several takes (id.wav, id_2.wav ...); play() never repeats the last one.
+const VARIANTS := {
+	&"shot_player": 4, &"laser": 4, &"shot_enemy": 3, &"hit": 4, &"mech_step": 4, &"land": 3, &"jump": 2,
+	&"explosion_small": 3, &"explosion_large": 3,
+}
 ## Minimum seconds between two plays of the same effect (rapid fire, many explosions).
 const MIN_GAP := {
 	&"shot_player": 0.07, &"laser": 0.06, &"shot_enemy": 0.05, &"hit": 0.045, &"armor_ping": 0.12,
 	&"explosion_small": 0.06, &"explosion_large": 0.1, &"explosion_huge": 0.25, &"pickup": 0.05,
 	&"ui_move": 0.03, &"land": 0.1, &"dash": 0.1, &"mech_step": 0.12, &"bike_crash": 0.4, &"bike_land": 0.15, &"retro_shot": 0.07, &"retro_hit": 0.05, &"retro_boom": 0.08,
 }
-## Per-effect trim so the mix sits right (dB).
+## Per-effect trim (dB). The studio effects are levelled in tools/audio/sfx_hq.py; only the
+## 8-bit set needs taming here.
 const TRIM := {
-	&"shot_player": -5.0, &"laser": -6.0, &"shot_enemy": -5.0, &"hit": -3.0, &"explosion_small": -2.0,
-	&"ui_move": -8.0, &"pickup": -2.0, &"land": -2.0, &"armor_ping": -4.0, &"retro_shot": -9.0, &"retro_hit": -6.0,
-	&"mech_step": -3.0,
+	&"retro_shot": -9.0, &"retro_hit": -6.0, &"retro_boom": -3.0, &"retro_power": -6.0, &"retro_1up": -6.0,
 }
 const VOICES := 24
-const MUSIC_BASE_DB := -7.0
+const MUSIC_BASE_DB := -8.0
 
 var current_music: StringName = &""
 
 var _music_streams: Dictionary = {}
 var _sfx_streams: Dictionary = {}
+## id -> Array[AudioStream] of every take, and the index played last.
+var _sfx_takes: Dictionary = {}
+var _last_take: Dictionary = {}
 var _voices: Array[AudioStreamPlayer] = []
 var _next_voice: int = 0
 var _last_played: Dictionary = {}
@@ -66,6 +73,10 @@ func _ready() -> void:
 		_music_streams[id] = _load(MUSIC_DIR % id)
 	for id: StringName in SFX:
 		_sfx_streams[id] = _load(SFX_DIR % id)
+		var takes: Array[AudioStream] = [_sfx_streams[id]]
+		for k in range(2, int(VARIANTS.get(id, 1)) + 1):
+			takes.append(_load(SFX_DIR % ("%s_%d" % [id, k])))
+		_sfx_takes[id] = takes
 	for id: StringName in LOOPS:
 		var wav := _sfx_streams[id] as AudioStreamWAV
 		if wav:
@@ -97,6 +108,7 @@ func _exit_tree() -> void:
 	_voices.clear()
 	_music_streams.clear()
 	_sfx_streams.clear()
+	_sfx_takes.clear()
 
 
 ## One-shot effect. `pitch_jitter` varies pitch slightly so repeats never sound identical.
@@ -112,11 +124,22 @@ func play(id: StringName, volume_db: float = 0.0, pitch_jitter: float = 0.05) ->
 	var voice := _voices[_next_voice]
 	_next_voice = (_next_voice + 1) % _voices.size()
 	voice.bus = &"UI" if String(id).begins_with("ui_") else &"SFX"
-	voice.stream = stream
+	voice.stream = _pick_take(id, stream)
 	voice.volume_db = volume_db + float(TRIM.get(id, 0.0))
 	voice.pitch_scale = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
 	if not _silent:
 		voice.play()
+
+
+func _pick_take(id: StringName, fallback: AudioStream) -> AudioStream:
+	var takes: Array = _sfx_takes.get(id, [])
+	if takes.size() < 2:
+		return fallback
+	var k := randi() % takes.size()
+	if k == int(_last_take.get(id, -1)):
+		k = (k + 1) % takes.size()
+	_last_take[id] = k
+	return takes[k] if takes[k] != null else fallback
 
 
 ## Starts a looping effect on its own player (engine hums); the caller adjusts its pitch and
