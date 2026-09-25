@@ -1,8 +1,8 @@
 class_name HullRunBackdrop
 extends Node3D
 ## Deep space around the warship for the 3D chase view (Star Wars-style battle):
-##   sky shader (stars, galactic band, nebula) swapped into the environment on activate()
-##   planets at "infinity" (follow the camera): ringed gas giant, red moon, the blue world below
+##   the space_vista sky (stars, galactic band, nebula and the ray-traced planets: ringed gas
+##   giant, red moon, the blue world below) swapped into the environment on activate()
 ##   distant capital ships trading turbolaser fire, fighters streaking past, burning hull
 ##   explosions ahead of the bike, speed streaks around the camera.
 ##   The warship itself (WarshipModel at track scale) spreads out under and around the deck, so
@@ -20,7 +20,6 @@ const WARSHIP_CENTER_X := 1950.0
 var active: bool = false
 var warship: WarshipModel
 
-var _sky_root: Node3D
 var _ships: Array[Node3D] = []
 var _camera: GameplayCamera
 var _streaks: CPUParticles3D
@@ -55,28 +54,18 @@ func activate() -> void:
 			world_environment = found[0] as WorldEnvironment
 	if world_environment and world_environment.environment:
 		var env := world_environment.environment.duplicate() as Environment
-		var sky := Sky.new()
-		var mat := ShaderMaterial.new()
-		mat.shader = preload("res://art/shaders/space_sky.gdshader")
-		sky.sky_material = mat
-		env.sky = sky
+		env.sky = SpacePlanets.make_sky(SpacePlanets.Layout.HULL_RUN)
 		env.background_mode = Environment.BG_SKY
 		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 		world_environment.environment = env
-	_sky_root = ModelKit.group(self, "SkyRoot")
 	warship = WarshipModel.new()
 	warship.clear_lane = 13.0
 	warship.scale = Vector3.ONE * WARSHIP_SCALE
 	# Well under the track plates: nothing on the hull can poke through or z-fight the spine.
 	warship.position = Vector3(WARSHIP_CENTER_X, HullTrack.DECK_Y - 0.45, 0.0)
 	add_child(warship)
-	_build_planets()
 	_build_ships()
 	_build_streaks()
-
-
-func _build_planets() -> void:
-	SpacePlanets.build(_sky_root, SpacePlanets.Layout.HULL_RUN)
 
 
 func _build_ships() -> void:
@@ -132,7 +121,6 @@ func _process(delta: float) -> void:
 	if _camera == null:
 		return
 	var cam := _camera.global_position
-	_sky_root.global_position = cam
 	_streaks.global_position = cam + Vector3(70.0, 0, 0)
 	var player := Players.find(get_tree())
 	var px := player.global_position.x if player else cam.x
