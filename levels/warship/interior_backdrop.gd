@@ -41,6 +41,10 @@ var _rng := RandomNumberGenerator.new()
 var _zone_lights: Node3D
 var _env: Environment
 var _zone_mats: Dictionary = {}
+var _key_light: DirectionalLight3D
+var _key_color: Color
+var _rim_light: DirectionalLight3D
+var _rim_color: Color
 
 
 func _ready() -> void:
@@ -194,6 +198,14 @@ func _bind_environment() -> void:
 	_env.fog_density = 0.85
 	_env.fog_sky_affect = 0.0
 	_env.fog_enabled = false
+	# Scene lights take on each zone's mood while inside.
+	for light in get_tree().root.find_children("*", "DirectionalLight3D", true, false):
+		if light.name == &"KeyLight" and _key_light == null:
+			_key_light = light
+			_key_color = _key_light.light_color
+		elif light.name == &"RimLight" and _rim_light == null:
+			_rim_light = light
+			_rim_color = _rim_light.light_color
 
 
 func _screen(at: Vector3, color: Color) -> void:
@@ -315,6 +327,12 @@ func _process(delta: float) -> void:
 		_env.fog_enabled = inside
 		if inside:
 			_env.fog_light_color = WarshipZones.fog_at(cx)
+	var target_key := _key_color.lerp(WarshipZones.accent_at(cx), 0.28) if inside else _key_color
+	var target_rim := WarshipZones.secondary_at(cx) if inside else _rim_color
+	if _key_light:
+		_key_light.light_color = _key_light.light_color.lerp(target_key, clampf(delta * 2.0, 0.0, 1.0))
+	if _rim_light:
+		_rim_light.light_color = _rim_light.light_color.lerp(target_rim, clampf(delta * 2.0, 0.0, 1.0))
 	# Locked arenas (mid-boss, boss) keep the fight view clear of foreground girders.
 	_fore.visible = inside and cx < fore_cutoff_x and not _camera.is_locked()
 	if _sky:

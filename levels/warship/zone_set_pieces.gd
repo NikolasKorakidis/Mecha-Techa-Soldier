@@ -30,6 +30,8 @@ func _ready() -> void:
 	_alarm_hall()
 	_security()
 	_core_conduits()
+	for i in WarshipZones.ZONES.size():
+		_zone_dressing(i)
 
 
 ## Local position for something meant to sit behind world x when the camera is centred there.
@@ -193,6 +195,44 @@ func _core_conduits() -> void:
 		ModelKit.hex_x(self, 0.1, 70.0, _at(305.0, cy, -1.3), ModelKit.emissive(accent, 0.8), 6)
 	for cx in range(276, 336, 9):
 		ModelKit.box(self, Vector3(0.8, 22.0, 0.8), _at(cx, 8.0, -0.4), _mat(Color("1b1430")))
+
+
+## Shared colour dressing for every zone: neon bands in the accent and secondary colours,
+## vertical light strips, coloured light shafts from the ceiling and a big sector sign.
+func _zone_dressing(i: int) -> void:
+	var span := WarshipZones.span(i)
+	var accent: Color = WarshipZones.ZONES[i][2]
+	var secondary: Color = WarshipZones.ZONES[i][4]
+	var length := span.y - span.x
+	var mid := (span.x + span.y) * 0.5
+	var band_a := ModelKit.emissive(accent, 1.6)
+	var band_b := ModelKit.emissive(secondary, 1.4)
+	_pulses.append(band_b)
+	ModelKit.box(self, Vector3(length * factor, 0.14, 0.1), _at(mid, 1.4, -1.8), band_a)
+	ModelKit.box(self, Vector3(length * factor, 0.1, 0.1), _at(mid, 13.2, -1.8), band_b)
+	ModelKit.box(self, Vector3(length * factor, 0.06, 0.1), _at(mid, 13.6, -1.8), band_a)
+	var x := span.x + 3.0
+	var k := 0
+	while x < span.y - 2.0:
+		var strip := ModelKit.box(self, Vector3(0.12, 4.0, 0.1), _at(x, 7.0, -1.7), band_b if k % 2 == 0 else band_a)
+		strip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if k % 3 == 1:
+			var shaft := ModelKit.quad(self, Vector2(16.0, 3.6), _at(x, 10.0, -1.0), ModelKit.glow(secondary if k % 2 else accent, 0.16, ModelKit.GlowShape.STREAK), Vector3(0, 0, 105))
+			shaft.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		x += 6.0
+		k += 1
+	var sign := Label3D.new()
+	sign.text = String(WarshipZones.ZONES[i][5])
+	sign.font_size = 96
+	sign.pixel_size = 0.018
+	sign.outline_size = 18
+	sign.outline_modulate = Color(0.02, 0.02, 0.05, 0.9)
+	sign.modulate = accent.lerp(Color.WHITE, 0.15)
+	sign.position = _at(span.x + 12.0, 17.2, 1.0)
+	sign.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	add_child(sign)
+	var underline := ModelKit.box(self, Vector3(9.0, 0.12, 0.1), _at(span.x + 16.0, 16.3, 1.0), band_b)
+	underline.position.x = sign.position.x + 4.5
 
 
 func _process(delta: float) -> void:
