@@ -12,6 +12,8 @@ extends Node3D
 ## The boarding dive ends with set_boarding(), which frames the deck behind the Stage 2 roof.
 ## Purely visual; nothing here collides or reads gameplay state.
 
+const GROUP := &"perspective_backdrop"
+
 ## Director whose boss marks the overflight (the approach finishes early if the boss comes first).
 @export var director: LevelDirector
 @export var resolution: Vector2i = Vector2i(1280, 720)
@@ -49,9 +51,12 @@ var _approach: float = 0.0
 var _hurry: bool = false
 var _boarding: bool = false
 var _slide: float = 0.0
+var _occluded: bool = false
+var _rendering: bool = true
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	_rng.seed = 2049
 	_build_viewport()
 	_build_dust()
@@ -82,6 +87,12 @@ func approach_progress() -> float:
 	return _approach
 
 
+## Something opaque covers the whole screen quad (the Stage 2 interior walls): pause rendering,
+## the last frame stays on the texture.
+func set_occluded(on: bool) -> void:
+	_occluded = on
+
+
 ## Stops rendering the backdrop world entirely (3D stages never see it).
 func set_active(on: bool) -> void:
 	visible = on
@@ -90,6 +101,13 @@ func set_active(on: bool) -> void:
 
 
 func _process(delta: float) -> void:
+	# Hidden (the boarding dive hides the sky) or covered: skip the whole 3D render.
+	var show := is_visible_in_tree() and not _occluded
+	if show != _rendering:
+		_rendering = show
+		_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if show else SubViewport.UPDATE_DISABLED
+	if not show:
+		return
 	_clock += delta
 	_camera.position.x += flight_speed * delta
 	var cx := _camera.position.x

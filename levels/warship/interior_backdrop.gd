@@ -330,6 +330,9 @@ func _process(delta: float) -> void:
 	var cx := _camera.global_position.x
 	var cy := _camera.global_position.y
 	var inside := cx > interior_x.x and cx < interior_x.y and cy < interior_max_y and _camera.projection == Camera3D.PROJECTION_ORTHOGONAL
+	if inside != _wall.visible:
+		# The walls cover the space backdrop completely (windows have their own glass).
+		get_tree().call_group(PerspectiveBackdrop.GROUP, &"set_occluded", inside)
 	_wall.visible = inside
 	_mid.visible = inside
 	_zone_lights.visible = inside
