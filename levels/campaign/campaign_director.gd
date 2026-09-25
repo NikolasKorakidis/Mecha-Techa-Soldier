@@ -53,6 +53,8 @@ var _ending_t: float = 0.0
 
 
 func _ready() -> void:
+	# The Stage 1 backdrop's real warship model replaces the flat side-view superstructure.
+	warship_exterior.visible = false
 	var checkpoint := String(RunSession.checkpoint_id)
 	if checkpoint.begins_with("STAGE 3"):
 		_start_hull_run_direct.call_deferred()
@@ -102,19 +104,21 @@ func _run_drop() -> void:
 	AudioService.play(&"boost")
 	stage_ui.show_banner("ENEMY WARSHIP VX-07", "BOARDING RUN — GET ON THAT HULL", 3.4)
 	var p0 := ship.global_position
-	var p1 := p0 + Vector3(140.0, 4.0, 0.0)
-	var p2 := drop_point + Vector3(-190.0, 26.0, 0.0)
+	var p1 := p0 + Vector3(170.0, 8.0, 0.0)
+	var p2 := drop_point + Vector3(-170.0, 22.0, 0.0)
 	var p3 := drop_point
 	var t := 0.0
 	var last := p0
 	camera.rig_override = true
-	var size_tween := create_tween()
-	size_tween.tween_property(camera, "size", 26.0, flight_time * 0.5).set_trans(Tween.TRANS_SINE)
-	size_tween.tween_property(camera, "size", 16.0, flight_time * 0.5).set_trans(Tween.TRANS_SINE)
-	_cam_update = func(delta: float) -> void:
-		var goal := ship.global_position + Vector3(8.0, 2.0, 0.0) if is_instance_valid(ship) else camera.global_position
-		var c := camera.global_position
-		camera.global_position = Vector3(lerpf(c.x, goal.x, clampf(delta * 3.0, 0, 1)), lerpf(c.y, goal.y, clampf(delta * 3.0, 0, 1)), 30.0)
+	# The camera stays locked on the Kestrel (no lag, it never leaves the frame); the offset
+	# eases from the Stage 1 framing to a lead ahead of the ship, then to the landing framing.
+	var start_offset := Vector2(camera.global_position.x - p0.x, camera.global_position.y - p0.y)
+	var speed_tween := create_tween()
+	speed_tween.tween_property(perspective_backdrop, "flight_speed", 150.0, flight_time * 0.35).set_trans(Tween.TRANS_SINE)
+	speed_tween.tween_interval(flight_time * 0.3)
+	speed_tween.tween_property(perspective_backdrop, "flight_speed", 38.0, flight_time * 0.35).set_trans(Tween.TRANS_SINE)
+	create_tween().tween_property(camera, "size", 16.0, flight_time).set_trans(Tween.TRANS_SINE)
+	_cam_update = Callable()
 	while t < 1.0:
 		await get_tree().process_frame
 		t = minf(1.0, t + get_process_delta_time() / flight_time)
@@ -123,8 +127,11 @@ func _run_drop() -> void:
 		ship.global_position = pos
 		var vel := (pos - last) / maxf(get_process_delta_time(), 0.001)
 		last = pos
-		ship.model.rotation.z = clampf(vel.y * 0.02, -0.5, 0.5)
+		ship.model.rotation.z = lerpf(ship.model.rotation.z, clampf(vel.y * 0.015, -0.4, 0.4), 0.15)
 		ship.model.set_thrust(1.4)
+		# Mid-flight the Kestrel rides high in the frame so the warship reads as below it.
+		var offset := start_offset.lerp(Vector2(7.0, -0.5), smoothstep(0.0, 0.25, t)).lerp(Vector2(3.0, 4.0), smoothstep(0.78, 1.0, t))
+		camera.global_position = Vector3(pos.x + offset.x, pos.y + offset.y, 30.0)
 	ship.model.rotation.z = 0.0
 	await _wait(0.25)
 	_transform_ship_into_mech()
@@ -157,7 +164,7 @@ func _run_drop() -> void:
 func _transform_ship_into_mech() -> void:
 	AudioService.play(&"transform")
 	var at := ship.global_position
-	stage_ui.flash(0.85, 0.7)
+	stage_ui.flash(0.45, 0.5)
 	camera.add_trauma(ArtStyle.SHAKE_MAJOR)
 	var root := get_tree().get_first_node_in_group(Vfx.ROOT_GROUP)
 	if root:
@@ -278,7 +285,8 @@ func _swing_camera_behind(duration: float) -> void:
 	var start_fov := GameplayCamera.fov_matching(camera.size, 30.0)
 	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
 	camera.fov = start_fov
-	camera.far = 2400.0
+	camera.near = 0.4
+	camera.far = 4500.0
 	var chase := hull_director.chase_offset
 	var t := 0.0
 	while t < 1.0:
@@ -349,6 +357,7 @@ func _run_ending() -> void:
 	var cam_from := camera.global_position
 	var cam_mid := Vector3(finish + 70.0, HullTrack.DECK_Y + 16.0, 40.0)
 	var cam_to := Vector3(finish + 420.0, HullTrack.DECK_Y + 190.0, 820.0)
+	camera.near = 2.0
 	camera.far = 12000.0
 	_ending_t = 0.0
 	_cam_update = func(delta: float) -> void:

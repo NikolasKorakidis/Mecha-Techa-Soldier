@@ -28,11 +28,11 @@ enum Zone { SPACE, STATION, SUNSET }
 @export var warship_cameo_time: float = 16.0
 
 ## Warship offsets from the backdrop camera: far cameo, and the boarding view above its deck.
-const SHIP_FAR_START := Vector3(1200.0, -200.0, -1300.0)
-const SHIP_FAR := Vector3(430.0, -115.0, -820.0)
-const SHIP_BOARDING := Vector3(120.0, -38.0, -150.0)
+const SHIP_FAR_START := Vector3(1200.0, -300.0, -1300.0)
+const SHIP_FAR := Vector3(430.0, -200.0, -820.0)
+const SHIP_BOARDING := Vector3(110.0, -64.0, -125.0)
 const CAMERA_CRUISE := Vector3(-8.0, -14.0, 0.0)
-const CAMERA_BOARDING := Vector3(-24.0, -20.0, 0.0)
+const CAMERA_BOARDING := Vector3(-17.0, -18.0, 0.0)
 
 var zone: Zone = Zone.SPACE
 
@@ -149,6 +149,8 @@ func _tween_ship(rel: Vector3, camera_rot: Vector3, duration: float, ease: Tween
 		_ship_tween.kill()
 	_ship_tween = create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(ease)
 	_ship_tween.tween_property(self, "_ship_rel", rel, duration)
+	# The camera never tips further down than the ship's own depression angle, so the ship
+	# stays below the flight line the whole way in.
 	_ship_tween.tween_property(_camera, "rotation_degrees", camera_rot, duration)
 
 
