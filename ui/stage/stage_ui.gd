@@ -123,6 +123,7 @@ func show_banner(title: String, subtitle: String, duration: float) -> void:
 
 
 func show_warning(duration: float) -> void:
+	AudioService.play(&"warning")
 	_warning.visible = true
 	_warning_left = duration
 

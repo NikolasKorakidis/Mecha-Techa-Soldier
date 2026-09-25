@@ -95,6 +95,8 @@ func _run_drop() -> void:
 	ship.set_cinematic(true)
 	await _wait(1.6)
 	space_backdrop.set_battle_layers_visible(false)
+	AudioService.play_music(&"title", 2.5)
+	AudioService.play(&"boost")
 	stage_ui.show_banner("ENEMY WARSHIP VX-07", "BOARDING RUN — GET ON THAT HULL", 3.4)
 	var p0 := ship.global_position
 	var p1 := p0 + Vector3(140.0, 4.0, 0.0)
@@ -136,6 +138,7 @@ func _run_drop() -> void:
 		await get_tree().physics_frame
 		guard += get_physics_process_delta_time()
 	# Heavy landing.
+	AudioService.play(&"heavy_land")
 	camera.add_trauma(ArtStyle.SHAKE_MAJOR)
 	for k in 6:
 		Vfx.spawn(get_tree(), preload("res://vfx/impact_spark.tscn"), mech.global_position + Vector3(randf_range(-1.2, 1.2), 0.1, 1.0), 1.4,
@@ -149,6 +152,7 @@ func _run_drop() -> void:
 
 
 func _transform_ship_into_mech() -> void:
+	AudioService.play(&"transform")
 	var at := ship.global_position
 	stage_ui.flash(0.85, 0.7)
 	camera.add_trauma(ArtStyle.SHAKE_MAJOR)
@@ -204,6 +208,8 @@ func _run_escape() -> void:
 	camera.limits = Rect2()
 	camera.rig_override = true
 	warship_layout.blast_open()
+	AudioService.play(&"explosion_huge")
+	AudioService.play_music(&"stage3", 2.0)
 	stage_ui.flash(0.5, 0.5, Color(1.0, 0.8, 0.6))
 	await _wait(0.6)
 	# Thrust up through the hole onto the top hull.
@@ -239,6 +245,7 @@ func _run_escape() -> void:
 
 func _transform_mech_into_bike() -> void:
 	_cam_update = Callable()
+	AudioService.play(&"transform")
 	var at := mech.global_position
 	stage_ui.flash(0.9, 0.8)
 	camera.add_trauma(ArtStyle.SHAKE_MAJOR)
@@ -355,6 +362,7 @@ func _run_ending() -> void:
 		Explosion3D.spawn(get_tree(), Vector3(2720.0 - n * 60.0, HullTrack.DECK_Y + 4.0, 0.0), 26.0)
 	await _wait(0.8)
 	stage_ui.show_banner("MISSION COMPLETE", "SCORE  %08d" % RunSession.score, 6.0)
+	AudioService.play_music(&"mission_complete", 1.0)
 	await _wait(6.5)
 	_set_phase(Phase.DONE)
 	RunSession.reset_run()

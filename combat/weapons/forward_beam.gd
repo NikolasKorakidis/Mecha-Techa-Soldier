@@ -57,6 +57,7 @@ func _ready() -> void:
 	_eraser.position = Vector3(length * 0.5, 0, 0)
 	_eraser.monitoring = false
 	add_child(_eraser)
+	AudioService.play(&"beam", 0.0, 0.0)
 	var camera := GameplayCamera.find(get_tree())
 	if camera:
 		camera.add_trauma(ArtStyle.SHAKE_MAJOR)

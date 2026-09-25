@@ -32,6 +32,7 @@ func activate() -> void:
 	if active:
 		return
 	active = true
+	AudioService.play(&"checkpoint")
 	_lamp.albedo_color = Palette.PLAYER_ENERGY
 	_lamp.emission = Palette.PLAYER_ENERGY
 	_lamp.emission_energy_multiplier = 3.0

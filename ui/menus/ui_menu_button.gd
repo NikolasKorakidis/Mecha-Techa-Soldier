@@ -29,6 +29,8 @@ func _init() -> void:
 	add_theme_stylebox_override(&"hover", focus)
 	add_theme_stylebox_override(&"focus", focus)
 	add_theme_stylebox_override(&"pressed", focus)
+	focus_entered.connect(func() -> void: AudioService.play(&"ui_move"))
+	pressed.connect(func() -> void: AudioService.play(&"ui_confirm"))
 	focus_entered.connect(_on_highlight.bind(true))
 	focus_exited.connect(_on_highlight.bind(false))
 	mouse_entered.connect(grab_focus)

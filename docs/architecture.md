@@ -23,7 +23,7 @@ Main (main/main.tscn, process_mode ALWAYS — owns pause + dev-room cycling)
 │       └── Projectiles      (group "projectile_root")
 └── HUD (CanvasLayer, process_mode ALWAYS)
 ```
-Autoloads: `RunSession`, `SceneRouter`. Planned: `AudioService`, `SaveService`, `TransitionLayer`.
+Autoloads: `Settings`, `RunSession`, `SceneRouter`, `AudioService` (see `docs/audio.md`). Planned: `SaveService`.
 
 ## State ownership
 | State | Owner | Readers |

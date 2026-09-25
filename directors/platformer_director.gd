@@ -35,6 +35,8 @@ enum State { IDLE, INTRO, PLAY, BOSS_WARNING, BOSS, ESCAPE, DONE }
 @export var clear_bonus: int = 20000
 @export var auto_start: bool = true
 @export var hand_off: bool = false
+@export var music: StringName = &"stage2"
+@export var boss_music: StringName = &"boss"
 @export_file("*.tscn") var next_level: String = ""
 @export var clear_title: String = "CORE DESTROYED"
 @export var clear_subtitle: String = "ESCAPE THE WARSHIP!"
@@ -83,6 +85,7 @@ func begin(place_player: bool = true) -> void:
 	if place_player:
 		camera.snap_to_target.call_deferred()
 	stage_ui.show_banner(stage_name, subtitle, intro_time + 0.4)
+	AudioService.play_music(music)
 	if RunSession.checkpoint_id != StringName(stage_name):
 		RunSession.save_checkpoint(StringName(stage_name))
 	_set_state(State.INTRO)
@@ -133,6 +136,8 @@ func start_boss() -> void:
 	camera.lock_to(arena_center)
 	if boss_gate:
 		_set_gate(true)
+		AudioService.play(&"door")
+	AudioService.stop_music(1.5)
 	checkpoint_position = Vector3(boss_trigger_x + 1.5, arena_floor_y + 0.5, 0)
 	stage_ui.show_warning(warning_time)
 	_set_state(State.BOSS_WARNING)
@@ -153,6 +158,7 @@ func _spawn_boss() -> void:
 	enemy_root.get_parent().add_child(boss)
 	boss.defeated.connect(_on_boss_defeated)
 	stage_ui.track_boss(boss)
+	AudioService.play_music(boss_music, 0.3)
 	_set_state(State.BOSS)
 	boss_spawned.emit(boss)
 
@@ -164,6 +170,8 @@ func _on_boss_defeated() -> void:
 	BossBase.clear_hostile_projectiles(get_tree())
 	player.call(&"grant_invulnerability", escape_time + 1.0)
 	stage_ui.show_banner(clear_title, clear_subtitle, escape_time)
+	AudioService.stop_music(0.3)
+	AudioService.play_jingle(&"stage_clear")
 	camera.add_trauma(ArtStyle.SHAKE_BOSS_DEATH)
 	if hand_off:
 		_set_state(State.DONE)

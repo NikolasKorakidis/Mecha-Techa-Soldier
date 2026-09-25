@@ -13,6 +13,7 @@ extends Node3D
 
 
 func _ready() -> void:
+	AudioService.play_explosion(size)
 	_flash()
 	_fireball()
 	_sparks()

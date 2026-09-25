@@ -24,6 +24,7 @@ const WAVE_DISTANCE := 150.0
 @export var spawn: Marker3D
 @export var auto_start: bool = true
 @export var hand_off: bool = false
+@export var music: StringName = &"stage3"
 @export var intro_time: float = 2.0
 @export var finish_time: float = 5.5
 @export var respawn_delay: float = 1.3
@@ -88,6 +89,7 @@ func begin(place_player: bool = true) -> void:
 	if place_player:
 		_update_camera(1.0)
 	stage_ui.show_banner(stage_name, subtitle, intro_time + 0.6)
+	AudioService.play_music(music)
 	if RunSession.checkpoint_id != StringName(stage_name):
 		RunSession.save_checkpoint(StringName(stage_name))
 	set_physics_process(true)
@@ -204,6 +206,7 @@ func _finish() -> void:
 		finished.emit()
 	else:
 		stage_ui.show_banner("MISSION COMPLETE", "SCORE  %08d" % RunSession.score, finish_time)
+		AudioService.play_music(&"mission_complete", 0.8)
 
 
 func _leave() -> void:

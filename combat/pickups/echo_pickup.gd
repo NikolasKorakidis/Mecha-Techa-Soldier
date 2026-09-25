@@ -78,4 +78,5 @@ func _on_area_entered(area: Area3D) -> void:
 		return
 	_collected = true
 	player.collect_echo(echo_id)
+	AudioService.play(&"weapon_get")
 	queue_free()

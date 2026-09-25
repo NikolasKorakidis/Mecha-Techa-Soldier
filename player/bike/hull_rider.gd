@@ -133,10 +133,12 @@ func tick(delta: float, input: MechInput) -> void:
 	if _buffer > 0.0 and state != State.SUPER:
 		if on_floor or _coyote > 0.0:
 			_jump(tuning.jump_velocity)
+			AudioService.play(&"jump")
 		elif _air_jumps > 0:
 			_air_jumps -= 1
 			double_jumps += 1
 			_jump(tuning.double_jump_velocity)
+			AudioService.play(&"double_jump")
 			Explosion3D.spawn(get_tree(), global_position, 0.35)
 	if not input.jump_held and velocity.y > 0.0 and not _jump_cut_done:
 		velocity.y *= tuning.jump_cut
@@ -152,6 +154,7 @@ func tick(delta: float, input: MechInput) -> void:
 		ram.set_deferred(&"monitoring", true)
 		state = State.BOOST
 		boosts += 1
+		AudioService.play(&"boost")
 		if absf(input.move_x) > 0.3:
 			velocity.z = signf(input.move_x) * tuning.roll_impulse
 			_roll_spin = signf(input.move_x) * TAU
@@ -265,6 +268,7 @@ func teleport(to: Vector3) -> void:
 
 
 func _fire_super() -> void:
+	AudioService.play(&"charge")
 	RunSession.spend_energy(RunSession.MAX_ENERGY)
 	state = State.SUPER
 	_super_left = tuning.super_duration
@@ -374,6 +378,7 @@ func _on_damaged(payload: DamagePayload, _source: Node) -> void:
 
 func _on_depleted(_source: Node) -> void:
 	state = State.DISABLED
+	AudioService.play(&"player_death")
 	visible = false
 	velocity = Vector3.ZERO
 	flash.stop()

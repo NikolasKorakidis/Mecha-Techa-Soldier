@@ -31,6 +31,10 @@ static func spawn(tree: SceneTree, at: Vector3, s: float = 1.0, shake: float = 0
 
 
 func _ready() -> void:
+	# Far-off battle explosions are felt, not heard: only nearby blasts make sound.
+	var cam := GameplayCamera.find(get_tree())
+	if size >= 0.5 and (cam == null or cam.global_position.distance_to(global_position) < 90.0 + size * 10.0):
+		AudioService.play_explosion(size)
 	_ensure_materials()
 	var quad := QuadMesh.new()
 	_flash = MeshInstance3D.new()

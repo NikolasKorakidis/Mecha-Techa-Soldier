@@ -46,6 +46,7 @@ func _on_area_entered(area: Area3D) -> void:
 		(player.get(&"health") as HealthComponent).heal(amount)
 	else:
 		RunSession.add_energy(amount)
+	AudioService.play(&"pickup")
 	Vfx.spawn(get_tree(), preload("res://vfx/collect_burst.tscn"), global_position, 0.8,
 			{&"color": Palette.HEALTH_GREEN if kind == Kind.HEALTH else Palette.RESONANCE_VIOLET})
 	queue_free()

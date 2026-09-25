@@ -91,6 +91,7 @@ func tick(delta: float, input: ShipInput) -> void:
 
 	if controllable and input.dash_pressed and movement.try_dash(move):
 		state = State.DASH
+		AudioService.play(&"dash")
 		_dash_start = _plane_position()
 	if controllable and input.burst_pressed:
 		movement.try_burst(move.y)
@@ -260,6 +261,7 @@ func _on_damaged(payload: DamagePayload, source: Node) -> void:
 
 
 func _on_depleted(_source: Node) -> void:
+	AudioService.play(&"player_death")
 	state = State.DISABLED
 	visible = false
 	flash.stop()
@@ -277,6 +279,7 @@ func _on_depleted(_source: Node) -> void:
 
 ## SUPER: Resonance Beam from the nose; the ship can keep moving while it fires.
 func _fire_super() -> void:
+	AudioService.play(&"charge")
 	RunSession.spend_energy(RunSession.MAX_ENERGY)
 	var root := get_tree().get_first_node_in_group(Vfx.ROOT_GROUP)
 	if root:

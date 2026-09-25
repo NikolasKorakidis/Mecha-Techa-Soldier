@@ -38,6 +38,10 @@ func fire_at(aim: Vector3, speed_scale: float = 1.0) -> Projectile:
 	root.add_child(projectile)
 	projectile.global_position = Vector3(global_position.x, global_position.y, 0.0)
 	projectile.setup(team, damage, Vector3(aim.x, aim.y, 0.0).normalized() * projectile_speed * speed_scale)
+	if team == Teams.Team.PLAYER:
+		AudioService.play(&"shot_player")
+	else:
+		AudioService.play(&"shot_heavy" if damage > 1 else &"shot_enemy")
 	fired.emit(projectile)
 	return projectile
 

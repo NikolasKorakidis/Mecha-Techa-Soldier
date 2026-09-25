@@ -10,7 +10,8 @@ platformer through the warship (Reactor Core) → the roof blows out, the mech t
 camera swings behind it → Stage 3 3D chase-view run along the burning warship's hull (fighters, turrets, trench
 run, pursuit gunship) → launch off the bow as the warship explodes → Mission Complete. SUPER beam in every form,
 elite weapon drops that carry across forms, checkpoints (restart resumes at the current stage), pause menu with
-accessibility options. Next up: audio.
+accessibility options. Original 16-bit-style soundtrack and sound effects, generated in code
+([audio](docs/audio.md)), with music/effects volume in Options.
 
 ## Play it
 **In the browser:** https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ (Chrome or Edge recommended;
@@ -36,6 +37,7 @@ click the game once to give it keyboard focus). Transitions play in-engine with 
 - [Architecture](docs/architecture.md) — scene tree, state ownership, damage contract
 - [Art direction](docs/art-direction.md) — palette, style tokens, accessibility, visual test room
 - [Art bible](docs/art-bible.md) — original shape language and VFX budget
+- [Audio](docs/audio.md) — soundtrack, SFX generation, AudioService
 - [Test plan](docs/test-plan.md) — automated coverage and manual regression
 - [Local setup](docs/local-setup.md) — engine path, import/test/boot commands
 - [CLAUDE.md](CLAUDE.md) — rules for Claude Code sessions

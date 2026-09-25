@@ -31,6 +31,7 @@ Adjust the path if you installed Godot elsewhere, and update this table.
 | Tests matching a file name | `$GODOT --headless --path . --script res://tests/run_tests.gd -- test_health` |
 | Boot check (runs Main for 180 frames) | `$GODOT --headless --path . --quit-after 180` |
 | Regenerate default input map | `$GODOT --headless --path . --script res://tools/generate_input_map.gd` |
+| Regenerate music + SFX (needs numpy, scipy) | `python3 tools/audio/build.py` |
 
 Run the import check once after cloning (it builds the `.godot/` cache the tests need).
 

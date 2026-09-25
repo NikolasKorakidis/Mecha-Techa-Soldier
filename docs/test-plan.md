@@ -33,6 +33,7 @@ Each `tests/test_*.gd` extends `TestCase`; every `test_*` method runs on a fresh
 | Tutorial card completes on action, is remembered, can be disabled | `test_hud_tutorial.gd` | ✅ |
 | Pause opens the menu and freezes stage time; title → start → restart → quit | `test_main_boot.gd` | ✅ |
 | Mech: held jump ≈ 3u, tap lower, double jump once, coyote, dash distance, wall jump, SUPER gating, pit recovery | `test_mech_player.gd` | ✅ |
+| Audio: all tracks/SFX load, music loops, crossfade state, volume options drive buses, rapid-fire throttle | `test_audio.gd` | ✅ |
 | Hull run: chase camera behind in perspective, auto-ride + steering limits, wall hurts / jump clears, gap recovery, bolts kill fighters, gunship + finish, gap clearability | `test_hull_run.gd` | ✅ |
 | Campaign: Start → campaign; shooter phase; drop transforms ship → mech on the roof without a scene change; resume at Stage 2 → escape → bike + 3D camera + roof blown; resume at Stage 3 → ending | `test_campaign_flow.gd` | ✅ |
 | Warship: roof-deck start, hatch drops into the bay, checkpoints, gate lock → Reactor Core → escape, respawn, blast roof, core damage window | `test_warship.gd` | ✅ |

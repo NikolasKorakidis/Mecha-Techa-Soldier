@@ -22,6 +22,8 @@ enum State { INTRO, WAVES, BOSS_WARNING, BOSS, CLEAR, DONE }
 @export var auto_start: bool = true
 ## True: never change scenes; show STAGE CLEAR and emit `finished` for the campaign.
 @export var hand_off: bool = false
+@export var music: StringName = &"stage1"
+@export var boss_music: StringName = &"boss"
 
 var state: State = State.INTRO
 var stage_time: float = 0.0
@@ -48,6 +50,7 @@ func _ready() -> void:
 
 
 func begin() -> void:
+	AudioService.play_music(music)
 	set_physics_process(true)
 	set_process_unhandled_input(true)
 	stage_ui.show_banner(stage.stage_name, stage.subtitle, intro_time + 0.5)
@@ -185,6 +188,7 @@ func _spawn_boss() -> void:
 	enemy_root.get_parent().add_child(boss)
 	boss.defeated.connect(_on_boss_defeated)
 	stage_ui.track_boss(boss)
+	AudioService.play_music(boss_music, 0.6)
 	_set_state(State.BOSS)
 	boss_spawned.emit(boss)
 
@@ -193,6 +197,11 @@ func _on_boss_defeated() -> void:
 	RunSession.add_score(stage.clear_bonus)
 	_clear_hostiles()
 	var final := stage.next_level.is_empty() and not hand_off
+	if final:
+		AudioService.play_music(&"mission_complete", 0.5)
+	else:
+		AudioService.stop_music(0.4)
+		AudioService.play_jingle(&"stage_clear")
 	stage_ui.show_banner("MISSION COMPLETE" if final else "STAGE CLEAR",
 			"SCORE  %08d" % RunSession.score, clear_time)
 	_set_state(State.CLEAR)

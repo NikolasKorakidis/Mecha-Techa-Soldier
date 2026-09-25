@@ -18,6 +18,7 @@ static func fire(tree: SceneTree, team: Teams.Team, damage: int, from: Vector3, 
 	root.add_child(bolt)
 	bolt.global_position = from
 	bolt._build(team, damage, color, radius)
+	AudioService.play(&"laser" if team == Teams.Team.PLAYER else &"shot_enemy")
 	return bolt
 
 

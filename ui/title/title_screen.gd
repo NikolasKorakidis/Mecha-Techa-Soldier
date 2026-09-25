@@ -20,6 +20,7 @@ var _time: float = 0.0
 
 
 func _ready() -> void:
+	AudioService.play_music(&"title")
 	var ui := CanvasLayer.new()
 	ui.layer = 5
 	add_child(ui)

@@ -26,6 +26,12 @@ func receive_hit(payload: DamagePayload, source: Node) -> bool:
 	if health == null or not accepts(payload):
 		return false
 	if not health.apply_damage(payload, source):
+		if health.invulnerable and team == Teams.Team.ENEMY and payload.team == Teams.Team.PLAYER:
+			AudioService.play(&"armor_ping")
 		return false
+	if team == Teams.Team.PLAYER:
+		AudioService.play(&"player_hurt")
+	else:
+		AudioService.play(&"hit")
 	hurt.emit(payload, source)
 	return true

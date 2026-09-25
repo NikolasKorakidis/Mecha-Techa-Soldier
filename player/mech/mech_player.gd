@@ -165,11 +165,13 @@ func tick(delta: float, input: MechInput) -> void:
 			if not input.jump_pressed:
 				_buffered_jumps += 1
 			_jump(tuning.jump_velocity)
+			AudioService.play(&"jump")
 			if _dash_left > 0.0:
 				_dash_carry = true
 				_dash_left = 0.0
 		elif _wall_coyote > 0.0:
 			_jump(tuning.wall_jump_velocity)
+			AudioService.play(&"jump")
 			velocity.x = _wall_normal_x * tuning.wall_jump_push
 			facing = _wall_normal_x
 			_wall_lock = tuning.wall_jump_lock
@@ -178,6 +180,7 @@ func tick(delta: float, input: MechInput) -> void:
 			_air_jumps -= 1
 			double_jumps += 1
 			_jump(tuning.double_jump_velocity)
+			AudioService.play(&"double_jump")
 			Vfx.spawn(get_tree(), jump_effect, global_position + Vector3(0, 0.2, 0), 0.8, {&"color": Palette.PLAYER_ENERGY})
 
 	# Variable height.
@@ -199,6 +202,7 @@ func tick(delta: float, input: MechInput) -> void:
 			velocity.y = 0.0
 		_invulnerable_left = maxf(_invulnerable_left, tuning.dash_invulnerability)
 		state = State.DASH
+		AudioService.play(&"dash")
 
 	# Super.
 	if controllable and input.special_pressed and RunSession.super_ready():
@@ -209,8 +213,12 @@ func tick(delta: float, input: MechInput) -> void:
 	muzzle.position.x = _muzzle_x * facing
 	arsenal.tick(delta, input.fire and controllable and state != State.SUPER)
 
+	var fall_speed := -velocity.y
+	var was_airborne := not on_floor
 	_move()
 	on_floor = is_on_floor()
+	if was_airborne and on_floor and fall_speed > 6.0:
+		AudioService.play(&"land")
 	if state != State.HIT and state != State.SUPER and _dash_left <= 0.0:
 		state = State.GROUND if on_floor else (State.WALL if wall_contact else State.AIR)
 	if global_position.y < kill_y:
@@ -276,6 +284,7 @@ func teleport(to: Vector3) -> void:
 
 
 func _fire_super() -> void:
+	AudioService.play(&"charge")
 	RunSession.spend_energy(RunSession.MAX_ENERGY)
 	state = State.SUPER
 	_super_left = tuning.super_duration
@@ -389,6 +398,7 @@ func _on_damaged(payload: DamagePayload, _source: Node) -> void:
 
 func _on_depleted(_source: Node) -> void:
 	state = State.DISABLED
+	AudioService.play(&"player_death")
 	visible = false
 	flash.stop()
 	RunSession.clear_echo()

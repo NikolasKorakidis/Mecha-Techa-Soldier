@@ -232,10 +232,12 @@ func _on_trigger(area: Area3D) -> void:
 		return
 	match kind:
 		Kind.PAD:
+			AudioService.play(&"boost")
 			if player.has_method(&"launch"):
 				player.call(&"launch", float(player.get(&"tuning").pad_velocity))
 		Kind.ORB:
 			_used = true
+			AudioService.play(&"pickup")
 			RunSession.add_score(ORB_SCORE)
 			RunSession.add_charge(ORB_CHARGE)
 			Explosion3D.spawn(get_tree(), global_position, 0.4)
@@ -245,5 +247,6 @@ func _on_trigger(area: Area3D) -> void:
 			var h := player.get(&"health") as HealthComponent
 			if h:
 				h.heal(1)
+			AudioService.play(&"weapon_get")
 			Explosion3D.spawn(get_tree(), global_position, 0.5)
 			queue_free()

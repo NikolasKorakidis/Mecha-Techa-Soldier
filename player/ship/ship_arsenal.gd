@@ -81,6 +81,7 @@ func _fire_arc(data: EchoModuleData) -> bool:
 	var root := get_tree().get_first_node_in_group(Vfx.ROOT_GROUP)
 	if root:
 		root.add_child(ArcBolt.create(points, data.module_color))
+	AudioService.play(&"laser")
 	return true
 
 
