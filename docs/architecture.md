@@ -161,6 +161,18 @@ Main
 - UI never owns gameplay state: HUD reads RunSession; TutorialCard reads input + Settings; StageUI is
   driven by the LevelDirector and boss signals.
 
+## Stage 4 — 8-bit (levels/retro/)
+- `RetroStage` renders into a 256x224 `SubViewport` (nearest filtering, pixel snapping) shown on canvas
+  layer 12 (above the HUD, below pause); while it runs the main viewport's 3D is disabled and it joins
+  `pausable_stage` so Main still allows pausing. It owns its entities and runs a classic rect-overlap
+  collision loop (player shots vs enemies/boss core/armour/terrain; enemy shots, bodies and terrain vs
+  the player) — the 3D Hitbox/Hurtbox components stay in the 3D stages.
+- `RetroTimeline` holds the fixed wave script and the fortress terrain columns; `RetroPlayer`,
+  `RetroEnemy` (kind-based behaviour), `RetroBoss`, `RetroText` (bitmap font), `RetroArt` (sheets).
+- Health, score and SUPER energy are RunSession's, so the modern HUD state carries in and out.
+- `PixelTransition` (layer 13) pixelates/posterizes the screen texture for the de-rez into Stage 4.
+- Art: `tools/pixel/build.py` → `assets/retro/` (original sprites, NES 2C02 palette only).
+
 ## Seamless campaign (levels/campaign/)
 ```
 Campaign (campaign.tscn) — one world, one GameplayCamera, one WorldEnvironment

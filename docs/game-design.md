@@ -142,10 +142,18 @@ stages. Score, echo weapon and SUPER energy carry across all three forms.
   out to both sides and drop away at the flanks, with fires and skyline explosions across it. Around it:
   ringed gas giant, red moon, the blue world below, capital ships fighting.
 - **Ending**: the bike launches off the bow; the camera pulls far back to a three-quarter view of the whole
-  burning warship, which explodes stern to bow and breaks into drifting sections → core flash → MISSION
-  COMPLETE → title.
+  burning warship, which explodes stern to bow and breaks into drifting sections → core flash → "VX-07
+  DESTROYED" → the picture de-rezzes (pixelate + posterize) into the 8-bit frame.
+- **Stage 4 — Pixel Riptide** (8-bit, ~2 min): a Famicom-style rearrangement of Stage 1 in a completely
+  different style — a 256x224 NES frame (nearest-neighbour, NES palette, pixel sprites, 2A03-style chiptune).
+  Open space with a dithered planet → asteroid belt (big rocks split) → fortress corridor with scrolling
+  ceiling/floor terrain (touching it hurts) and turrets → **CORE BREAKER** boss (shutters closed: gun ports
+  and darts; open: aimed fans, the only damage window; rings below half health). Carrier waves (the flashing
+  ones) and pods drop capsules: weapon levels single → twin → twin + diagonals → 5-way spread; gunships drop
+  hearts. SUPER is a screen-clearing smart bomb. Losing every heart respawns you with full health one weapon
+  level lower. Clear → STAGE CLEAR → title.
 - Restart Stage resumes at the current stage inside the campaign. Standalone dev rooms (F2) exist for each
-  stage: `orbital_riptide`, `warship_level`, `hull_run_level`, plus Foundry Descent.
+  stage: `orbital_riptide`, `warship_level`, `hull_run_level`, `retro_level`, plus Foundry Descent.
 
 ### Mech (Stage 2)
 Run, variable-height jump, **double jump**, coyote time + jump buffer, ground/air **dash** (dash + jump keeps

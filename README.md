@@ -10,7 +10,9 @@ drops onto the roof → Stage 2 Mega Man X-style platformer through eight colour
 (charge shot, appearing blocks, conveyors, Heart/Energy Tanks, secrets, Bulkhead Sentinel mid-boss, Reactor
 Core) → the roof blows out, the mech thrusts up, becomes the bike and the camera swings behind it → Stage 3
 3D chase-view run along the spine of the burning 3.6 km warship (fighters, turrets, trench run, pursuit
-gunship) → launch off the bow, the camera pulls back and the whole ship explodes → Mission Complete. SUPER beam in every form,
+gunship) → launch off the bow, the camera pulls back and the whole ship explodes → the picture de-rezzes into
+Stage 4, an 8-bit (NES-style) rearrangement of Stage 1 with pixel sprites, chiptune and the Core Breaker
+boss → Mission Complete. SUPER beam in every form,
 elite weapon drops that carry across forms, checkpoints (restart resumes at the current stage), pause menu with
 accessibility options. Original 16-bit-style soundtrack and sound effects, generated in code
 ([audio](docs/audio.md)), with music/effects volume in Options. Desktop builds default to **High graphics**
@@ -18,7 +20,7 @@ accessibility options. Original 16-bit-style soundtrack and sound effects, gener
 
 ## Play it
 **In the browser:** https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ (Chrome or Edge recommended;
-click the game once to give it keyboard focus). Transitions play in-engine with letterbox bars. **Select Stage** on the title menu jumps straight to Stage 1, 2 or 3. Every push to the branch rebuilds it after the tests pass.
+click the game once to give it keyboard focus). Transitions play in-engine with letterbox bars. **Select Stage** on the title menu jumps straight to Stage 1, 2, 3 or 4. Every push to the branch rebuilds it after the tests pass.
 
 **Locally:**
 1. Install Godot 4.7.2 (standard build).

@@ -25,6 +25,13 @@ the renderer folds echo/reverb tails back onto the start.
 | `stage3` | Hull Run | B minor, 178 bpm | Escape + Stage 3 |
 | `stage_clear` | — | D major | Jingle after each boss (music ducks) |
 | `mission_complete` | — | D major, 88 bpm | Ending |
+| `stage4` | Pixel Riptide | E minor, 150 bpm | Stage 4 (8-bit): the Stage 1 theme on 2 pulses + triangle + noise |
+| `boss8` | Core Breaker | C minor, 168 bpm | Stage 4 boss |
+| `clear8` | — | E major | Stage 4 clear jingle |
+
+Stage 4 voices live in `tools/audio/nes.py`: 12.5/25/50 % pulses, a 4-bit stepped triangle and LFSR
+noise, 16-level quantized envelopes, no echo or reverb. Effects: `retro_shot`, `retro_boom`, `retro_hit`,
+`retro_power`, `retro_1up`.
 
 ## Runtime (`autoload/audio_service.gd`)
 - Buses `Music` (−7 dB base), `SFX`, `UI`; Options → Music / Effects volume sliders (saved in settings).

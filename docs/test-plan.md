@@ -37,6 +37,7 @@ Each `tests/test_*.gd` extends `TestCase`; every `test_*` method runs on a fresh
 | Hull run: chase camera behind in perspective, auto-ride + steering limits, wall hurts / jump clears, gap recovery, bolts kill fighters, gunship + finish, gap clearability | `test_hull_run.gd` | ✅ |
 | Campaign: Start → campaign; shooter phase; drop transforms ship → mech on the roof without a scene change; resume at Stage 2 → escape → bike + 3D camera + roof blown; resume at Stage 3 → ending | `test_campaign_flow.gd` | ✅ |
 | Stage 2 upgrades: appearing-block rhythm is clearable without falling, Heart/Energy Tanks, charge shot pierces, shield guard front block + back window, swooper dive/return, secret shaft reaches the Heart Tank, Sentinel room seals / resets on death / opens on victory | `test_stage2_upgrades.gd` | ✅ |
+| Stage 4 (8-bit): NES-sized nearest-filtered screen, 3D off/on, playfield clamp, shots per weapon level, carrier capsule → power-up, damage + respawn at full health, fortress terrain solid, boss core only hurt when open → clear, campaign resumes at STAGE 4 | `test_retro_stage.gd` | ✅ |
 | Warship: roof-deck start, hatch drops into the bay, checkpoints, gate lock → Reactor Core → escape, respawn, blast roof, core damage window | `test_warship.gd` | ✅ |
 
 ## Movement instrumentation (F3 debug panel)
