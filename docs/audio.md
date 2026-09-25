@@ -19,7 +19,7 @@ the renderer folds echo/reverb tails back onto the start.
 | Id | Title | Key / tempo | Used for |
 |---|---|---|---|
 | `title` | Echoes of Kharon | D minor, 80 bpm | Title screen, boarding-run flight |
-| `stage1` | Orbital Riptide | E minor, 138 bpm | Stage 1 |
+| `stage1` | Space Music Loop 1 (supplied track, 57.6 s stereo seamless loop; `build.py` never overwrites it) | — | Stage 1 |
 | `boss` | Guardian | C minor, 162 bpm | Choir Engine, Reactor Core |
 | `stage2` | Warship Infiltration | A minor, 150 bpm | Stage 2 |
 | `stage3` | Hull Run | B minor, 178 bpm | Escape + Stage 3 |

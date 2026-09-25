@@ -15,8 +15,13 @@ from sfx_v2 import SFX_V2  # noqa: E402
 TRACKS = {**TRACKS, **NES_TRACKS}
 SFX = {**SFX, **SFX_V2, **NES_SFX}
 
+# Tracks supplied as produced audio files: never overwrite them with the synth versions.
+USER_TRACKS = {"stage1"}
+
 only = set(sys.argv[1:])
 for name, fn in TRACKS.items():
+    if name in USER_TRACKS:
+        continue
     if not only or name in only:
         write_wav(os.path.join(ROOT, "assets", "audio", "music", name + ".wav"), fn())
 for name, fn in SFX.items():
