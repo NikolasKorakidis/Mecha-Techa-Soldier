@@ -54,6 +54,8 @@ var _silent: bool = false
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_silent = DisplayServer.get_name() == "headless"
+	# The buses come from default_bus_layout.tres: the web's sample playback only routes buses that
+	# exist in the project layout, so these runtime additions are just a fallback.
 	for bus in [&"Music", &"SFX", &"UI"]:
 		if AudioServer.get_bus_index(bus) == -1:
 			AudioServer.add_bus()

@@ -34,7 +34,8 @@ noise, 16-level quantized envelopes, no echo or reverb. Effects: `retro_shot`, `
 `retro_power`, `retro_1up`.
 
 ## Runtime (`autoload/audio_service.gd`)
-- Buses `Music` (−7 dB base), `SFX`, `UI`; Options → Music / Effects volume sliders (saved in settings).
+- Buses `Music` (−7 dB base), `SFX`, `UI`, defined in `default_bus_layout.tres` (the web build's sample
+  playback only routes buses from the project layout; buses added in code play silently there); Options → Music / Effects volume sliders (saved in settings).
 - `AudioService.play(id)` — 24-voice pool, per-effect minimum gap (rapid fire, explosion spam), per-effect trim,
   slight pitch variation.
 - `play_music(id, fade)` crossfades (same id = no restart), `stop_music`, `play_jingle` ducks the loop.
