@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" path="res://enemies/space/space_drone.tscn" id="9_drone"]
 
 [sub_resource type="SphereShape3D" id="Shape_core"]
-radius = 1.7
+radius = 2.2
 
 [sub_resource type="Resource" id="Payload_contact"]
 script = ExtResource("6_payload")
@@ -23,7 +23,7 @@ knockback = Vector3(-10, 0, 0)
 script = ExtResource("1_boss")
 weapon = NodePath("Weapon")
 summon_scene = ExtResource("9_drone")
-boss_name = "THE CHOIR ENGINE"
+boss_name = "CHOIR COLOSSUS"
 max_health = 420
 home_position = Vector3(10, 0, 0)
 health = NodePath("Health")
