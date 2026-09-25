@@ -7,6 +7,8 @@ extends Node3D
 ##   SPACE     planet, orbital ring, capital ships, asteroids streaming past
 ##   STATION   flying low over a colossal megastructure (towers, domes, arches, light strips)
 ##   SUNSET    above an endless cloud sea at dusk, rock spires rising through the clouds (boss)
+## The enemy warship (WarshipModel) cruises into view far off late in the stage — the next
+## destination — and approach_warship() dives the camera down onto its deck for the boarding.
 ## Purely visual; nothing here collides or reads gameplay state.
 
 enum Zone { SPACE, STATION, SUNSET }
@@ -22,6 +24,15 @@ enum Zone { SPACE, STATION, SUNSET }
 @export var dim: float = 0.62
 ## Its battle-debris layers (flat silhouettes) are hidden over the cloud sea.
 @export var space_backdrop: SpaceBackdrop
+## Stage seconds when the warship first shows up in the distance.
+@export var warship_cameo_time: float = 16.0
+
+## Warship offsets from the backdrop camera: far cameo, and the boarding view above its deck.
+const SHIP_FAR_START := Vector3(1200.0, -200.0, -1300.0)
+const SHIP_FAR := Vector3(430.0, -115.0, -820.0)
+const SHIP_BOARDING := Vector3(120.0, -38.0, -150.0)
+const CAMERA_CRUISE := Vector3(-8.0, -14.0, 0.0)
+const CAMERA_BOARDING := Vector3(-24.0, -20.0, 0.0)
 
 var zone: Zone = Zone.SPACE
 
@@ -38,6 +49,10 @@ var _next_spawn_x: float = 0.0
 var _clock: float = 0.0
 var _sky_tween: Tween
 var _rng := RandomNumberGenerator.new()
+var _warship: WarshipModel
+var _ship_rel: Vector3 = SHIP_FAR_START
+var _ship_tween: Tween
+var _screen_mat: StandardMaterial3D
 
 const PRESETS := {
 	Zone.SPACE: {
@@ -64,7 +79,10 @@ func _ready() -> void:
 	_build_space()
 	_build_station_root()
 	_build_sunset()
+	_build_warship()
 	_apply_preset(PRESETS[Zone.SPACE])
+	if space_backdrop:
+		space_backdrop.flat_warship_reveal = false
 	_set_zone_visibility()
 	if director:
 		director.boss_spawned.connect(func(_b: BossBase) -> void: set_zone(Zone.SUNSET))
@@ -85,6 +103,55 @@ func set_zone(next: Zone, blend: float = 5.0) -> void:
 	get_tree().create_timer(blend * 0.5, false).timeout.connect(_set_zone_visibility)
 
 
+## The warship slides into the far distance and cruises alongside (the next destination).
+func show_warship(blend: float = 20.0) -> void:
+	if _warship.visible:
+		return
+	_warship.visible = true
+	_ship_rel = SHIP_FAR_START
+	_tween_ship(SHIP_FAR, CAMERA_CRUISE, blend, Tween.EASE_OUT)
+
+
+## Quick fade-through that clears the streamed scenery and snaps to open space (used when
+## the boarding run starts, so the station or cloud sea does not linger around the warship).
+func cut_to_open_space(fade: float = 0.5) -> void:
+	var lit := _screen_mat.albedo_color
+	var tween := create_tween()
+	tween.tween_property(_screen_mat, "albedo_color", Color.BLACK, fade)
+	tween.tween_callback(func() -> void:
+		for node in _streamers:
+			node.queue_free()
+		_streamers.clear()
+		zone = Zone.SPACE
+		if _sky_tween:
+			_sky_tween.kill()
+		_apply_preset(PRESETS[Zone.SPACE])
+		_set_zone_visibility()
+		_next_spawn_x = _camera.position.x + 60.0)
+	tween.tween_property(_screen_mat, "albedo_color", lit, fade * 2.0)
+
+
+## Boarding run: the camera closes on the warship and tips down until its deck fills the
+## lower half of the view, framed like the side-view roof the mech lands on.
+func approach_warship(duration: float) -> void:
+	if not _warship.visible:
+		_warship.visible = true
+		_ship_rel = SHIP_FAR
+	_tween_ship(SHIP_BOARDING, CAMERA_BOARDING, duration, Tween.EASE_IN_OUT)
+
+
+func warship_visible() -> bool:
+	return _warship.visible
+
+
+func _tween_ship(rel: Vector3, camera_rot: Vector3, duration: float, ease: Tween.EaseType) -> void:
+	if _ship_tween:
+		_ship_tween.kill()
+	_ship_tween = create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(ease)
+	_ship_tween.tween_property(self, "_ship_rel", rel, duration)
+	_ship_tween.tween_property(_camera, "rotation_degrees", camera_rot, duration)
+
+
 ## Stops rendering the backdrop world entirely (3D stages never see it).
 func set_active(on: bool) -> void:
 	visible = on
@@ -96,8 +163,12 @@ func _process(delta: float) -> void:
 	_clock += delta
 	if zone == Zone.SPACE and _clock >= station_time and director != null and director.state == LevelDirector.State.WAVES:
 		set_zone(Zone.STATION)
+	if not _warship.visible and _clock >= warship_cameo_time:
+		show_warship()
 	_camera.position.x += flight_speed * delta
 	var cx := _camera.position.x
+	if _warship.visible:
+		_warship.position = _camera.position + _ship_rel
 	_space.position.x = cx
 	_clouds.position.x = cx
 	_sunset.get_node("Horizon").position.x = cx
@@ -157,6 +228,7 @@ func _build_viewport() -> void:
 	mat.albedo_texture = _viewport.get_texture()
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 	mat.albedo_color = Color(dim, dim, dim * 1.05)
+	_screen_mat = mat
 	screen.material_override = mat
 	screen.position = Vector3(0, 0, -screen_distance)
 	add_child(screen)
@@ -190,6 +262,13 @@ func _build_space() -> void:
 	ring.position = planet.position
 	ring.rotation_degrees = Vector3(78, 10, -8)
 	_space.add_child(ring)
+
+
+func _build_warship() -> void:
+	_warship = WarshipModel.new()
+	_warship.scale = Vector3.ONE * 0.5
+	_warship.visible = false
+	_viewport.add_child(_warship)
 
 
 func _build_station_root() -> void:

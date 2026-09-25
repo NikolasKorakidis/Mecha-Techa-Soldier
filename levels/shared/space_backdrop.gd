@@ -43,6 +43,8 @@ const WRAP_X := 26.0
 @export var fleet_speed: float = 0.35
 ## Off when a PerspectiveBackdrop provides the far sky (stars, nebula, planet, orbital structures).
 @export var far_layers: bool = true
+## Flat warship silhouette late in the stage (off when a PerspectiveBackdrop shows the real one).
+@export var flat_warship_reveal: bool = true
 
 var _layers: Array[Node3D] = []
 var _structures: Array[Node3D] = []
@@ -447,7 +449,7 @@ func _run_moment(kind: String) -> void:
 		"light_chase":
 			_chase_lights_on(true)
 		"warship_reveal":
-			if cinematic_depth:
+			if cinematic_depth and flat_warship_reveal:
 				reveal_warship()
 
 
