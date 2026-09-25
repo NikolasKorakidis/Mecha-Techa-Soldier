@@ -6,7 +6,7 @@ signal start_requested
 ## Stage select: 1 = shooter, 2 = warship, 3 = hull run. Main starts the campaign there.
 signal stage_requested(stage: int)
 
-const STAGES: Array[String] = ["Stage 1 — Orbital Riptide", "Stage 2 — Warship Infiltration", "Stage 3 — Hull Run"]
+const STAGES: Array[String] = ["Stage 1 — Orbital Riptide", "Stage 2 — Warship Infiltration", "Stage 3 — Hull Run", "Stage 4 — Pixel Riptide (8-bit)"]
 
 var _prompt: Label
 var _menu: VBoxContainer

@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://core/gameplay_camera.gd" id="1_cam"]
 [ext_resource type="Environment" path="res://art/environments/space.tres" id="2_env"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://player/mech/mech_player.tscn" id="13_mech"]
 [ext_resource type="PackedScene" path="res://player/bike/hull_rider.tscn" id="14_rider"]
 [ext_resource type="Script" path="res://levels/shared/perspective_backdrop.gd" id="15_persp"]
+[ext_resource type="Script" path="res://levels/retro/retro_stage.gd" id="16_retro"]
 
 [node name="Campaign" type="Node3D"]
 
@@ -114,3 +115,6 @@ rider_scene = ExtResource("14_rider")
 
 [editable path="Warship"]
 [editable path="HullRun"]
+
+[node name="RetroStage" type="Node" parent="."]
+script = ExtResource("16_retro")

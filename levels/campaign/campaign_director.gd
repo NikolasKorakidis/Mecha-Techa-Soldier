@@ -9,12 +9,13 @@ extends Node
 ##              the top hull, transforms into the bike and the camera swings from side view to
 ##              a chase view behind it (ortho → matched-FOV perspective → orbit)
 ##   HULL_RUN   Stage 3, 3D behind view along the top of the burning warship
-##   ENDING     the bike launches off the bow, the warship explodes, MISSION COMPLETE → title
+##   ENDING     the bike launches off the bow, the warship explodes and the picture de-rezzes
+##   RETRO      Stage 4, the 8-bit rearrangement (RetroStage), then MISSION COMPLETE → title
 ## Restarting a stage reloads this scene and resumes at that stage's phase (RunSession checkpoint).
 
 signal phase_changed(phase: Phase)
 
-enum Phase { SHOOTER, DROP, PLATFORMER, ESCAPE, HULL_RUN, ENDING, DONE }
+enum Phase { SHOOTER, DROP, PLATFORMER, ESCAPE, HULL_RUN, ENDING, RETRO, DONE }
 
 @export var camera: GameplayCamera
 @export var stage_ui: StageUI
@@ -56,7 +57,9 @@ func _ready() -> void:
 	# The Stage 1 backdrop's real warship model replaces the flat side-view superstructure.
 	warship_exterior.visible = false
 	var checkpoint := String(RunSession.checkpoint_id)
-	if checkpoint.begins_with("STAGE 3"):
+	if checkpoint.begins_with("STAGE 4"):
+		_start_retro_direct.call_deferred()
+	elif checkpoint.begins_with("STAGE 3"):
 		_start_hull_run_direct.call_deferred()
 	elif checkpoint.begins_with("STAGE 2"):
 		_start_platformer_direct.call_deferred()
@@ -397,9 +400,45 @@ func _run_ending() -> void:
 	for n in 5:
 		Explosion3D.spawn(get_tree(), ship.to_global(Vector3(-400.0 + n * 200.0, -30.0, 0.0)), 160.0)
 	await _wait(0.8)
-	stage_ui.show_banner("MISSION COMPLETE", "SCORE  %08d" % RunSession.score, 6.0)
-	AudioService.play_music(&"mission_complete", 1.0)
-	await _wait(6.5)
+	# The picture de-rezzes into 8 bits and Stage 4 begins.
+	stage_ui.show_banner("VX-07 DESTROYED", "SCORE  %08d" % RunSession.score, 3.0)
+	await _wait(3.2)
+	stage_ui.letterbox(false)
+	await _start_retro(true)
+
+
+# --- Stage 4 (8-bit) ---------------------------------------------------------------------
+
+func _start_retro_direct() -> void:
+	add_to_group(&"debug_telemetry")
+	_free_ship()
+	await _start_retro(false)
+
+
+func _start_retro(with_transition: bool) -> void:
+	var retro := get_tree().get_first_node_in_group(&"retro_stage") as RetroStage
+	if retro == null:
+		push_error("CampaignDirector: no RetroStage in the campaign scene.")
+		return
+	var fx := PixelTransition.new()
+	add_child(fx)
+	if with_transition:
+		AudioService.stop_music(1.0)
+		await fx.play(1.0, 48.0, 0.0, 1.0, 1.3)
+	else:
+		fx.play(48.0, 48.0, 1.0, 1.0, 0.01)
+	_cam_update = Callable()
+	if is_instance_valid(rider):
+		rider.remove_from_group(Players.GROUP)
+		rider.queue_free()
+	_set_phase(Phase.RETRO)
+	retro.cleared.connect(_on_retro_cleared, CONNECT_ONE_SHOT)
+	retro.begin()
+	await fx.play(48.0, 1.0, 1.0, 0.0, 1.0)
+	fx.queue_free()
+
+
+func _on_retro_cleared() -> void:
 	_set_phase(Phase.DONE)
 	RunSession.reset_run()
 	SceneRouter.go_to(title_scene)

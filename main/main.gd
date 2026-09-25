@@ -52,7 +52,10 @@ func quit_to_title() -> void:
 
 
 func is_in_gameplay() -> bool:
-	return is_instance_valid(SceneRouter.current_level) and Players.find(get_tree()) != null
+	if not is_instance_valid(SceneRouter.current_level):
+		return false
+	# The 8-bit stage has no 3D avatar; it registers itself while it runs.
+	return Players.find(get_tree()) != null or get_tree().get_first_node_in_group(&"pausable_stage") != null
 
 
 func _on_level_changed(level: Node) -> void:
