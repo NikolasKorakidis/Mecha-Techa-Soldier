@@ -59,3 +59,5 @@ static func apply(mat: ShaderMaterial, layout: Layout, view: Basis = Basis.IDENT
 	var ring_basis := Basis.from_euler(Vector3(deg_to_rad(ring_rot.x), deg_to_rad(ring_rot.y), deg_to_rad(ring_rot.z)))
 	mat.set_shader_parameter(&"ring_normal", view * (ring_basis * Vector3.UP))
 	mat.set_shader_parameter(&"sun_dir", (view * (data["sun"] as Vector3)).normalized())
+	# Web / mobile (Compatibility renderer): fewer noise octaves per pixel.
+	mat.set_shader_parameter(&"detail_cut", 0 if Settings.supports_high_graphics() else 2)

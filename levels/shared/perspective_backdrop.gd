@@ -187,7 +187,9 @@ func _build_viewport() -> void:
 ## Renders at the window's resolution (never below the authored one) so the backdrop is sharp.
 func _render_size() -> Vector2i:
 	var window := Vector2i(get_viewport().get_visible_rect().size)
-	return Vector2i(maxi(window.x, resolution.x), maxi(window.y, resolution.y))
+	var size := Vector2i(maxi(window.x, resolution.x), maxi(window.y, resolution.y))
+	# Web / mobile render the (dimmed, background) backdrop at three-quarter resolution.
+	return size if Settings.supports_high_graphics() else Vector2i(Vector2(size) * 0.75)
 
 
 func _spawn_rocks(x: float) -> void:

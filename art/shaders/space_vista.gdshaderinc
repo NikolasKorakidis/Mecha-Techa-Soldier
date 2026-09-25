@@ -68,10 +68,14 @@ float noise3(vec3 x) {
 				mix(hash13(i + vec3(0, 1, 1)), hash13(i + vec3(1, 1, 1)), f.x), f.y), f.z);
 }
 
+// Octaves dropped per call at lower detail (Compatibility / web): 0 = full quality.
+uniform int detail_cut = 0;
+
 float fbm(vec3 p, int octaves) {
 	float v = 0.0;
 	float a = 0.5;
-	for (int i = 0; i < octaves; i++) {
+	int n = max(2, octaves - detail_cut);
+	for (int i = 0; i < n; i++) {
 		v += a * noise3(p);
 		p = p * 2.02 + vec3(1.7, 9.2, 4.1);
 		a *= 0.5;
