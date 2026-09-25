@@ -4,11 +4,13 @@
 platformer, then into a motorcycle racing along the top of the exploding warship (3D chase view). The link between both halves is **Echo Shift** — decode an enemy's combat pattern (Burst, Arc,
 Guard) and carry it through the ship-to-mech transformation.
 
-**Status:** one seamless campaign, no scene switches. Stage 1 side-view shooter (Choir Engine) → the Kestrel
-races to the enemy warship, transforms over its hull and the mech drops onto the roof → Stage 2 Mega Man X-style
-platformer through the warship (charge shot, Heart/Energy Tanks, secrets, Bulkhead Sentinel mid-boss, Reactor Core) → the roof blows out, the mech thrusts up, becomes the bike and the
-camera swings behind it → Stage 3 3D chase-view run along the burning warship's hull (fighters, turrets, trench
-run, pursuit gunship) → launch off the bow as the warship explodes → Mission Complete. SUPER beam in every form,
+**Status:** one seamless campaign, no scene switches. Stage 1 side-view shooter (Choir Engine), with the enemy
+warship cruising below in the background → the Kestrel dives onto it, transforms over its hull and the mech
+drops onto the roof → Stage 2 Mega Man X-style platformer through eight colour-zoned sections of the warship
+(charge shot, appearing blocks, conveyors, Heart/Energy Tanks, secrets, Bulkhead Sentinel mid-boss, Reactor
+Core) → the roof blows out, the mech thrusts up, becomes the bike and the camera swings behind it → Stage 3
+3D chase-view run along the spine of the burning 3.6 km warship (fighters, turrets, trench run, pursuit
+gunship) → launch off the bow, the camera pulls back and the whole ship explodes → Mission Complete. SUPER beam in every form,
 elite weapon drops that carry across forms, checkpoints (restart resumes at the current stage), pause menu with
 accessibility options. Original 16-bit-style soundtrack and sound effects, generated in code
 ([audio](docs/audio.md)), with music/effects volume in Options. Desktop builds default to **High graphics**

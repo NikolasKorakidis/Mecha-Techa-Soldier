@@ -36,7 +36,7 @@ Each `tests/test_*.gd` extends `TestCase`; every `test_*` method runs on a fresh
 | Audio: all tracks/SFX load, music loops, crossfade state, volume options drive buses, rapid-fire throttle | `test_audio.gd` | ✅ |
 | Hull run: chase camera behind in perspective, auto-ride + steering limits, wall hurts / jump clears, gap recovery, bolts kill fighters, gunship + finish, gap clearability | `test_hull_run.gd` | ✅ |
 | Campaign: Start → campaign; shooter phase; drop transforms ship → mech on the roof without a scene change; resume at Stage 2 → escape → bike + 3D camera + roof blown; resume at Stage 3 → ending | `test_campaign_flow.gd` | ✅ |
-| Stage 2 upgrades: Heart/Energy Tanks, charge shot pierces, shield guard front block + back window, swooper dive/return, secret shaft reaches the Heart Tank, Sentinel room seals / resets on death / opens on victory | `test_stage2_upgrades.gd` | ✅ |
+| Stage 2 upgrades: appearing-block rhythm is clearable without falling, Heart/Energy Tanks, charge shot pierces, shield guard front block + back window, swooper dive/return, secret shaft reaches the Heart Tank, Sentinel room seals / resets on death / opens on victory | `test_stage2_upgrades.gd` | ✅ |
 | Warship: roof-deck start, hatch drops into the bay, checkpoints, gate lock → Reactor Core → escape, respawn, blast roof, core damage window | `test_warship.gd` | ✅ |
 
 ## Movement instrumentation (F3 debug panel)
@@ -63,6 +63,11 @@ Scratch bots and captures (not committed):
   wall-climbing); intended route roof → hatch → interior → boss gate verified.
 - Hull-run bot (steer around blocks/fences/blasts, jump walls/gaps, hold fire): finishes the faster
   3760-unit course in ~68 s taking 4 hits; the pad gap was widened after the bot fell short.
+- Warship bot (boss- and block-aware): after the zone/mechanics pass it found the conveyor strips snagging
+  the mech on the seam into the next floor block (fixed: conveyors became push areas over a continuous
+  floor); full route to the boss gate in ~80 s. Hull-run bot with the warship hull in place: ~70 s.
+- Ending capture: the first pass showed the dying ship with invisible blasts from 2.7 km — explosion scale
+  and fires were raised until the whole ship reads as burning and breaking apart.
 - Warship bot (boss-aware): roof → hatch → interior → Sentinel (beaten in ~30 s) → boss gate. A wall-kick
   bot reaches the secret Heart Tank in ~2 s; the first shaft design (single hanging pillar) was not
   climbable and became a two-wall shaft.

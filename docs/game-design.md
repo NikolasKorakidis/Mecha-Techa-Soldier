@@ -109,26 +109,38 @@ stages. Score, echo weapon and SUPER energy carry across all three forms.
   depth: a real 3D world renders behind the play plane (`PerspectiveBackdrop`, SubViewport) and the camera
   flies through it — ringed planet, capital fleet and asteroids in open space → a space-station trench
   mid-stage (modules, arches) → a sunset cloud sea with spires for the boss. Zones blend sky and fog presets.
-  Flat layers on top: capital-ship battle trading turbolaser fire, sun shafts, the warship looming in late.
-- **Boarding run** (in-engine, letterboxed): the Kestrel breaks off, races across space to the warship VX-07
-  (camera pulls wide to show it), transforms above the roof and the **mech drops onto the hull**.
+  Flat layers on top: capital-ship battle trading turbolaser fire, sun shafts. From ~16 s the real enemy
+  warship (`WarshipModel`) cruises below the flight line in the backdrop — the destination.
+- **Boarding run** (in-engine, letterboxed): the backdrop cuts to open space and its camera dives toward the
+  warship below until its deck fills the lower screen; the Kestrel races across, transforms above the roof and
+  the **mech drops onto the hull** with the rest of the ship spreading out behind it.
 - **Stage 2 — Warship Infiltration** (Mega Man X-style platformer): roof deck drop zone → entry hatch (a
   bulkhead + gantry block roof-running) → landing bay → pit run → electric corridor → tower climb → moving
   platforms over the reactor pit → crusher hall → **Bulkhead Sentinel** mid-boss room → elite guard +
   dash-jump gap → **Warship Reactor Core**. Five checkpoints; pits cost 1 HP. Secrets (Metroid layer): a
   wall-kick shaft above the high walkway leads to a hidden roof pocket with a **Heart Tank**; an **Energy
-  Tank** floats above the vertical lift over the reactor pit. Detail: parallax back wall (window bays onto space, pipes, screens,
-  fans, beacons, generators), mid-layer pillars/cables/catwalks, foreground girders, steam and sparks,
-  coloured light pools, a far superstructure (command tower, dishes, batteries, engines) outside.
+  Tank** floats above the vertical lift over the reactor pit. Platforming set pieces: **appearing blocks**
+  over the foundry pit (on 1.8 s / off 1.4 s, staggered 0.8 s — flicker before vanishing), a **crumbling
+  ledge** on the tower climb, **conveyor strips** dragging you back under the crushers.
+  Art: eight colour zones (`WarshipZones`) — amber hangar with parked fighters and a gantry crane, molten
+  foundry with vats pouring into the pit, electric-blue corridor with arcing tesla coils, teal lift shaft
+  with moving counterweights, reactor column with spinning rings, red alarm hall with pistons, gold security
+  bulkhead with the emblem, violet core approach. Each tints the walls and platforms, lights the play plane
+  with accent pools and sets the depth-fog colour of the far layers. Plus the parallax back wall (windows,
+  pipes, screens, fans, beacons, generators), mid-layer pillars/catwalks, foreground girders, steam, sparks.
 - **Escape** (in-engine): slow motion, the arena roof blows out, the mech thrusts up to the top hull, turns into
   the bike, and the camera swings from the side view to a chase view behind it (ortho → matched-FOV
   perspective → orbit).
 - **Stage 3 — Hull Run** (3D, camera behind the bike, ~65–75 s at 42–60 u/s): warm-up → blast field →
   **trench run** (walls with turrets) → burning deck with jump pads → **pursuit gunship** mini boss →
   **collapse run** (debris rains, the deck blows apart around you) → the bow. Explosions erupt along the
-  route the whole way and intensify toward the bow. Around you: ringed
-  gas giant, red moon, the blue world below, capital ships fighting, explosions tearing through the hull.
-- **Ending**: the bike launches off the bow and glides out while the warship explodes → MISSION COMPLETE → title.
+  route the whole way and intensify toward the bow. You ride the spine of the 3.6 km warship itself
+  (`WarshipModel` at track scale): the hull, command islands, gun batteries and superstructure skyline spread
+  out to both sides and drop away at the flanks, with fires and skyline explosions across it. Around it:
+  ringed gas giant, red moon, the blue world below, capital ships fighting.
+- **Ending**: the bike launches off the bow; the camera pulls far back to a three-quarter view of the whole
+  burning warship, which explodes stern to bow and breaks into drifting sections → core flash → MISSION
+  COMPLETE → title.
 - Restart Stage resumes at the current stage inside the campaign. Standalone dev rooms (F2) exist for each
   stage: `orbital_riptide`, `warship_level`, `hull_run_level`, plus Foundry Descent.
 
@@ -137,7 +149,8 @@ Run, variable-height jump, **double jump**, coyote time + jump buffer, ground/ai
 the dash speed for long gaps), wall slide + wall jump, hold-to-fire (echo weapons carry over and fire
 forward), **charge shot** (keep holding fire: the buster keeps shooting while the cannon charges; release at
 level 1 (0.75 s, 4 damage) or level 2 (1.6 s, 10 damage) for a piercing plasma ball — base buster only),
-**SUPER** = Resonance Beam. Tuning: `player/mech/mech_tuning.tres`
+**SUPER** = Resonance Beam. Look: Mega Man X-style side profile (helmet with crest, visor and ear discs,
+chest core, pauldron, buster forearm, chunky boots, twin-nozzle pack). Tuning: `player/mech/mech_tuning.tres`
 (single jump ≈ 3 high / 6 wide, double ≈ 5.3 high / 10 wide, dash-jump ≈ 12 wide).
 
 Ground enemies: Walker (patrols, turns at ledges, fires forward), Hopper (leaps at you), Turret (aimed

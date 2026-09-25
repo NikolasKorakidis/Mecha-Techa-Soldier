@@ -146,7 +146,16 @@ Main
   where Forward+ runs (desktop): the scene's `environment_binder` then enables KeyLight shadows, SSAO and 4x
   MSAA, and `Settings.particle_amount()` scales effect particle counts.
 - Stage 2 mid-boss: `WarshipLayout` builds a `MidBossZone` (code-built doors, trigger, camera lock) that
-  spawns `SentinelBoss` (a `BossBase` subclass) and resets itself on player death. Stage 1 depth:
+  spawns `SentinelBoss` (a `BossBase` subclass) and resets itself on player death. Zone art:
+  `WarshipZones` (x-range table: accent, fog) drives `InteriorBackdrop` wall tints, zone lights and the
+  depth fog (applied to a duplicated environment only while inside), `ZoneSetPieces` in the mid layer, and
+  the per-zone platform materials in `WarshipLayout`. Platforming kit: `TimedBlock`, `ConveyorBelt` (an
+  Area3D pushing grounded bodies via move_and_collide over a continuous floor), `CrumblePlatform`; both
+  vanishing kinds join the `unsafe_ground` group so pit recovery never returns you onto them.
+- `WarshipModel` (art/models): one hero capital ship — lofted hull split into four sections, MultiMesh
+  plating/windows/superstructure, towers, batteries, engines — used at 0.5 scale in the Stage 1 backdrop's
+  own world, at 3.6 scale under the Stage 3 track (`HullRunBackdrop.warship`), and destroyed in the ending
+  (`destroy()` chains explosions and drifts the sections apart). Stage 1 depth:
   `PerspectiveBackdrop` renders its own 3D world (`own_world_3d` SubViewport) onto a screen quad under
   the sky follower; zone changes are driven by stage time and the director's `boss_spawned`.
 - UI never owns gameplay state: HUD reads RunSession; TutorialCard reads input + Settings; StageUI is
