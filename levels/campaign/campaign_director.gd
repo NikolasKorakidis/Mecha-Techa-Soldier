@@ -120,6 +120,7 @@ func _run_drop() -> void:
 	cine.setup(ship.global_position)
 	_set_drop_world_visible(false)
 	AudioService.play(&"boost")
+	AudioService.play(&"whoosh", -4.0)
 	await _swing_behind_ship(flight_time * 0.37)
 	# Beat 3: the dive. Speed lines build, the Kestrel transforms half way down, the mech keeps
 	# falling head-first at the runway.
@@ -128,6 +129,7 @@ func _run_drop() -> void:
 	var target := cine.landing_point(start)
 	var dir := (target - start).normalized()
 	var start_fov := camera.fov
+	AudioService.play(&"whoosh")
 	var body: Node3D = ship
 	var close := 0.0
 	var t := 0.0

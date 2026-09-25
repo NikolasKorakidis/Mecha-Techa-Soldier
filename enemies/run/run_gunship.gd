@@ -25,6 +25,7 @@ func _ready() -> void:
 	hurt_size = Vector3(7.0, 3.5, 9.0)
 	fire_range = Vector2(10.0, 200.0)
 	death_size = 5.0
+	AudioService.play(&"boss_roar")
 	super._ready()
 	health.health_changed.connect(func(c: int, m: int) -> void: health_changed.emit(c, m))
 

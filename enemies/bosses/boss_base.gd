@@ -64,6 +64,8 @@ func _ready() -> void:
 	add_child(_flash)
 	health.damaged.connect(func(_p: DamagePayload, _s: Node) -> void: _flash.flash(0.05))
 	_apply_state_rules()
+	# Every boss announces itself.
+	AudioService.play(&"boss_roar")
 
 
 func _physics_process(delta: float) -> void:
@@ -205,6 +207,9 @@ func _transition(next: State, reason: String) -> void:
 			player.grant_invulnerability(break_time + 0.5)
 		Vfx.spawn(get_tree(), death_effect, global_position + Vector3(0, 0, 1), 2.0)
 		HitStop.trigger(get_tree(), 0.08)
+		AudioService.play(&"boss_break")
+	elif next == State.DEFEATED:
+		AudioService.play(&"boss_break")
 	_on_state_entered(next)
 	state_changed.emit(state, reason)
 
@@ -282,6 +287,7 @@ func _update_defeat(delta: float) -> void:
 		# Several physics steps can run before queue_free lands; finish exactly once.
 		_defeat_finished = true
 		Vfx.spawn(get_tree(), death_effect, global_position + Vector3(0, 0, 1), 4.0)
+		AudioService.play(&"explosion_huge")
 		defeated.emit()
 		queue_free()
 

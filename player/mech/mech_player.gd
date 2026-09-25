@@ -12,6 +12,9 @@ signal respawned
 signal super_fired
 signal echo_collected(echo_id: StringName)
 
+## Run distance between footfall sounds.
+const STRIDE := 1.9
+
 enum State { GROUND, AIR, DASH, WALL, HIT, SUPER, DISABLED, CINEMATIC }
 
 const GROUP := Players.GROUP
@@ -31,6 +34,7 @@ const COLLECT_EFFECT := preload("res://vfx/collect_burst.tscn")
 @export var kill_y: float = -30.0
 
 var state: State = State.AIR
+var _stride: float = 0.0
 var facing: float = 1.0
 ## Enemies aim at the chest, not the feet.
 var aim_offset: Vector3 = Vector3(0, 1.2, 0)
@@ -176,7 +180,7 @@ func tick(delta: float, input: MechInput) -> void:
 				_dash_left = 0.0
 		elif _wall_coyote > 0.0:
 			_jump(tuning.wall_jump_velocity)
-			AudioService.play(&"jump")
+			AudioService.play(&"wall_jump")
 			velocity.x = _wall_normal_x * tuning.wall_jump_push
 			facing = _wall_normal_x
 			_wall_lock = tuning.wall_jump_lock
@@ -226,6 +230,14 @@ func tick(delta: float, input: MechInput) -> void:
 	on_floor = is_on_floor()
 	if was_airborne and on_floor and fall_speed > 6.0:
 		AudioService.play(&"land")
+	# Footfalls while running (not dashing): one clank per stride.
+	if on_floor and _dash_left <= 0.0 and absf(velocity.x) > 2.0:
+		_stride += absf(velocity.x) * delta
+		if _stride > STRIDE:
+			_stride = 0.0
+			AudioService.play(&"mech_step", 0.0, 0.08)
+	else:
+		_stride = STRIDE * 0.7
 	if state != State.HIT and state != State.SUPER and _dash_left <= 0.0:
 		state = State.GROUND if on_floor else (State.WALL if wall_contact else State.AIR)
 	if global_position.y < kill_y:

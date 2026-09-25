@@ -55,6 +55,8 @@ var _lock_target: Node3D
 var _reticle: MeshInstance3D
 var _muzzle_flash: MeshInstance3D
 var _flash_energy: float = 0.0
+var _engine: AudioStreamPlayer
+var _air_time: float = 0.0
 
 
 func _ready() -> void:
@@ -87,6 +89,22 @@ func _ready() -> void:
 	_reticle.top_level = true
 	_reticle.scale = Vector3.ONE * 4.5
 	add_child(_reticle)
+	_engine = AudioService.start_loop(&"bike_engine", -60.0)
+
+
+func _exit_tree() -> void:
+	AudioService.stop_loop(_engine)
+
+
+## Engine note follows road speed, revs up on boost and in the air, cuts out when wrecked.
+func _update_engine(delta: float) -> void:
+	if _engine == null:
+		return
+	var speed := clampf(velocity.x / tuning.max_speed, 0.0, 1.2)
+	var pitch := 0.7 + 0.55 * speed + (0.18 if _boost_left > 0.0 else 0.0) + (0.1 if not is_on_floor() else 0.0)
+	_engine.pitch_scale = lerpf(_engine.pitch_scale, pitch, clampf(delta * 6.0, 0.0, 1.0))
+	var volume := -60.0 if state == State.DISABLED or not visible else (-3.0 if _boost_left > 0.0 else -6.0)
+	_engine.volume_db = lerpf(_engine.volume_db, volume, clampf(delta * (12.0 if volume < -30.0 else 4.0), 0.0, 1.0))
 
 
 func _physics_process(delta: float) -> void:
@@ -115,6 +133,9 @@ func tick(delta: float, input: MechInput) -> void:
 				state = State.RIDE
 
 	var on_floor := is_on_floor()
+	if on_floor and _air_time > 0.3:
+		AudioService.play(&"bike_land")
+	_air_time = 0.0 if on_floor else _air_time + delta
 	if on_floor:
 		_coyote = tuning.coyote_time
 		_air_jumps = tuning.air_jumps
@@ -382,6 +403,7 @@ func _update_lock(delta: float) -> void:
 
 
 func _update_visuals(delta: float) -> void:
+	_update_engine(delta)
 	var pose := BikeModel.Pose.RIDE
 	if state == State.BOOST:
 		pose = BikeModel.Pose.BOOST
@@ -406,6 +428,7 @@ func _on_damaged(payload: DamagePayload, _source: Node) -> void:
 		camera.add_trauma(ArtStyle.SHAKE_PLAYER_HIT)
 	if health.is_depleted() or payload.damage_type == &"pit":
 		return
+	AudioService.play(&"bike_crash", -3.0)
 	_slow = tuning.hit_slowdown
 	velocity.x *= tuning.hit_slowdown
 	_update_invulnerability()
@@ -413,6 +436,7 @@ func _on_damaged(payload: DamagePayload, _source: Node) -> void:
 
 func _on_depleted(_source: Node) -> void:
 	state = State.DISABLED
+	AudioService.play(&"bike_crash")
 	AudioService.play(&"player_death")
 	visible = false
 	velocity = Vector3.ZERO
