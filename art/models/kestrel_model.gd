@@ -8,6 +8,8 @@ extends Node3D
 
 const PART_NAMES: Array[String] = ["Nose", "Fuselage", "WingUpper", "WingLower", "EngineUpper", "EngineLower"]
 
+## Overall size multiplier (set by the ship from its tuning).
+var base_scale: float = 1.0
 var _flames: Array[MeshInstance3D] = []
 var _flame_materials: Array[ShaderMaterial] = []
 var _nozzles: Array[StandardMaterial3D] = []
@@ -139,4 +141,4 @@ func _process(delta: float) -> void:
 	if _recoil > 0.0:
 		_recoil = maxf(0.0, _recoil - delta * 7.0)
 	position.x = -_recoil * 0.22
-	scale = Vector3(1.0 - _recoil * 0.08, 1.0 + _recoil * 0.05, 1.0) if not _dash_streak.visible else scale
+	scale = Vector3(1.0 - _recoil * 0.08, 1.0 + _recoil * 0.05, 1.0) * base_scale if not _dash_streak.visible else scale

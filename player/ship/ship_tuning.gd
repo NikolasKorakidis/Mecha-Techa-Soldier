@@ -3,6 +3,10 @@ extends Resource
 ## Tunable ship feel values. Starting points are playtest hypotheses (docs/game-design.md).
 ## Change one family per tuning pass.
 
+@export_group("Visual")
+## Ship model size on screen (the hurtbox stays the same, shmup-fair).
+@export var model_scale: float = 1.2
+
 @export_group("Movement")
 @export var max_speed: float = 13.0
 ## Units/s² while steering toward the stick direction.
@@ -10,7 +14,7 @@ extends Resource
 ## Units/s² when the stick is released (short ease-out).
 @export var deceleration: float = 80.0
 ## Half-size of the ship kept inside the play rect.
-@export var boundary_margin: Vector2 = Vector2(1.1, 0.7)
+@export var boundary_margin: Vector2 = Vector2(1.3, 0.85)
 ## Extra clearance under the top edge so the ship never hides beneath the HUD bar.
 @export var hud_top_inset: float = 1.1
 ## Distance from the boundary where outward velocity starts fading (soft edge).

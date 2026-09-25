@@ -193,7 +193,8 @@ func _update_visuals(delta: float) -> void:
 	if model:
 		# Bank into vertical motion; squash along the dash.
 		model.rotation.x = -movement.velocity.y / tuning.max_speed * 0.45
-		model.scale = Vector3(1.25, 0.8, 1.0) if movement.is_dashing else Vector3.ONE
+		model.base_scale = tuning.model_scale
+		model.scale = (Vector3(1.25, 0.8, 1.0) if movement.is_dashing else Vector3.ONE) * tuning.model_scale
 		var thrust := 2.0 if movement.is_dashing else 0.6 + movement.velocity.x / tuning.max_speed * 0.5
 		model.set_thrust(thrust)
 		for trail in engine_trails:
