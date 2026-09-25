@@ -3,10 +3,16 @@ extends Node3D
 ## Main listens for `start_requested`; no gameplay runs here.
 
 signal start_requested
+## Stage select: 1 = shooter, 2 = warship, 3 = hull run. Main starts the campaign there.
+signal stage_requested(stage: int)
+
+const STAGES: Array[String] = ["Stage 1 — Orbital Riptide", "Stage 2 — Warship Infiltration", "Stage 3 — Hull Run"]
 
 var _prompt: Label
 var _menu: VBoxContainer
 var _options: OptionsPanel
+var _stage_menu: VBoxContainer
+var _stage_first: UiMenuButton
 var _start: UiMenuButton
 var _time: float = 0.0
 
@@ -44,10 +50,30 @@ func _ready() -> void:
 	_start.text = "Start"
 	_start.pressed.connect(func() -> void: start_requested.emit())
 	_menu.add_child(_start)
+	var select := UiMenuButton.new()
+	select.text = "Select Stage"
+	select.pressed.connect(_open_stage_select)
+	_menu.add_child(select)
 	var options := UiMenuButton.new()
 	options.text = "Options"
 	options.pressed.connect(_open_options)
 	_menu.add_child(options)
+	_stage_menu = VBoxContainer.new()
+	_stage_menu.add_theme_constant_override(&"separation", 10)
+	_stage_menu.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_stage_menu.visible = false
+	column.add_child(_stage_menu)
+	for i in STAGES.size():
+		var button := UiMenuButton.new()
+		button.text = STAGES[i]
+		button.pressed.connect(func() -> void: stage_requested.emit(i + 1))
+		_stage_menu.add_child(button)
+		if i == 0:
+			_stage_first = button
+	var back := UiMenuButton.new()
+	back.text = "Back"
+	back.pressed.connect(_close_stage_select)
+	_stage_menu.add_child(back)
 	_options = OptionsPanel.new()
 	_options.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_options.visible = false
@@ -72,6 +98,11 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _stage_menu.visible:
+		if event.is_action_pressed(&"ui_cancel"):
+			_close_stage_select()
+			get_viewport().set_input_as_handled()
+		return
 	if _options.visible:
 		if event.is_action_pressed(&"ui_cancel"):
 			_close_options()
@@ -80,6 +111,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"fire"):
 		get_viewport().set_input_as_handled()
 		start_requested.emit()
+
+
+func _open_stage_select() -> void:
+	_menu.visible = false
+	_stage_menu.visible = true
+	_stage_first.grab_focus()
+
+
+func _close_stage_select() -> void:
+	_stage_menu.visible = false
+	_menu.visible = true
+	_start.grab_focus()
 
 
 func _open_options() -> void:

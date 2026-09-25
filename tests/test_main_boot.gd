@@ -51,3 +51,19 @@ func test_title_starts_game_and_quit_returns() -> void:
 	main.quit_to_title()
 	await wait_process_frames(1)
 	assert_eq(SceneRouter.current_path, main.start_level, "quit returns to the title")
+
+
+func test_stage_select_starts_the_campaign_at_each_stage() -> void:
+	var main: Node = (load("res://main/main.tscn") as PackedScene).instantiate()
+	add_autofree(main)
+	await wait_process_frames(1)
+	assert_true(SceneRouter.current_level.has_signal(&"stage_requested"), "title offers stage select")
+	var expected := {1: CampaignDirector.Phase.SHOOTER, 2: CampaignDirector.Phase.PLATFORMER, 3: CampaignDirector.Phase.HULL_RUN}
+	for stage: int in [3, 2, 1]:
+		main.start_at_stage(stage)
+		await wait_process_frames(4)
+		assert_eq(SceneRouter.current_path, main.first_stage, "stage %d loads the campaign" % stage)
+		var cd := SceneRouter.current_level.get_node("CampaignDirector") as CampaignDirector
+		assert_eq(cd.phase, expected[stage], "stage %d starts in the right phase" % stage)
+		main.quit_to_title()
+		await wait_process_frames(2)

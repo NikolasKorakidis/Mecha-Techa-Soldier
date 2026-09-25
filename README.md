@@ -14,7 +14,7 @@ accessibility options. Next up: audio.
 
 ## Play it
 **In the browser:** https://nikolaskorakidis.github.io/Mecha-Techa-Soldier/ (Chrome or Edge recommended;
-click the game once to give it keyboard focus). Transitions play in-engine with letterbox bars. Every push to the branch rebuilds it after the tests pass.
+click the game once to give it keyboard focus). Transitions play in-engine with letterbox bars. **Select Stage** on the title menu jumps straight to Stage 1, 2 or 3. Every push to the branch rebuilds it after the tests pass.
 
 **Locally:**
 1. Install Godot 4.7.2 (standard build).

@@ -29,6 +29,15 @@ func start_game() -> void:
 	SceneRouter.go_to(first_stage)
 
 
+## Stage select: starts the campaign at stage 1–3 (the campaign resumes from the checkpoint id).
+func start_at_stage(stage: int) -> void:
+	set_paused(false)
+	RunSession.reset_run()
+	if stage > 1:
+		RunSession.save_checkpoint(StringName("STAGE %d" % stage))
+	SceneRouter.go_to(first_stage)
+
+
 ## Restart the current stage from its entry snapshot (score, weapon, energy).
 func restart_stage() -> void:
 	set_paused(false)
@@ -50,6 +59,8 @@ func _on_level_changed(level: Node) -> void:
 	_hud.visible = Players.find(get_tree()) != null
 	if level.has_signal(&"start_requested"):
 		level.start_requested.connect(start_game, CONNECT_DEFERRED)
+	if level.has_signal(&"stage_requested"):
+		level.stage_requested.connect(start_at_stage, CONNECT_DEFERRED)
 
 
 func _unhandled_input(event: InputEvent) -> void:
