@@ -1,13 +1,13 @@
 class_name InteriorBackdrop
 extends Node3D
 ## Warship interior depth, parallaxed against the moving camera (side view):
-##   back wall  (x0.55, z -9): hull panels, ribs, window bays onto space, pipe runs with flanges,
+##   back wall  (x0.55, z -9): hull panels, ribs, window bays onto space (space_window glass: the
+##                             Stage 1 planets and nebula with fake perspective), pipe runs with flanges,
 ##                             flickering screens, rotating beacons, spinning vent fans,
 ##                             generator blocks with pulsing coils
 ##   mid layer  (x0.8,  z -5): pillars with cross braces, hanging cables, crate stacks, catwalks
 ##   foreground (x1.25, z +6): dark girders and cable clumps passing in front of the action
 ## Only shown while the camera is inside the ship (the campaign flies past it from space).
-## The sky itself comes from the campaign's space backdrop, seen through the windows.
 ## Every section has its own colour zone (WarshipZones): tinted wall panels, pools of accent
 ## light along the play plane, signature machinery (ZoneSetPieces) and a depth fog that tints
 ## the far layers — while inside, the environment fog follows the camera's zone.
@@ -96,6 +96,15 @@ func _build_wall() -> void:
 	var pipe := ModelKit.toon(Color("27324e"), 0.45, 0.45, 0.6)
 	var flange := ModelKit.toon(Color("3b4a6c"), 0.5, 0.4, 0.7)
 	var stripe := ModelKit.toon(Palette.INTERACTABLE.darkened(0.45), 0.2, 0.7, 0.2)
+	# Window glass looks out onto the same star system as Stage 1 (space_window shader).
+	var glass := ShaderMaterial.new()
+	glass.shader = preload("res://art/shaders/space_window.gdshader")
+	SpacePlanets.apply(glass, SpacePlanets.Layout.ORBIT)
+	glass.set_shader_parameter(&"pixel_angle", 0.0006)
+	# Travelling through the ship pans the view from the gas giant past the red moon.
+	glass.set_shader_parameter(&"view_offset", Vector2(-0.4, 0.06))
+	glass.set_shader_parameter(&"drift", 0.0028)
+	glass.set_shader_parameter(&"brightness", 1.5)
 	var z := -9.0
 	var x := -240.0
 	var i := 0
@@ -108,6 +117,7 @@ func _build_wall() -> void:
 		if window:
 			ModelKit.box(_wall, Vector3(6.0, 15.0, 0.4), Vector3(cx, -4.5, z), mat)
 			ModelKit.box(_wall, Vector3(6.0, 12.0, 0.4), Vector3(cx, 16.0, z), mat)
+			ModelKit.quad(_wall, Vector2(6.0, 7.0), Vector3(cx, 6.5, z - 0.1), glass)
 			# Heavy frame with a central mullion and corner gussets.
 			ModelKit.box(_wall, Vector3(6.2, 0.5, 0.8), Vector3(cx, 3.1, z + 0.2), frame)
 			ModelKit.box(_wall, Vector3(6.2, 0.5, 0.8), Vector3(cx, 9.9, z + 0.2), frame)
