@@ -269,6 +269,7 @@ func _transform_ship_into_mech() -> void:
 func _start_platformer_direct() -> void:
 	add_to_group(&"debug_telemetry")
 	space_backdrop.set_battle_layers_visible(false)
+	perspective_backdrop.set_boarding()
 	_free_ship()
 	mech = mech_scene.instantiate() as MechPlayer
 	mech.position = warship_spawn.global_position - player_root.global_position
