@@ -323,5 +323,4 @@ func _process(delta: float) -> void:
 	_time += delta
 	# Lights race forward along the rails.
 	for i in _chase_lights.size():
-		var phase := fmod(_time * 6.0 - i, 4.0)
-		_chase_lights[i].emission_energy_multiplier = 3.0 if phase < 1.0 else 0.35
+		_chase_lights[i].emission_energy_multiplier = 1.2 + 0.9 * maxf(0.0, sin(_time * 4.0 - i * 1.3))

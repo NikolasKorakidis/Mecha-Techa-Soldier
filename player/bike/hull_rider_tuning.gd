@@ -3,16 +3,16 @@ extends Resource
 ## Bike feel values for the 3D hull run (chase camera, forward = +X, lateral = Z).
 
 @export_group("Speed")
-@export var start_speed: float = 42.0
-@export var max_speed: float = 60.0
+@export var start_speed: float = 56.0
+@export var max_speed: float = 80.0
 ## Cruise speed gained per second.
-@export var speed_ramp: float = 0.32
+@export var speed_ramp: float = 0.45
 ## Forward/back input scales cruise speed by ± this fraction.
 @export var throttle: float = 0.2
-@export var acceleration: float = 40.0
+@export var acceleration: float = 55.0
 
 @export_group("Steering")
-@export var lateral_speed: float = 19.0
+@export var lateral_speed: float = 22.0
 @export var lateral_accel: float = 130.0
 ## Half width of the drivable deck (Z).
 @export var lane_half_width: float = 8.0
@@ -30,7 +30,7 @@ extends Resource
 @export var pad_velocity: float = 28.0
 
 @export_group("Boost")
-@export var boost_multiplier: float = 1.5
+@export var boost_multiplier: float = 1.3
 @export var boost_duration: float = 0.6
 @export var boost_cooldown: float = 1.4
 @export var roll_impulse: float = 28.0

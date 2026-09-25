@@ -51,7 +51,7 @@ var _window_mat: StandardMaterial3D
 var _cool_mat: StandardMaterial3D
 ## White toon material tinted per instance (MultiMesh colours) for varied plating.
 var _tint_mat: StandardMaterial3D
-const PLATE_TONES: Array[Color] = [Color("222c47"), Color("1b2339"), Color("2b3757"), Color("141b2d"), Color("323f60")]
+const PLATE_TONES: Array[Color] = [Color("1f2842"), Color("1b2339"), Color("232d4a"), Color("161d30"), Color("283352")]
 
 
 func _ready() -> void:
@@ -61,7 +61,7 @@ func _ready() -> void:
 	_keel_mat = _mat(keel_color, 0.25)
 	_dark_mat = _mat(hull_color.darkened(0.35), 0.25)
 	_trim_mat = _mat(deck_color.lightened(0.18), 0.45)
-	_window_mat = ModelKit.emissive(window_color, 1.6)
+	_window_mat = ModelKit.emissive(window_color, 1.2)
 	_cool_mat = ModelKit.emissive(Color("9fe4ff"), 1.8)
 	_tint_mat = _mat(Color.WHITE, 0.3)
 	_tint_mat.vertex_color_use_as_albedo = true
@@ -250,25 +250,36 @@ func _cap(st: SurfaceTool, ring: PackedVector3Array, stern: bool) -> void:
 
 # --- Detail --------------------------------------------------------------------------------
 
-## Deck plating: raised panels, vents and trenches in a seeded pattern (MultiMesh per section).
+## Deck plating: long armour strips laid in orderly bands along the hull (low relief, two close
+## tones) so the deck reads as engineered plating, not noise; the spine lane stays bare.
 func _build_deck_detail() -> void:
-	var count := 300 if low_detail else 1400
+	var step := 34.0 if low_detail else 22.0
 	var panels: Array = []
 	var tones: Array = []
 	for i in sections.size():
 		panels.append([])
 		tones.append(PackedColorArray())
-	for n in count:
-		var x := _rng.randf_range(-470.0, 470.0)
-		var w := profile(x).x * 0.74
-		var z := _rng.randf_range(-w, w)
-		var size := Vector3(_rng.randf_range(8.0, 30.0), _rng.randf_range(0.4, 2.2), _rng.randf_range(4.0, 14.0))
-		if absf(z) + size.z * 0.5 > w:
-			continue
-		if absf(z) - size.z * 0.5 < clear_lane:
-			size.y = minf(size.y, 0.3)
-		panels[_section_index(x)].append(Transform3D(Basis.from_scale(size), Vector3(x, size.y * 0.5, z)))
-		tones[_section_index(x)].append(PLATE_TONES[_rng.randi() % PLATE_TONES.size()])
+	var lane := clear_lane + 2.0
+	var band := 0
+	var z0 := lane
+	while z0 < 110.0:
+		var band_w := 10.0 if band % 3 != 2 else 6.0
+		var x := -470.0 + fmod(band * 7.0, step)
+		var n := 0
+		while x < 470.0:
+			var length := step - 1.5
+			var cx := x + length * 0.5
+			var w := profile(cx).x * 0.74
+			if z0 + band_w <= w:
+				var h := 0.35 + 0.25 * float((n + band) % 3 == 0)
+				for side: float in [-1.0, 1.0]:
+					var z := side * (z0 + band_w * 0.5)
+					panels[_section_index(cx)].append(Transform3D(Basis.from_scale(Vector3(length, h, band_w - 1.0)), Vector3(cx, h * 0.5, z)))
+					tones[_section_index(cx)].append(PLATE_TONES[(n + band) % 2 * 2])
+			x += step
+			n += 1
+		z0 += band_w
+		band += 1
 	for i in sections.size():
 		_multimesh(sections[i], panels[i], _tint_mat, BoxMesh.new(), tones[i])
 	# Long dorsal trenches (the kind you race down) with lights.
@@ -281,7 +292,7 @@ func _build_deck_detail() -> void:
 
 
 func _build_windows() -> void:
-	var count := 700 if low_detail else 3200
+	var count := 500 if low_detail else 1600
 	var warm: Array = []
 	var cool: Array = []
 	for i in sections.size():
@@ -296,7 +307,7 @@ func _build_windows() -> void:
 		var t := 0.05 + row * 0.1
 		var y := -lerpf(0.02, 0.26, t / 0.6) * p.y if row < 3 else -lerpf(0.33, 0.58, (t - 0.3) / 0.3) * p.y
 		var z := side * (p.x * (lerpf(0.8, 1.0, clampf(-y / (0.28 * p.y), 0.0, 1.0)) if row < 3 else lerpf(1.0, 0.74, clampf((-y - 0.28 * p.y) / (0.34 * p.y), 0.0, 1.0))) + 0.25)
-		var xf := Transform3D(Basis.from_scale(Vector3(_rng.randf_range(2.0, 6.0), 0.8, 0.3)), Vector3(x, y, z))
+		var xf := Transform3D(Basis.from_scale(Vector3(_rng.randf_range(4.0, 9.0), 1.0, 0.3)), Vector3(x, y, z))
 		(cool if _rng.randf() < 0.18 else warm)[_section_index(x)].append(xf)
 	var box := BoxMesh.new()
 	for i in sections.size():

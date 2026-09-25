@@ -46,7 +46,9 @@ func activate() -> void:
 	set_process(true)
 	_camera = GameplayCamera.find(get_tree())
 	if _camera:
-		_camera.far = 9000.0
+		# A sane near/far ratio keeps distant hull detail from shimmering (depth precision).
+		_camera.near = 0.4
+		_camera.far = 4500.0
 	if world_environment == null:
 		var found := get_tree().root.find_children("*", "WorldEnvironment", true, false)
 		if not found.is_empty():
@@ -65,7 +67,8 @@ func activate() -> void:
 	warship = WarshipModel.new()
 	warship.clear_lane = 13.0
 	warship.scale = Vector3.ONE * WARSHIP_SCALE
-	warship.position = Vector3(WARSHIP_CENTER_X, HullTrack.DECK_Y - 0.08, 0.0)
+	# Well under the track plates: nothing on the hull can poke through or z-fight the spine.
+	warship.position = Vector3(WARSHIP_CENTER_X, HullTrack.DECK_Y - 0.45, 0.0)
 	add_child(warship)
 	_build_planets()
 	_build_ships()
@@ -153,11 +156,11 @@ func _build_ships() -> void:
 
 func _build_streaks() -> void:
 	_streaks = CPUParticles3D.new()
-	_streaks.amount = 60
+	_streaks.amount = 28
 	_streaks.lifetime = 0.5
 	_streaks.local_coords = false
 	_streaks.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_streaks.emission_box_extents = Vector3(4.0, 10.0, 16.0)
+	_streaks.emission_box_extents = Vector3(4.0, 12.0, 22.0)
 	_streaks.direction = Vector3(-1, 0, 0)
 	_streaks.spread = 2.0
 	_streaks.gravity = Vector3.ZERO
@@ -166,8 +169,8 @@ func _build_streaks() -> void:
 	_streaks.scale_amount_min = 1.0
 	_streaks.scale_amount_max = 1.0
 	var box := BoxMesh.new()
-	box.size = Vector3(3.5, 0.04, 0.04)
-	box.material = ModelKit.emissive(Color(0.7, 0.85, 1.0), 1.6)
+	box.size = Vector3(5.0, 0.03, 0.03)
+	box.material = ModelKit.emissive(Color(0.6, 0.75, 1.0), 0.7)
 	_streaks.mesh = box
 	_streaks.visibility_aabb = AABB(Vector3(-200, -40, -60), Vector3(400, 80, 120))
 	add_child(_streaks)
@@ -196,11 +199,11 @@ func _process(delta: float) -> void:
 	if _blast_timer <= 0.0 and player:
 		# The ship is coming apart: blasts get denser the closer you are to the bow.
 		var collapse := clampf((px - 2900.0) / 600.0, 0.0, 1.0)
-		_blast_timer = _rng.randf_range(0.14, 0.4) * (1.0 - 0.5 * collapse)
+		_blast_timer = _rng.randf_range(0.35, 0.7) * (1.0 - 0.5 * collapse)
 		_hull_explosion(px)
 		if _rng.randf() < 0.35 + 0.4 * collapse:
 			_deck_edge_blast(px)
-		if _rng.randf() < 0.5:
+		if _rng.randf() < 0.25:
 			_skyline_explosion(px)
 
 
