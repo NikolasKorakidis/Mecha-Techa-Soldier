@@ -40,8 +40,10 @@ static func material(kind: StringName) -> Material:
 
 
 ## Solid block from its top-left corner (x, top) with width/height, facing up (y is up).
-## `trim` adds a lit top edge so walkable surfaces read at a glance.
-static func solid(parent: Node3D, x: float, top: float, width: float, height: float, trim: bool = true) -> StaticBody3D:
+## `trim` adds a lit top edge so walkable surfaces read at a glance. `hull_mat` / `light_mat`
+## override the body and edge-light materials (per-zone palettes).
+static func solid(parent: Node3D, x: float, top: float, width: float, height: float, trim: bool = true,
+		hull_mat: Material = null, light_mat: Material = null, trim_mat: Material = null) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.collision_layer = PhysicsLayers.WORLD
 	body.collision_mask = 0
@@ -52,10 +54,12 @@ static func solid(parent: Node3D, x: float, top: float, width: float, height: fl
 	shape.shape = box
 	body.add_child(shape)
 	parent.add_child(body)
-	ModelKit.box(body, Vector3(width, height, DEPTH * 0.6), Vector3.ZERO, material(&"hull" if trim else &"hull_dark"))
+	var body_mat := hull_mat if hull_mat else material(&"hull" if trim else &"hull_dark")
+	var edge_light := light_mat if light_mat else material(&"light")
+	ModelKit.box(body, Vector3(width, height, DEPTH * 0.6), Vector3.ZERO, body_mat)
 	if trim:
-		ModelKit.box(body, Vector3(width, 0.22, DEPTH * 0.62), Vector3(0, height * 0.5 - 0.11, 0), material(&"trim"))
-		ModelKit.box(body, Vector3(width - 0.2, 0.06, 0.05), Vector3(0, height * 0.5 - 0.24, DEPTH * 0.31), material(&"light"))
+		ModelKit.box(body, Vector3(width, 0.22, DEPTH * 0.62), Vector3(0, height * 0.5 - 0.11, 0), trim_mat if trim_mat else material(&"trim"))
+		ModelKit.box(body, Vector3(width - 0.2, 0.06, 0.05), Vector3(0, height * 0.5 - 0.24, DEPTH * 0.31), edge_light)
 	# Panel seams every few units on the camera face (only ~6 units of the face are ever seen:
 	# the top of floors, the bottom of ceilings).
 	var seam_h := minf(maxf(0.2, height - 0.5), 6.0)
@@ -72,7 +76,7 @@ static func solid(parent: Node3D, x: float, top: float, width: float, height: fl
 		var lamps := int(width / 4.0)
 		for i in lamps:
 			var lx := -width * 0.5 + 2.0 + i * 4.0
-			_detail(ModelKit.box(body, Vector3(1.4, 0.12, 0.5), Vector3(lx, bottom - 0.02, 0.6), material(&"warm_light")))
+			_detail(ModelKit.box(body, Vector3(1.4, 0.12, 0.5), Vector3(lx, bottom - 0.02, 0.6), light_mat if light_mat else material(&"warm_light")))
 			_detail(ModelKit.box(body, Vector3(0.25, 1.6, 0.1), Vector3(lx + 1.2, bottom + 0.9, DEPTH * 0.33), material(&"hull")))
 	if trim:
 		# Recessed lip under the walkable edge, bolts along the trim, vent grilles.

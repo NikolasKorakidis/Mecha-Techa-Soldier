@@ -278,7 +278,7 @@ func _move() -> void:
 func _track_safe_ground(delta: float) -> void:
 	# Safe = on solid, non-moving ground for a moment.
 	var collider := get_last_slide_collision().get_collider() if get_slide_collision_count() > 0 else null
-	if collider is AnimatableBody3D:
+	if collider is AnimatableBody3D or (collider is Node and (collider as Node).is_in_group(&"unsafe_ground")):
 		_safe_timer = 0.0
 		return
 	_safe_timer += delta

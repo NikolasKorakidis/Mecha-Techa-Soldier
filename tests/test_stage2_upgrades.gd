@@ -187,3 +187,54 @@ func test_mid_boss_room_seals_resets_on_death_and_opens_on_victory() -> void:
 	assert_false(director.camera.is_locked(), "camera follows again")
 	boss.queue_free()
 	RunSession.reset_run()
+
+
+func test_appearing_blocks_can_be_crossed_in_rhythm() -> void:
+	RunSession.reset_run()
+	var level: Node = await _warship()
+	for enemy in level.get_node("Segment/Enemies").get_children():
+		enemy.queue_free()
+	var mech := Players.find(get_tree()) as MechPlayer
+	mech.read_devices = false
+	mech.teleport(Vector3(30.5, 0.5, 0))
+	var blocks: Array[TimedBlock] = []
+	for node in get_tree().get_nodes_in_group(&"unsafe_ground"):
+		if node is TimedBlock:
+			blocks.append(node)
+	blocks.sort_custom(func(a: TimedBlock, b: TimedBlock) -> bool: return a.global_position.x < b.global_position.x)
+	assert_eq(blocks.size(), 4, "four appearing blocks over the pit")
+	var target := -1
+	var pits := [0]
+	mech.health.damaged.connect(func(p: DamagePayload, _s: Node) -> void:
+		if p.damage_type == &"pit":
+			pits[0] += 1)
+	for f in int(20.0 / DT):
+		var p := mech.global_position
+		var move := 0.0
+		var press := false
+		if p.x > 55.5 and mech.is_on_floor():
+			break
+		if mech.is_on_floor():
+			# Next block ahead (or the pillar at the end).
+			var next_x := 56.3
+			var ready := true
+			for b in blocks:
+				if b.global_position.x > p.x + 1.0:
+					next_x = b.global_position.x
+					var t := fposmod(b._time, b.on_time + b.off_time)
+					ready = b.solid and b.on_time - t > 1.0
+					break
+			if ready:
+				target = int(next_x * 10.0)
+				press = true
+				move = 1.0
+			else:
+				# Hold position on the current block's centre.
+				move = 0.0
+		elif target >= 0:
+			move = 1.0 if p.x < target / 10.0 - 0.2 else 0.0
+		mech.tick(DT, MechInput.make(move, press, not mech.is_on_floor() or press))
+		await get_tree().physics_frame
+	assert_eq(pits[0], 0, "no falls into the pit")
+	assert_true(mech.global_position.x > 55.0, "reached the pillar past the blocks")
+	RunSession.reset_run()
