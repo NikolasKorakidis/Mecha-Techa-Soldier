@@ -11,8 +11,8 @@ extends Resource
 @export var air_control: float = 0.85
 
 @export_group("Jump")
-@export var jump_velocity: float = 15.5
-@export var double_jump_velocity: float = 13.5
+@export var jump_velocity: float = 17.5
+@export var double_jump_velocity: float = 15.0
 @export var air_jumps: int = 1
 @export var gravity_up: float = 40.0
 @export var gravity_down: float = 58.0
@@ -23,8 +23,8 @@ extends Resource
 @export var jump_buffer: float = 0.12
 
 @export_group("Dash")
-@export var dash_speed: float = 20.0
-@export var dash_duration: float = 0.22
+@export var dash_speed: float = 22.0
+@export var dash_duration: float = 0.27
 @export var dash_cooldown: float = 0.28
 @export var dash_invulnerability: float = 0.1
 ## Jumping out of a ground dash keeps this share of dash speed in the air.
@@ -32,7 +32,7 @@ extends Resource
 
 @export_group("Wall")
 @export var wall_slide_speed: float = 4.0
-@export var wall_jump_velocity: float = 14.5
+@export var wall_jump_velocity: float = 15.5
 @export var wall_jump_push: float = 10.0
 ## Input ignored briefly after a wall jump so the kick-off reads.
 @export var wall_jump_lock: float = 0.14

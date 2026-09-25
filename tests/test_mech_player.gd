@@ -37,11 +37,11 @@ func _apex_after(input_press: MechInput, hold: MechInput, seconds: float) -> flo
 	return apex - start
 
 
-func test_held_jump_reaches_about_three_units_and_tap_is_lower() -> void:
+func test_held_jump_reaches_about_3_7_units_and_tap_is_lower() -> void:
 	await _setup()
 	assert_true(mech.is_on_floor(), "starts grounded")
 	var held := _apex_after(MechInput.make(0, true, true), MechInput.make(0, false, true), 0.9)
-	assert_near(held, 3.0, 0.35, "held jump apex ≈ 3")
+	assert_near(held, 3.7, 0.35, "held jump apex ≈ 3.7")
 	_run(0.5, MechInput.new())
 	var tap := _apex_after(MechInput.make(0, true, true), MechInput.make(0, false, false), 0.9)
 	assert_true(tap < held * 0.6, "tap jump is clearly lower (variable height)")
