@@ -7,7 +7,8 @@ func test_all_music_and_sfx_load() -> void:
 	for id: StringName in AudioService.MUSIC:
 		var stream := load(AudioService.MUSIC_DIR % id) as AudioStreamWAV
 		assert_true(stream != null, "music '%s' loads" % id)
-		if stream and id != &"stage_clear":
+		# Jingles play once; everything else loops.
+		if stream and id not in [&"stage_clear", &"clear8"]:
 			assert_eq(stream.loop_mode, AudioStreamWAV.LOOP_FORWARD, "music '%s' loops" % id)
 	for id: StringName in AudioService.SFX:
 		assert_true(load(AudioService.SFX_DIR % id) is AudioStream, "sfx '%s' loads" % id)

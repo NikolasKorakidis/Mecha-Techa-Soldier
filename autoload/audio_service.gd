@@ -5,23 +5,25 @@ extends Node
 
 const MUSIC_DIR := "res://assets/audio/music/%s.wav"
 const SFX_DIR := "res://assets/audio/sfx/%s.wav"
-const MUSIC := [&"title", &"stage1", &"boss", &"stage2", &"stage3", &"stage_clear", &"mission_complete"]
+const MUSIC := [&"title", &"stage1", &"boss", &"stage2", &"stage3", &"stage_clear", &"mission_complete",
+		&"stage4", &"boss8", &"clear8"]
 const SFX := [
 	&"shot_player", &"shot_enemy", &"shot_heavy", &"laser", &"explosion_small", &"explosion_large",
 	&"explosion_huge", &"hit", &"armor_ping", &"player_hurt", &"player_death", &"jump", &"double_jump",
 	&"dash", &"land", &"heavy_land", &"pickup", &"weapon_get", &"checkpoint", &"ui_move", &"ui_confirm",
 	&"ui_back", &"warning", &"charge", &"beam", &"transform", &"boost", &"door",
+	&"retro_shot", &"retro_boom", &"retro_hit", &"retro_power", &"retro_1up",
 ]
 ## Minimum seconds between two plays of the same effect (rapid fire, many explosions).
 const MIN_GAP := {
 	&"shot_player": 0.07, &"laser": 0.06, &"shot_enemy": 0.05, &"hit": 0.045, &"armor_ping": 0.12,
 	&"explosion_small": 0.06, &"explosion_large": 0.1, &"explosion_huge": 0.25, &"pickup": 0.05,
-	&"ui_move": 0.03, &"land": 0.1, &"dash": 0.1,
+	&"ui_move": 0.03, &"land": 0.1, &"dash": 0.1, &"retro_shot": 0.07, &"retro_hit": 0.05, &"retro_boom": 0.08,
 }
 ## Per-effect trim so the mix sits right (dB).
 const TRIM := {
 	&"shot_player": -9.0, &"laser": -10.0, &"shot_enemy": -8.0, &"hit": -6.0, &"explosion_small": -4.0,
-	&"ui_move": -8.0, &"pickup": -5.0, &"land": -4.0, &"armor_ping": -8.0,
+	&"ui_move": -8.0, &"pickup": -5.0, &"land": -4.0, &"armor_ping": -8.0, &"retro_shot": -9.0, &"retro_hit": -6.0,
 }
 const VOICES := 24
 const MUSIC_BASE_DB := -7.0
