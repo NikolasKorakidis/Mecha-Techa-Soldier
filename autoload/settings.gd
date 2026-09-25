@@ -11,6 +11,8 @@ var reduced_shake: bool = false
 ## Disables decorative UI motion (menu slides, pulses).
 var reduced_motion: bool = false
 var glow_enabled: bool = true
+var music_volume: float = 0.8
+var sfx_volume: float = 0.9
 ## Test-room and debug labels (HP numbers, room titles). Off in normal play.
 var show_debug_labels: bool = false
 var tutorials_enabled: bool = true
@@ -45,6 +47,8 @@ func reset_defaults() -> void:
 	reduced_shake = false
 	reduced_motion = false
 	glow_enabled = true
+	music_volume = 0.8
+	sfx_volume = 0.9
 	show_debug_labels = false
 	tutorials_enabled = true
 	tutorials_done = PackedStringArray()
@@ -67,6 +71,8 @@ func load_settings(path: String = PATH) -> void:
 	reduced_shake = bool(file.get_value("accessibility", "reduced_shake", reduced_shake))
 	reduced_motion = bool(file.get_value("accessibility", "reduced_motion", reduced_motion))
 	glow_enabled = bool(file.get_value("video", "glow_enabled", glow_enabled))
+	music_volume = clampf(float(file.get_value("audio", "music_volume", music_volume)), 0.0, 1.0)
+	sfx_volume = clampf(float(file.get_value("audio", "sfx_volume", sfx_volume)), 0.0, 1.0)
 	tutorials_enabled = bool(file.get_value("gameplay", "tutorials_enabled", tutorials_enabled))
 	var done: Variant = file.get_value("gameplay", "tutorials_done", PackedStringArray())
 	tutorials_done = done if done is PackedStringArray else PackedStringArray()
@@ -82,6 +88,8 @@ func save_settings(path: String = PATH) -> void:
 	file.set_value("accessibility", "reduced_shake", reduced_shake)
 	file.set_value("accessibility", "reduced_motion", reduced_motion)
 	file.set_value("video", "glow_enabled", glow_enabled)
+	file.set_value("audio", "music_volume", music_volume)
+	file.set_value("audio", "sfx_volume", sfx_volume)
 	file.set_value("gameplay", "tutorials_enabled", tutorials_enabled)
 	file.set_value("gameplay", "tutorials_done", tutorials_done)
 	file.save(path)

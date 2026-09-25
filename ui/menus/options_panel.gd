@@ -18,6 +18,27 @@ var _first: Control
 func _ready() -> void:
 	add_theme_constant_override(&"separation", 10)
 	add_child(UiStyle.label("OPTIONS", ArtStyle.FONT_TITLE - 16, Palette.PLAYER_PRIMARY))
+	for volume: Array in [[&"music_volume", "Music volume"], [&"sfx_volume", "Effects volume"]]:
+		var row := HBoxContainer.new()
+		row.custom_minimum_size = Vector2(420, 48)
+		var label := UiStyle.label(volume[1], ArtStyle.FONT_BODY, Palette.UI_MUTED_TEXT)
+		label.custom_minimum_size = Vector2(200, 0)
+		row.add_child(label)
+		var slider := HSlider.new()
+		slider.min_value = 0.0
+		slider.max_value = 1.0
+		slider.step = 0.05
+		slider.value = float(Settings.get(volume[0]))
+		slider.focus_mode = Control.FOCUS_ALL
+		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		slider.value_changed.connect(func(v: float) -> void:
+			Settings.set_option(volume[0], v)
+			AudioService.play(&"ui_move"))
+		row.add_child(slider)
+		add_child(row)
+		if _first == null:
+			_first = slider
 	for option in OPTIONS:
 		var toggle := CheckButton.new()
 		toggle.text = option[1]
