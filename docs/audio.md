@@ -16,7 +16,7 @@ QOA-compressed streams; music `.import` files set `edit/loop_mode=2` (forward lo
 the renderer folds echo/reverb tails back onto the start.
 
 ## Tracks
-Supplied tracks (`stage1`, `boss1`, `stage2`) are listed in `USER_TRACKS` in `build.py`, which never
+Supplied tracks (`stage1`, `boss1`, `stage2`, `stage3`) are listed in `USER_TRACKS` in `build.py`, which never
 overwrites them. Loops whose last sample did not meet the first got a 20 ms equal-power crossfade of
 the tail into the head so they wrap without a click.
 
@@ -27,7 +27,7 @@ the tail into the head so they wrap without a click.
 | `boss` | Guardian | C minor, 162 bpm | Reactor Core, Sentinel |
 | `boss1` | Battle Music Loop 1 (supplied track, 52.3 s stereo loop, seam crossfaded) | — | Stage 1 boss (Choir Colossus) |
 | `stage2` | Action Game Music Loop 1 (supplied track, 29.5 s stereo loop, seam crossfaded) | — | Stage 2 |
-| `stage3` | Hull Run | B minor, 178 bpm | Escape + Stage 3 |
+| `stage3` | Electronic Music Loop 2 (supplied track, 44.3 s stereo loop, seam crossfaded) | — | Escape + Stage 3 |
 | `stage_clear` | — | D major | Jingle after each boss (music ducks) |
 | `mission_complete` | — | D major, 88 bpm | Ending |
 | `stage4` | Pixel Riptide | E minor, 150 bpm | Stage 4 (8-bit): the Stage 1 theme on 2 pulses + triangle + noise |

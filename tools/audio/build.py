@@ -16,7 +16,7 @@ TRACKS = {**TRACKS, **NES_TRACKS}
 SFX = {**SFX, **SFX_V2, **NES_SFX}
 
 # Tracks supplied as produced audio files: never overwrite them with the synth versions.
-USER_TRACKS = {"stage1", "boss1", "stage2"}
+USER_TRACKS = {"stage1", "boss1", "stage2", "stage3"}
 
 only = set(sys.argv[1:])
 for name, fn in TRACKS.items():
