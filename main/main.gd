@@ -25,30 +25,27 @@ func _ready() -> void:
 
 func start_game() -> void:
 	set_paused(false)
-	RunSession.reset_run()
-	SceneRouter.go_to(first_stage)
+	SceneRouter.change_level(first_stage, RunSession.reset_run)
 
 
 ## Stage select: starts the campaign at stage 1–3 (the campaign resumes from the checkpoint id).
 func start_at_stage(stage: int) -> void:
 	set_paused(false)
-	RunSession.reset_run()
-	if stage > 1:
-		RunSession.save_checkpoint(StringName("STAGE %d" % stage))
-	SceneRouter.go_to(first_stage)
+	SceneRouter.change_level(first_stage, func() -> void:
+		RunSession.reset_run()
+		if stage > 1:
+			RunSession.save_checkpoint(StringName("STAGE %d" % stage)))
 
 
 ## Restart the current stage from its entry snapshot (score, weapon, energy).
 func restart_stage() -> void:
 	set_paused(false)
-	RunSession.restore_checkpoint()
-	SceneRouter.reload_current()
+	SceneRouter.change_level(SceneRouter.current_path, RunSession.restore_checkpoint)
 
 
 func quit_to_title() -> void:
 	set_paused(false)
-	RunSession.reset_run()
-	SceneRouter.go_to(start_level)
+	SceneRouter.change_level(start_level, RunSession.reset_run)
 
 
 func is_in_gameplay() -> bool:
@@ -92,7 +89,7 @@ func next_dev_room() -> void:
 	if rooms.is_empty():
 		return
 	var index := (rooms.find(SceneRouter.current_path) + 1) % rooms.size()
-	SceneRouter.go_to(rooms[index])
+	SceneRouter.change_level(rooms[index])
 
 
 ## Test rooms are for debug builds only; release builds cycle real stages.

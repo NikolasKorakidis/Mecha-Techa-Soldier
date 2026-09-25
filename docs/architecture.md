@@ -169,6 +169,14 @@ Main
   dive); `DropCinematic` owns the temporary dive world and restores the environment; `MangaFx`
   (CanvasLayer 7, under StageUI) draws speed lines and impact frames. The mech's physics is paused while
   it is placed along the dive path.
+- Level changes from menus go through `SceneRouter.change_level(path, prepare)`: a `ScreenTransition`
+  (CanvasLayer 14, `shutter_wipe.gdshader`) sweeps slanted armour plates in, `prepare` runs (reset /
+  restore the run) right before the swap, the level mounts behind the plates, then they sweep out. Headless
+  runs (tests, CI, boot check) swap instantly; `go_to()` always swaps immediately.
+- Typography: Chakra Petch (UI, project default font) and Orbitron (titles; `UiStyle.style_title()` adds
+  letter spacing, outline and a coloured glow), both SIL OFL (`assets/fonts/OFL-*.txt`). StageUI title
+  cards: skewed plate slam-in with accent rails and auto-fitted text, WARNING with scrolling hazard bands
+  (`hazard_stripes.gdshader`), and a boss name card when a boss is tracked.
 - UI never owns gameplay state: HUD reads RunSession; TutorialCard reads input + Settings; StageUI is
   driven by the LevelDirector and boss signals.
 

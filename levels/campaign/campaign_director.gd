@@ -310,7 +310,11 @@ func _run_escape() -> void:
 	AudioService.play_music(&"stage3", 2.0)
 	stage_ui.flash(0.5, 0.5, Color(1.0, 0.8, 0.6))
 	await _wait(0.6)
-	# Thrust up through the hole onto the top hull.
+	# Thrust up through the hole onto the top hull, speed lines streaming.
+	var fx := MangaFx.new()
+	add_child(fx)
+	create_tween().tween_method(fx.set_intensity, 0.0, 0.6, 0.4)
+	AudioService.play(&"whoosh")
 	var start := mech.global_position
 	var apex := Vector3(escape_point.x, escape_point.y + 4.0, 0.0)
 	mech.set_physics_process(false)
@@ -326,6 +330,7 @@ func _run_escape() -> void:
 		mech.global_position = start.lerp(apex, k) + Vector3(0, sin(k * PI) * 2.0, 0)
 		mech.model.update_pose(MechModel.Pose.AIR, 0.0, 0.016), 0.0, 1.0, 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	await rise.finished
+	create_tween().tween_method(fx.set_intensity, 0.6, 0.0, 0.5)
 	mech.set_physics_process(true)
 	var guard := 0.0
 	while not mech.is_on_floor() and guard < 3.0:
@@ -334,8 +339,14 @@ func _run_escape() -> void:
 	camera.add_trauma(ArtStyle.SHAKE_ELITE_DEATH)
 	stage_ui.show_banner("THE WARSHIP IS GOING DOWN", "", 2.0)
 	await _wait(0.8)
+	# Impact frame on the transformation, then full speed lines through the camera swing.
+	fx.impact(0.12)
+	fx.set_intensity(1.0)
 	_transform_mech_into_bike()
+	AudioService.play(&"whoosh", -3.0)
+	create_tween().tween_method(fx.set_intensity, 1.0, 0.0, 2.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	await _swing_camera_behind(2.6)
+	fx.queue_free()
 	stage_ui.letterbox(false)
 	_cam_update = Callable()
 	_begin_hull_run(false)
