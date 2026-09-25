@@ -14,7 +14,7 @@ extends Node3D
 @export var interior_x: Vector2 = Vector2(-40.0, 345.0)
 ## Above this camera Y the camera is outside on the roof deck.
 @export var interior_max_y: float = 25.0
-## Camera X beyond which foreground girders are hidden (boss arena).
+## Camera X beyond which foreground girders are hidden (boss arena approach).
 @export var fore_cutoff_x: float = 285.0
 ## Standalone levels have no campaign sky; build a simple one.
 @export var own_sky: bool = true
@@ -250,7 +250,8 @@ func _process(delta: float) -> void:
 	var inside := cx > interior_x.x and cx < interior_x.y and cy < interior_max_y and _camera.projection == Camera3D.PROJECTION_ORTHOGONAL
 	_wall.visible = inside
 	_mid.visible = inside
-	_fore.visible = inside and cx < fore_cutoff_x
+	# Locked arenas (mid-boss, boss) keep the fight view clear of foreground girders.
+	_fore.visible = inside and cx < fore_cutoff_x and not _camera.is_locked()
 	if _sky:
 		_sky.position = Vector3(cx, cy * 0.9, 0)
 	if not inside:

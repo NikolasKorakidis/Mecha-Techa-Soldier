@@ -10,6 +10,8 @@ const HOPPER := preload("res://enemies/ground/hopper.tscn")
 const TURRET := preload("res://enemies/ground/turret.tscn")
 const FLYER := preload("res://enemies/ground/flyer.tscn")
 const ELITE := preload("res://enemies/ground/elite_walker.tscn")
+const SHIELD := preload("res://enemies/ground/shield_guard.tscn")
+const SWOOPER := preload("res://enemies/ground/swooper.tscn")
 
 @export var enemy_root: Node3D
 @export var pickup_root: Node3D
@@ -19,7 +21,7 @@ const ELITE := preload("res://enemies/ground/elite_walker.tscn")
 const SOLIDS := [
 	# Exterior hull (the drop zone): stern mass + roof deck with the entry hatch at x 0..8.
 	# The roof also seals the level so wall-climbs cannot skip sections.
-	[-130.0, 30.0, 112.0, 50.0], [-18.0, 30.0, 18.0, 8.0], [8.0, 30.0, 308.0, 8.0], [330.0, 30.0, 16.0, 8.0],
+	[-130.0, 30.0, 112.0, 50.0], [-18.0, 30.0, 18.0, 8.0], [8.0, 30.0, 144.0, 8.0], [152.0, 30.0, 7.0, 4.0], [159.0, 30.0, 157.0, 8.0], [330.0, 30.0, 16.0, 8.0],
 	# Bulkhead tower right of the hatch: the only way on is down.
 	[8.0, 90.0, 4.0, 60.0, false],
 	# Docking gantry over the hatch: caps any wall-climb up the bulkhead.
@@ -33,11 +35,14 @@ const SOLIDS := [
 	[92.0, 0.0, 34.0, 8.0], [92.0, 24.0, 34.0, 17.5, false],
 	# 4. Tower climb and high walkway
 	[126.0, 2.5, 6.0, 10.5], [134.0, 6.0, 4.0, 1.2], [140.0, 9.0, 27.0, 17.5],
+	# 4b. Secret: wall-kick up the narrow shaft between two hanging blocks to the roof
+	# pocket (Heart Tank). Both blocks clear the walkway by 3.5 so the main path is untouched.
+	[150.5, 21.0, 1.5, 8.5, false], [154.6, 21.0, 4.4, 8.5],
 	# 5. Moving platforms over the reactor pit (landing ledge)
 	[190.0, 4.5, 10.0, 12.5],
 	# 6. Crusher hall
 	[200.0, 0.0, 46.0, 8.0], [200.0, 24.0, 46.0, 16.5, false],
-	# 7. Elite guard, dash-jump gap, approach
+	# 7. Sentinel mid-boss room (246..270, sealed by MidBossZone), dash-jump gap, approach
 	[246.0, 0.0, 24.0, 8.0], [279.0, 0.0, 22.0, 8.0],
 	# 8. Boss arena
 	[301.0, 0.0, 30.0, 8.0], [312.0, 3.8, 5.0, 0.6], [329.0, 16.0, 4.0, 24.0],
@@ -62,12 +67,11 @@ const HAZARDS := [
 
 ## [scene, x, y]
 const ENEMIES := [
-	[WALKER, 18.0, 0.2], [WALKER, 26.0, 0.2],
+	[WALKER, 18.0, 0.2], [SHIELD, 28.0, 0.2],
 	[HOPPER, 65.0, 0.2], [TURRET, 80.0, 2.7], [WALKER, 88.0, 0.2],
-	[FLYER, 112.0, 5.0],
-	[TURRET, 158.0, 9.2], [WALKER, 150.0, 9.2], [FLYER, 178.0, 10.0],
-	[HOPPER, 241.0, 0.2],
-	[ELITE, 260.0, 0.2], [FLYER, 275.0, 6.0], [WALKER, 292.0, 0.2],
+	[SWOOPER, 103.5, 5.4], [FLYER, 112.0, 5.0], [SWOOPER, 121.0, 5.4],
+	[TURRET, 158.0, 9.2], [SHIELD, 146.0, 9.2], [FLYER, 178.0, 10.0],
+	[FLYER, 275.0, 6.0], [ELITE, 287.0, 0.2], [SHIELD, 296.0, 0.2],
 ]
 
 ## [kind, x, y]
@@ -75,12 +79,16 @@ const ITEMS := [
 	[ItemPickup.Kind.HEALTH, 45.0, 4.0],
 	[ItemPickup.Kind.ENERGY, 123.0, 1.2],
 	[ItemPickup.Kind.HEALTH, 136.0, 7.6],
+	[ItemPickup.Kind.TANK, 186.0, 11.0],
+	[ItemPickup.Kind.HEART, 156.5, 22.4],
 	[ItemPickup.Kind.ENERGY, 195.0, 5.7],
 	[ItemPickup.Kind.HEALTH, 267.0, 1.2],
 	[ItemPickup.Kind.ENERGY, 296.0, 1.2],
 ]
 
-const CHECKPOINTS := [[14.0, 0.0], [128.0, 2.5], [203.0, 0.0], [284.0, 0.0]]
+const CHECKPOINTS := [[14.0, 0.0], [128.0, 2.5], [203.0, 0.0], [240.0, 0.0], [284.0, 0.0]]
+## Sentinel room: [left gate x, right gate x, trigger x, camera center].
+const MID_BOSS := [245.5, 270.5, 250.0, Vector2(258.0, 6.0)]
 
 ## Roof section over the reactor arena; blown open for the escape.
 const BLAST_ROOF := [316.0, 30.0, 14.0, 8.0]
@@ -98,9 +106,11 @@ const LIGHTS := [
 	[4.0, 6.0, Color(1.0, 0.65, 0.3), 14.0], [108.0, 4.5, Color(0.7, 0.45, 1.0), 16.0],
 	[180.0, 11.0, Color(0.3, 0.8, 1.0), 16.0], [222.0, 5.0, Color(1.0, 0.25, 0.2), 18.0],
 	[315.0, 8.0, Color(0.55, 0.4, 1.0), 20.0], [-60.0, 36.0, Color(0.6, 0.8, 1.0), 22.0],
+	[156.5, 23.5, Color(0.4, 1.0, 0.6), 6.0],
 ]
 
 var blast_roof: StaticBody3D
+var mid_boss_zone: MidBossZone
 
 
 func _ready() -> void:
@@ -148,6 +158,14 @@ func _ready() -> void:
 	blast_roof = LevelKit.solid(world, BLAST_ROOF[0], BLAST_ROOF[1], BLAST_ROOF[2], BLAST_ROOF[3])
 	LevelKit.stripes(blast_roof, -BLAST_ROOF[2] * 0.5, BLAST_ROOF[3] * 0.5 - 0.7, BLAST_ROOF[2])
 	_build_gate()
+	mid_boss_zone = MidBossZone.new()
+	mid_boss_zone.left_x = MID_BOSS[0]
+	mid_boss_zone.right_x = MID_BOSS[1]
+	mid_boss_zone.trigger_x = MID_BOSS[2]
+	mid_boss_zone.camera_center = MID_BOSS[3]
+	mid_boss_zone.enemy_root = enemy_root
+	mid_boss_zone.pickup_root = pickup_root
+	add_child(mid_boss_zone)
 	_build_reactor_housing()
 	_build_hatch()
 	_build_exterior_deck()

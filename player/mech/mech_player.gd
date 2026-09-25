@@ -2,7 +2,8 @@ class_name MechPlayer
 extends CharacterBody3D
 ## Kestrel in mech form: Mega Man X-style platforming on the Z = 0 plane.
 ## Run, variable jump, double jump, coyote + buffer, ground/air dash (dash-jump keeps speed),
-## wall slide + wall jump, hold-to-fire (echo weapons carry over), SUPER beam at full energy.
+## wall slide + wall jump, hold-to-fire with a charge shot on release (echo weapons carry
+## over), SUPER beam at full energy.
 ## Health mirrors RunSession like the ship; falling into a pit costs 1 HP and returns you to
 ## the last safe ground.
 
@@ -55,6 +56,10 @@ var _safe_timer: float = 0.0
 var _muzzle_x: float = 1.0
 var _arsenal_x: float = 1.0
 var _clock: float = 0.0
+var _charge_time: float = 0.0
+var _charge_level: int = 0
+## Lifetime charge shots fired (tests + telemetry).
+var charge_shots: int = 0
 
 # Telemetry.
 var _jump_apex: float = 0.0
@@ -211,7 +216,9 @@ func tick(delta: float, input: MechInput) -> void:
 	arsenal.facing = facing
 	arsenal.position.x = _arsenal_x * facing
 	muzzle.position.x = _muzzle_x * facing
-	arsenal.tick(delta, input.fire and controllable and state != State.SUPER)
+	var firing := input.fire and controllable and state != State.SUPER
+	arsenal.tick(delta, firing)
+	_update_charge(delta, firing)
 
 	var fall_speed := -velocity.y
 	var was_airborne := not on_floor
@@ -226,6 +233,31 @@ func tick(delta: float, input: MechInput) -> void:
 	_track_apex()
 	_update_invulnerability()
 	_update_visuals(delta, absf(velocity.x) / tuning.run_speed)
+
+
+## The buster charges only while no echo weapon is equipped (echoes are their own power-up).
+func _update_charge(delta: float, firing: bool) -> void:
+	var can_charge := RunSession.selected_echo == RunSession.NO_ECHO
+	if firing and can_charge:
+		_charge_time += delta
+		var level := 2 if _charge_time >= tuning.charge_level_2 else (1 if _charge_time >= tuning.charge_level_1 else 0)
+		if level > _charge_level:
+			_charge_level = level
+			AudioService.play(&"charge")
+	elif _charge_level > 0 and can_charge and state != State.DISABLED:
+		var damage := tuning.charge_damage_2 if _charge_level >= 2 else tuning.charge_damage_1
+		ChargeShot.fire(get_tree(), muzzle.global_position, facing, _charge_level, damage)
+		charge_shots += 1
+		model.shoot_kick()
+		_reset_charge()
+	else:
+		_reset_charge()
+	model.set_charge(_charge_level, _charge_time)
+
+
+func _reset_charge() -> void:
+	_charge_time = 0.0
+	_charge_level = 0
 
 
 func _jump(speed: float) -> void:
@@ -398,6 +430,8 @@ func _on_damaged(payload: DamagePayload, _source: Node) -> void:
 
 func _on_depleted(_source: Node) -> void:
 	state = State.DISABLED
+	_reset_charge()
+	model.set_charge(0, 0.0)
 	AudioService.play(&"player_death")
 	visible = false
 	flash.stop()

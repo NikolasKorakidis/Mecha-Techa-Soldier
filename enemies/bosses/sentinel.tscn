@@ -1,0 +1,73 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://enemies/bosses/sentinel.gd" id="1_boss"]
+[ext_resource type="Script" path="res://components/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://components/hurtbox_component.gd" id="3_hurt"]
+[ext_resource type="Script" path="res://components/hitbox_component.gd" id="4_hit"]
+[ext_resource type="Script" path="res://combat/weapons/weapon_component.gd" id="5_weapon"]
+[ext_resource type="Script" path="res://components/damage_payload.gd" id="6_payload"]
+[ext_resource type="PackedScene" path="res://combat/projectiles/enemy_shot_heavy.tscn" id="7_shot"]
+[ext_resource type="PackedScene" path="res://vfx/explosion.tscn" id="8_boom"]
+
+[sub_resource type="BoxShape3D" id="Shape_body"]
+size = Vector3(2.2, 3.4, 1.6)
+
+[sub_resource type="Resource" id="Payload_contact"]
+script = ExtResource("6_payload")
+amount = 2
+team = 2
+knockback = Vector3(-7, 6, 0)
+
+[node name="Sentinel" type="Node3D" node_paths=PackedStringArray("weapon", "ground_weapon", "contact", "health", "hurtbox")]
+script = ExtResource("1_boss")
+weapon = NodePath("Weapon")
+ground_weapon = NodePath("GroundWeapon")
+contact = NodePath("ContactHitbox")
+boss_name = "BULKHEAD SENTINEL"
+max_health = 80
+intro_time = 2.0
+break_time = 1.4
+rest_time = Vector2(1.0, 0.7)
+intro_offset = 0.0
+health = NodePath("Health")
+hurtbox = NodePath("Hurtbox")
+death_effect = ExtResource("8_boom")
+defeat_score = 8000
+
+[node name="Weapon" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.1, 0)
+script = ExtResource("5_weapon")
+projectile_scene = ExtResource("7_shot")
+team = 2
+projectile_speed = 12.0
+
+[node name="GroundWeapon" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+script = ExtResource("5_weapon")
+projectile_scene = ExtResource("7_shot")
+team = 2
+damage = 2
+projectile_speed = 11.0
+
+[node name="Hurtbox" type="Area3D" parent="." node_paths=PackedStringArray("health")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+script = ExtResource("3_hurt")
+team = 2
+health = NodePath("../Health")
+
+[node name="Shape" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("Shape_body")
+
+[node name="ContactHitbox" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+script = ExtResource("4_hit")
+payload = SubResource("Payload_contact")
+single_hit = false
+continuous = true
+
+[node name="Shape" type="CollisionShape3D" parent="ContactHitbox"]
+shape = SubResource("Shape_body")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 80

@@ -23,6 +23,8 @@ var _core_glow: MeshInstance3D
 var _phase: float = 0.0
 var _kick: float = 0.0
 var _time: float = 0.0
+var _charge_glow: MeshInstance3D
+var _charge_mat: ShaderMaterial
 
 
 func _ready() -> void:
@@ -144,6 +146,10 @@ func _ready() -> void:
 	ModelKit.hex_x(_cannon, 0.23, 0.05, Vector3(0.52, -0.15, 0), gold, 6)
 	ModelKit.cylinder(_cannon, 0.13, 0.13, 0.04, Vector3(0.77, -0.15, 0), energy, Vector3(0, 0, 90), 8)
 	ModelKit.box(_cannon, Vector3(0.3, 0.03, 0.02), Vector3(0.36, -0.15, 0.21), energy)
+	# Charge glow at the muzzle, hidden until the buster starts charging.
+	_charge_mat = ModelKit.glow_billboard(Palette.PLAYER_ENERGY, 2.0)
+	_charge_glow = ModelKit.quad(_cannon, Vector2.ONE, Vector3(0.85, -0.15, 0.1), _charge_mat)
+	_charge_glow.visible = false
 
 
 ## Called by the controller every frame.
@@ -198,6 +204,18 @@ func update_pose(new_pose: Pose, speed_ratio: float, delta: float) -> void:
 		flame.scale = Vector3(1.6 if pose == Pose.DASH else 0.8 + 0.2 * sin(_time * 40.0), 1, 1)
 	(_core_glow.material_override as ShaderMaterial).set_shader_parameter(
 			&"energy", (2.6 if pose == Pose.SUPER else 1.0) + 0.3 * sin(_time * 5.0))
+
+
+## level 0 = idle, 1 = partial, 2 = full; `time` drives the pulse.
+func set_charge(level: int, time: float) -> void:
+	_charge_glow.visible = level > 0 or time > 0.25
+	if not _charge_glow.visible:
+		return
+	var pulse := 0.5 + 0.5 * sin(time * (22.0 if level >= 2 else 14.0))
+	var size := 0.5 + 0.25 * level + pulse * 0.25
+	_charge_glow.scale = Vector3.ONE * size
+	var color := Palette.PLAYER_ENERGY if level < 2 else Palette.PLAYER_ENERGY.lerp(Palette.PLAYER_GOLD, pulse)
+	_charge_mat.set_shader_parameter(&"tint", color)
 
 
 func shoot_kick() -> void:

@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://enemies/ground/ground_enemy.tscn" id="1_base"]
+
+[node name="Swooper" instance=ExtResource("1_base")]
+behavior = 5
+score_value = 250
+health_drop_chance = 0.12
+
+[node name="Model" parent="Facing"]
+kind = 1
+
+[node name="Health" parent="."]
+max_health = 2
+
+[node name="Hurtbox" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="ContactHitbox" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

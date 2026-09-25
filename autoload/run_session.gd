@@ -50,6 +50,13 @@ func reset_run() -> void:
 	echo_ammo_changed.emit(echo_ammo)
 
 
+## Heart Tank: one more health segment for the rest of the run, fully refilled.
+func increase_max_health(segments: int = 1) -> void:
+	max_health += segments
+	health = max_health
+	health_changed.emit(health, max_health)
+
+
 func set_health(value: int) -> void:
 	var clamped := clampi(value, 0, max_health)
 	if clamped == health:

@@ -2,11 +2,20 @@ class_name GroundEnemy
 extends CharacterBody3D
 ## Platformer enemy. WALKER patrols (turns at walls and ledges) and fires along its facing;
 ## HOPPER leaps at the player; TURRET sits still and fires aimed bursts; FLYER hovers on a
-## sine path and fires aimed shots. Every volley is telegraphed. Only acts near the screen.
+## sine path and fires aimed shots; SHIELD (Sniper Joe-style) holds a front shield that blocks
+## shots and only drops it to fire, turning slowly so a jump over it opens its back; SWOOPER
+## hangs from the ceiling and dives at the player. Every volley is telegraphed. Only acts near
+## the screen.
 
 signal defeated(enemy: GroundEnemy)
 
-enum Behavior { WALKER, HOPPER, TURRET, FLYER }
+enum Behavior { WALKER, HOPPER, TURRET, FLYER, SHIELD, SWOOPER }
+enum Swoop { PERCH, DIVE, RETURN }
+
+## Shield guard: seconds before it turns to face a player who got behind it.
+const SHIELD_TURN_DELAY := 0.9
+## Shield guard: shield stays down this long after a volley.
+const SHIELD_OPEN_AFTER_FIRE := 0.5
 
 const GROUP := SpaceEnemy.GROUP
 
@@ -45,6 +54,12 @@ var _hop_left: float = 1.5
 var _time: float = 0.0
 var _home: Vector3
 var _camera: GameplayCamera
+var _shield: Node3D
+var _behind_time: float = 0.0
+var _open_left: float = 0.0
+var _swoop: Swoop = Swoop.PERCH
+var _swoop_target: Vector3
+var _swoop_rest: float = 0.0
 
 
 func _ready() -> void:
@@ -57,6 +72,8 @@ func _ready() -> void:
 		telegraph.visible = false
 	health.damaged.connect(func(_p: DamagePayload, _s: Node) -> void: flash.flash(0.08))
 	health.depleted.connect(_on_depleted)
+	if behavior == Behavior.SHIELD:
+		_build_shield()
 
 
 func is_alive() -> bool:
@@ -89,6 +106,10 @@ func tick(delta: float) -> void:
 				global_position.x = move_toward(global_position.x, target_x, 1.5 * delta)
 			global_position.y = _home.y + sin(_time * 2.2) * 1.2
 			_face_player()
+		Behavior.SHIELD:
+			_guard(delta)
+		Behavior.SWOOPER:
+			_swoop_update(delta)
 	_update_firing(delta)
 	if facing_root:
 		facing_root.scale.x = -facing
@@ -118,6 +139,72 @@ func _hop(delta: float) -> void:
 	global_position.z = 0.0
 
 
+func _build_shield() -> void:
+	# Front is local -X (the facing root mirrors the model).
+	_shield = ModelKit.group(facing_root, "Shield", Vector3(-0.85, 0.95, 0.2))
+	var plate := ModelKit.hull(Color("56607a"), ArtStyle.OUTLINE_THIN, 0.5)
+	ModelKit.box(_shield, Vector3(0.22, 1.7, 1.0), Vector3.ZERO, plate)
+	ModelKit.box(_shield, Vector3(0.26, 0.2, 1.04), Vector3(0, 0.55, 0), ModelKit.glossy(Palette.ECHO_GOLD))
+	ModelKit.box(_shield, Vector3(0.26, 0.9, 0.12), Vector3(0, -0.1, 0), ModelKit.emissive(EnemyModel.SENSOR, 2.0))
+
+
+## Shield guard: creeps toward the player behind its shield; lowers it only to shoot.
+func _guard(delta: float) -> void:
+	velocity.y -= 40.0 * delta
+	var player := Players.find_active(get_tree())
+	if player:
+		var side := signf(player.global_position.x - global_position.x)
+		if side != facing and absf(player.global_position.x - global_position.x) > 0.3:
+			_behind_time += delta
+			if _behind_time >= SHIELD_TURN_DELAY:
+				facing = side
+				_behind_time = 0.0
+		else:
+			_behind_time = 0.0
+		var distance := absf(player.global_position.x - global_position.x)
+		var advancing := _open_left <= 0.0 and _telegraph_left < 0.0 and _burst_left == 0 and distance > 5.0 and distance < sight_range
+		velocity.x = facing * speed if advancing and _ground_ahead() else 0.0
+	else:
+		velocity.x = 0.0
+	move_and_slide()
+	global_position.z = 0.0
+	_open_left = maxf(0.0, _open_left - delta)
+	var open := _open_left > 0.0 or _telegraph_left >= 0.0 or _burst_left > 0
+	var shielded := not open and player != null and (player.global_position.x - global_position.x) * facing > 0.0
+	health.invulnerable = shielded
+	# Shield swings down while firing.
+	_shield.rotation.z = lerpf(_shield.rotation.z, 0.0 if not open else -1.1, minf(1.0, delta * 14.0))
+	_shield.position.y = lerpf(_shield.position.y, 0.95 if not open else 0.35, minf(1.0, delta * 14.0))
+
+
+## Swooper: perches on the ceiling, dives at where the player stood, then climbs back.
+func _swoop_update(delta: float) -> void:
+	var player := Players.find_active(get_tree())
+	match _swoop:
+		Swoop.PERCH:
+			_swoop_rest -= delta
+			global_position = global_position.move_toward(_home, 6.0 * delta)
+			if player and _swoop_rest <= 0.0:
+				var dx := player.global_position.x - global_position.x
+				if absf(dx) < 7.0 and player.global_position.y < global_position.y - 1.0:
+					_swoop = Swoop.DIVE
+					_swoop_target = player.global_position + Vector3(0, 0.8, 0)
+					facing = signf(dx) if absf(dx) > 0.1 else facing
+					AudioService.play(&"dash")
+		Swoop.DIVE:
+			global_position = global_position.move_toward(_swoop_target, 16.0 * delta)
+			if global_position.distance_to(_swoop_target) < 0.2:
+				_swoop = Swoop.RETURN
+		Swoop.RETURN:
+			global_position = global_position.move_toward(_home, 7.0 * delta)
+			if global_position.distance_to(_home) < 0.1:
+				_swoop = Swoop.PERCH
+				_swoop_rest = 1.4
+	global_position.z = 0.0
+	if model:
+		model.set_charge(1.0 if _swoop == Swoop.DIVE else 0.0)
+
+
 func _ground_ahead() -> bool:
 	var from := global_position + Vector3(facing * 0.7, 0.5, 0)
 	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3(0, -1.4, 0), PhysicsLayers.WORLD)
@@ -136,7 +223,7 @@ func _player_in_sight() -> bool:
 
 
 func _update_firing(delta: float) -> void:
-	if weapon == null or behavior == Behavior.HOPPER:
+	if weapon == null or behavior in [Behavior.HOPPER, Behavior.SWOOPER]:
 		return
 	if _burst_left > 0:
 		_burst_timer -= delta
@@ -158,6 +245,8 @@ func _update_firing(delta: float) -> void:
 			if model:
 				model.set_charge(0.0)
 				model.recoil()
+			if behavior == Behavior.SHIELD:
+				_open_left = SHIELD_OPEN_AFTER_FIRE + burst_count * 0.13
 			_fire_left = fire_interval
 			_aim = _aim_direction()
 			_burst_left = burst_count
@@ -172,14 +261,14 @@ func _update_firing(delta: float) -> void:
 
 
 func _player_in_front() -> bool:
-	if behavior != Behavior.WALKER:
+	if behavior not in [Behavior.WALKER, Behavior.SHIELD]:
 		return true
 	var player := Players.find_active(get_tree())
 	return player != null and (player.global_position.x - global_position.x) * facing > 0.0
 
 
 func _aim_direction() -> Vector3:
-	if behavior == Behavior.WALKER:
+	if behavior in [Behavior.WALKER, Behavior.SHIELD]:
 		return Vector3(facing, 0, 0)
 	var player := Players.find_active(get_tree())
 	if player == null:

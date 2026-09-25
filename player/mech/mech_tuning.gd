@@ -43,5 +43,13 @@ extends Resource
 @export var respawn_invulnerability: float = 2.0
 @export var knockback: Vector2 = Vector2(7.0, 6.0)
 
+@export_group("Charge shot")
+## Holding fire keeps the rapid-fire buster going while the cannon charges; releasing
+## fires a piercing charge shot once a level is reached.
+@export var charge_level_1: float = 0.75
+@export var charge_level_2: float = 1.6
+@export var charge_damage_1: int = 4
+@export var charge_damage_2: int = 10
+
 @export_group("Super")
 @export var super_duration: float = 1.35

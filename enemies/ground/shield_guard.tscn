@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://enemies/ground/ground_enemy.tscn" id="1_base"]
+
+[node name="ShieldGuard" instance=ExtResource("1_base")]
+behavior = 4
+speed = 1.6
+fire_interval = 2.0
+telegraph_time = 0.5
+burst_count = 3
+sight_range = 16.0
+score_value = 500
+death_size = 1.2
+health_drop_chance = 0.3
+
+[node name="Model" parent="Facing"]
+kind = 8
+
+[node name="Muzzle" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 1.2, 0)
+
+[node name="Telegraph" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 1.2, 0.6)
+
+[node name="Health" parent="."]
+max_health = 6
