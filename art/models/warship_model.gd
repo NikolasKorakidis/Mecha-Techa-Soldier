@@ -26,6 +26,8 @@ const STATIONS := [
 @export var low_detail: bool = false
 ## Keep |z| below this free of dorsal props (Stage 3 races down the centreline).
 @export var clear_lane: float = 0.0
+## Paint the Stage 3 runway down the spine (lighter strip, guide lights) for distant views.
+@export var runway: bool = false
 ## Base size of destroy() blasts in local units (raise it when the camera watches from far away).
 @export var explosion_scale: float = 8.0
 
@@ -75,6 +77,8 @@ func _ready() -> void:
 	_build_tower(_section_at(-380.0), Vector3(-380.0, 0, 42.0))
 	_build_tower(_section_at(-90.0), Vector3(-90.0, 0, -50.0), 0.6)
 	_build_city()
+	if runway:
+		_build_runway()
 	_build_batteries()
 	_build_fins()
 	_build_engines()
@@ -313,6 +317,34 @@ func _build_windows() -> void:
 	for i in sections.size():
 		_multimesh(sections[i], warm[i], _window_mat, box)
 		_multimesh(sections[i], cool[i], _cool_mat, box)
+
+
+## The hull-run spine seen from afar: a lighter plated strip with edge lights and chevrons.
+func _build_runway() -> void:
+	var strip := _mat(Color("2c3856"), 0.35)
+	var lights: Array = []
+	var chevrons: Array = []
+	for i in sections.size():
+		lights.append([])
+		chevrons.append([])
+	for i in sections.size():
+		var x0 := SECTION_BOUNDS[i]
+		var x1 := minf(SECTION_BOUNDS[i + 1], 480.0)
+		ModelKit.box(sections[i], Vector3(x1 - x0, 0.4, 5.0), Vector3((x0 + x1) * 0.5, 0.2, 0), strip)
+	var x := -470.0
+	var n := 0
+	while x < 480.0:
+		for side: float in [-1.0, 1.0]:
+			lights[_section_index(x)].append(Transform3D(Basis.from_scale(Vector3(2.0, 0.3, 0.5)), Vector3(x, 0.45, side * 2.7)))
+		if n % 7 == 0:
+			chevrons[_section_index(x)].append(Transform3D(Basis.from_scale(Vector3(1.2, 0.2, 3.0)), Vector3(x, 0.45, 0)))
+		x += 8.0
+		n += 1
+	var glow := ModelKit.emissive(Color("5fd3ff"), 2.4)
+	var hazard := ModelKit.emissive(Color("ffc46b"), 1.4)
+	for i in sections.size():
+		_multimesh(sections[i], lights[i], glow, BoxMesh.new())
+		_multimesh(sections[i], chevrons[i], hazard, BoxMesh.new())
 
 
 ## Superstructure "city": blocks, domes and ridges clustered off the centreline, taller near

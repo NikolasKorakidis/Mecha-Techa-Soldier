@@ -76,56 +76,7 @@ func activate() -> void:
 
 
 func _build_planets() -> void:
-	var giant_mat := ShaderMaterial.new()
-	giant_mat.shader = preload("res://art/shaders/gas_giant.gdshader")
-	giant_mat.set_shader_parameter(&"band_dark", Color(0.35, 0.16, 0.1))
-	giant_mat.set_shader_parameter(&"band_mid", Color(0.7, 0.42, 0.22))
-	giant_mat.set_shader_parameter(&"band_light", Color(0.95, 0.78, 0.5))
-	giant_mat.set_shader_parameter(&"atmosphere", Color(1.0, 0.7, 0.4))
-	giant_mat.set_shader_parameter(&"light_direction", Vector3(-0.6, 0.5, -0.6))
-	var giant := ModelKit.sphere(_sky_root, 260.0, Vector3(1400, 120, 700), giant_mat)
-	(giant.mesh as SphereMesh).radial_segments = 64
-	(giant.mesh as SphereMesh).rings = 32
-	giant.rotation_degrees = Vector3(0, 0, 18)
-	var ring := MeshInstance3D.new()
-	var torus := TorusMesh.new()
-	torus.inner_radius = 330.0
-	torus.outer_radius = 470.0
-	torus.rings = 96
-	torus.ring_segments = 3
-	ring.mesh = torus
-	var ring_mat := StandardMaterial3D.new()
-	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	ring_mat.albedo_color = Color(0.85, 0.7, 0.5, 0.45)
-	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	ring_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	ring.material_override = ring_mat
-	ring.position = giant.position
-	ring.scale = Vector3(1, 0.02, 1)
-	ring.rotation_degrees = Vector3(12, 0, 18)
-	_sky_root.add_child(ring)
-	var moon_mat := ShaderMaterial.new()
-	moon_mat.shader = preload("res://art/shaders/gas_giant.gdshader")
-	moon_mat.set_shader_parameter(&"band_dark", Color(0.25, 0.06, 0.06))
-	moon_mat.set_shader_parameter(&"band_mid", Color(0.5, 0.15, 0.12))
-	moon_mat.set_shader_parameter(&"band_light", Color(0.75, 0.35, 0.25))
-	moon_mat.set_shader_parameter(&"atmosphere", Color(1.0, 0.4, 0.3))
-	ModelKit.sphere(_sky_root, 70.0, Vector3(1300, 330, -900), moon_mat)
-	var world_mat := ShaderMaterial.new()
-	world_mat.shader = preload("res://art/shaders/gas_giant.gdshader")
-	var world := ModelKit.sphere(_sky_root, 700.0, Vector3(600, -950, -500), world_mat)
-	world.rotation_degrees = Vector3(0, 0, 70)
-	(world.mesh as SphereMesh).radial_segments = 64
-	(world.mesh as SphereMesh).rings = 32
-	# Sun with a warm corona.
-	ModelKit.sphere(_sky_root, 30.0, Vector3(1800, 500, -1100), ModelKit.emissive(Color(1.0, 0.92, 0.8), 6.0))
-	for k in 2:
-		var corona := MeshInstance3D.new()
-		corona.mesh = QuadMesh.new()
-		corona.material_override = ModelKit.glow_billboard(Color(1.0, 0.75, 0.45), [1.2, 0.35][k])
-		corona.position = Vector3(1800, 500, -1100)
-		corona.scale = Vector3.ONE * [260.0, 800.0][k]
-		_sky_root.add_child(corona)
+	SpacePlanets.build(_sky_root, SpacePlanets.Layout.HULL_RUN)
 
 
 func _build_ships() -> void:

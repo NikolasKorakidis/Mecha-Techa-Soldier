@@ -2,8 +2,8 @@ class_name CampaignDirector
 extends Node
 ## The whole run in one continuous world — no scene changes between stages:
 ##   SHOOTER    Stage 1 in open space (static side-view camera far left of the warship)
-##   DROP       the Kestrel breaks off, races to the enemy warship, transforms over its roof
-##              and the mech drops onto the hull (in-engine cinematic, letterboxed)
+##   DROP       the camera swings behind the Kestrel, it dives at the warship far below (manga
+##              speed lines), transforms half way down and the mech lands on the roof deck
 ##   PLATFORMER Stage 2 on/inside the warship
 ##   ESCAPE     core destroyed: slow motion, the arena roof blows out, the mech thrusts up to
 ##              the top hull, transforms into the bike and the camera swings from side view to
@@ -38,8 +38,9 @@ enum Phase { SHOOTER, DROP, PLATFORMER, ESCAPE, HULL_RUN, ENDING, RETRO, DONE }
 
 ## Stage 1 camera origin (far from the warship so the flight there is a real journey).
 @export var shooter_camera: Vector3 = Vector3(-700.0, 0.0, 30.0)
-## Where the Kestrel transforms, above the landing ring on the roof deck.
+## Where the mech touches down on the roof deck after the boarding dive.
 @export var drop_point: Vector3 = Vector3(-62.0, 44.0, 0.0)
+## Length of the whole boarding cinematic (pull-in, camera swing, dive).
 @export var flight_time: float = 6.0
 ## Where the mech lands on the top hull after the escape, and the bike starts.
 @export var escape_point: Vector3 = Vector3(321.0, 30.6, 0.0)
@@ -99,53 +100,87 @@ func _run_drop() -> void:
 	_set_phase(Phase.DROP)
 	stage_ui.letterbox(true)
 	ship.set_cinematic(true)
-	await _wait(1.6)
-	space_backdrop.set_battle_layers_visible(false)
-	perspective_backdrop.cut_to_open_space(0.4)
-	perspective_backdrop.approach_warship(flight_time + 1.2)
-	AudioService.play_music(&"title", 2.5)
-	AudioService.play(&"boost")
-	stage_ui.show_banner("ENEMY WARSHIP VX-07", "BOARDING RUN — GET ON THAT HULL", 3.4)
-	var p0 := ship.global_position
-	var p1 := p0 + Vector3(170.0, 8.0, 0.0)
-	var p2 := drop_point + Vector3(-170.0, 22.0, 0.0)
-	var p3 := drop_point
-	var t := 0.0
-	var last := p0
-	camera.rig_override = true
-	# The camera stays locked on the Kestrel (no lag, it never leaves the frame); the offset
-	# eases from the Stage 1 framing to a lead ahead of the ship, then to the landing framing.
-	var start_offset := Vector2(camera.global_position.x - p0.x, camera.global_position.y - p0.y)
-	var speed_tween := create_tween()
-	speed_tween.tween_property(perspective_backdrop, "flight_speed", 150.0, flight_time * 0.35).set_trans(Tween.TRANS_SINE)
-	speed_tween.tween_interval(flight_time * 0.3)
-	speed_tween.tween_property(perspective_backdrop, "flight_speed", 38.0, flight_time * 0.35).set_trans(Tween.TRANS_SINE)
-	create_tween().tween_property(camera, "size", 16.0, flight_time).set_trans(Tween.TRANS_SINE)
 	_cam_update = Callable()
+	camera.rig_override = true
+	AudioService.play_music(&"title", 2.5)
+	var fx := MangaFx.new()
+	add_child(fx)
+	# Beat 1: the Kestrel eases to the middle of the side view.
+	var beat := flight_time * 0.2
+	var from := ship.global_position
+	var mid := Vector3(camera.global_position.x - 3.0, camera.global_position.y + 1.0, 0.0)
+	stage_ui.show_banner("ENEMY WARSHIP VX-07", "BOARDING RUN — GET ON THAT HULL", beat + flight_time * 0.3)
+	await _tween_ship(from, mid, beat)
+	# Beat 2: swap to the dive world under a flash and orbit the camera behind the ship.
+	stage_ui.flash(0.6, 0.6)
+	var saved_near := camera.near
+	var saved_far := camera.far
+	var cine := DropCinematic.new()
+	add_child(cine)
+	cine.setup(ship.global_position)
+	_set_drop_world_visible(false)
+	AudioService.play(&"boost")
+	await _swing_behind_ship(flight_time * 0.37)
+	# Beat 3: the dive. Speed lines build, the Kestrel transforms half way down, the mech keeps
+	# falling head-first at the runway.
+	var dive := flight_time * 0.43
+	var start := ship.global_position
+	var target := cine.landing_point(start)
+	var dir := (target - start).normalized()
+	var start_fov := camera.fov
+	var body: Node3D = ship
+	var close := 0.0
+	var t := 0.0
 	while t < 1.0:
 		await get_tree().process_frame
-		t = minf(1.0, t + get_process_delta_time() / flight_time)
-		var e := t * t * (3.0 - 2.0 * t)
-		var pos := _bezier(p0, p1, p2, p3, e)
-		ship.global_position = pos
-		var vel := (pos - last) / maxf(get_process_delta_time(), 0.001)
-		last = pos
-		ship.model.rotation.z = lerpf(ship.model.rotation.z, clampf(vel.y * 0.015, -0.4, 0.4), 0.15)
-		ship.model.set_thrust(1.4)
-		# Mid-flight the Kestrel rides high in the frame so the warship reads as below it.
-		var offset := start_offset.lerp(Vector2(7.0, -0.5), smoothstep(0.0, 0.25, t)).lerp(Vector2(3.0, 4.0), smoothstep(0.78, 1.0, t))
-		camera.global_position = Vector3(pos.x + offset.x, pos.y + offset.y, 30.0)
-	ship.model.rotation.z = 0.0
-	await _wait(0.25)
-	_transform_ship_into_mech()
-	# Fall onto the deck.
+		var delta := get_process_delta_time()
+		t = minf(1.0, t + delta / dive)
+		var u := t * t * 0.82
+		var p := start.lerp(target, u)
+		if t >= 0.45 and body == ship:
+			fx.impact(0.12)
+			_transform_ship_into_mech()
+			mech.set_physics_process(false)
+			body = mech
+		body.global_position = p
+		if body == ship:
+			ship.model.set_thrust(1.8)
+			ship.model.rotation.z = lerpf(ship.model.rotation.z, -0.75, clampf(delta * 5.0, 0, 1))
+		else:
+			mech.rotation.z = lerpf(mech.rotation.z, -0.9, clampf(delta * 6.0, 0, 1))
+			mech.model.update_pose(MechModel.Pose.DASH, 1.0, delta)
+		# After the transform the camera closes in on the falling mech.
+		if body == mech:
+			close = minf(1.0, close + delta * 3.0)
+		fx.set_intensity(lerpf(0.25, 1.0, t))
+		camera.fov = lerpf(start_fov, 78.0, t)
+		var back := lerpf(lerpf(26.0, 17.0, t), 8.0, close)
+		camera.global_position = p - dir * back + Vector3(0.0, lerpf(7.0, 2.5, close), lerpf(5.0, 2.0, close))
+		camera.look_at(p + dir * 45.0, Vector3.UP)
+		camera.add_trauma(delta * 0.5 * t)
+	# Beat 4: impact frame hides the cut back to the side view over the Stage 2 roof.
+	fx.impact(0.14)
+	AudioService.play(&"explosion_large")
+	cine.restore()
+	_set_drop_world_visible(true)
+	perspective_backdrop.set_boarding()
+	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+	camera.rotation = Vector3.ZERO
+	camera.size = 15.0
+	camera.near = saved_near
+	camera.far = saved_far
+	mech.rotation = Vector3.ZERO
+	mech.global_position = drop_point + Vector3(0.0, 9.0, 0.0)
+	mech.velocity = Vector3(0.0, -32.0, 0.0)
+	mech.set_physics_process(true)
+	camera.global_position = mech.global_position + Vector3(3.0, 2.0, 30.0)
+	create_tween().tween_method(fx.set_intensity, 0.8, 0.0, 0.6)
 	_cam_update = func(delta: float) -> void:
 		if not is_instance_valid(mech):
 			return
 		var goal := mech.global_position + Vector3(3.0, 4.0, 0.0)
 		var c := camera.global_position
-		camera.global_position = Vector3(lerpf(c.x, goal.x, clampf(delta * 4.0, 0, 1)), lerpf(c.y, goal.y, clampf(delta * 4.0, 0, 1)), 30.0)
-	create_tween().tween_property(camera, "size", 15.0, 0.8)
+		camera.global_position = Vector3(lerpf(c.x, goal.x, clampf(delta * 6.0, 0, 1)), lerpf(c.y, goal.y, clampf(delta * 6.0, 0, 1)), 30.0)
 	var guard := 0.0
 	while not mech.is_on_floor() and guard < 4.0:
 		await get_tree().physics_frame
@@ -158,10 +193,57 @@ func _run_drop() -> void:
 				{&"direction": Vector3(randf_range(-1, 1), 0.6, 0).normalized()})
 	LevelKit.steam(get_tree().get_first_node_in_group(Vfx.ROOT_GROUP), mech.global_position + Vector3(0, 0, 1.2), 1.5).one_shot = true
 	await _wait(0.9)
+	fx.queue_free()
 	stage_ui.letterbox(false)
 	_cam_update = Callable()
 	mech.set_cinematic(false)
 	_begin_platformer(false)
+
+
+func _tween_ship(from: Vector3, to: Vector3, duration: float) -> void:
+	var t := 0.0
+	while t < 1.0:
+		await get_tree().process_frame
+		t = minf(1.0, t + get_process_delta_time() / maxf(duration, 0.01))
+		ship.global_position = from.lerp(to, t * t * (3.0 - 2.0 * t))
+		ship.model.set_thrust(1.2)
+
+
+## The side-view layers and the Stage 2/3 geometry make no sense from the dive's angles.
+func _set_drop_world_visible(on: bool) -> void:
+	sky.visible = on
+	(warship_director.get_parent() as Node3D).visible = on
+	(hull_director.get_parent() as Node3D).visible = on
+	space_backdrop.set_battle_layers_visible(false)
+
+
+## Side-view ortho → matched perspective → orbit to behind and above the Kestrel, looking down
+## past its nose at the warship below.
+func _swing_behind_ship(duration: float) -> void:
+	var p := ship.global_position
+	var start_h := camera.global_position.y - p.y
+	var start_x := camera.global_position.x - p.x
+	var start_fov := GameplayCamera.fov_matching(camera.size, 30.0)
+	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
+	camera.fov = start_fov
+	camera.near = 0.4
+	camera.far = 6000.0
+	var t := 0.0
+	while t < 1.0:
+		await get_tree().process_frame
+		t = minf(1.0, t + get_process_delta_time() / maxf(duration, 0.01))
+		var e := t * t * (3.0 - 2.0 * t)
+		var angle := e * PI * 0.5
+		var dist := lerpf(30.0, 26.0, e)
+		var side_x := lerpf(start_x, 0.0, e)
+		camera.global_position = Vector3(p.x + side_x - sin(angle) * dist, p.y + lerpf(start_h, 7.0, e), cos(angle) * dist + 5.0 * e)
+		# The look drops toward the warship ahead of the orbit, so it is in view early.
+		var down := smoothstep(0.0, 0.6, t)
+		camera.look_at(Vector3(p.x + lerpf(side_x, 45.0, e), p.y + lerpf(start_h, -30.0, down), 0.0), Vector3.UP)
+		camera.fov = lerpf(start_fov, 55.0, e)
+		# The nose tips down as the camera settles: the dive is coming.
+		ship.model.rotation.z = lerpf(0.0, -0.3, smoothstep(0.5, 1.0, t))
+		ship.model.set_thrust(1.2)
 
 
 func _transform_ship_into_mech() -> void:
@@ -459,11 +541,6 @@ func _slow_motion(scale: float, real_seconds: float) -> void:
 
 func _wait(seconds: float) -> void:
 	await get_tree().create_timer(seconds, false).timeout
-
-
-static func _bezier(a: Vector3, b: Vector3, c: Vector3, d: Vector3, t: float) -> Vector3:
-	var u := 1.0 - t
-	return a * u * u * u + b * 3.0 * u * u * t + c * 3.0 * u * t * t + d * t * t * t
 
 
 func _set_phase(next: Phase) -> void:
