@@ -153,11 +153,16 @@ Main
   Area3D pushing grounded bodies via move_and_collide over a continuous floor), `CrumblePlatform`; both
   vanishing kinds join the `unsafe_ground` group so pit recovery never returns you onto them.
 - `WarshipModel` (art/models): one hero capital ship — lofted hull split into four sections, MultiMesh
-  plating/windows/superstructure, towers, batteries, engines — used at 0.5 scale in the Stage 1 backdrop's
-  own world, at 3.6 scale under the Stage 3 track (`HullRunBackdrop.warship`), and destroyed in the ending
+  plating/windows/superstructure, towers, batteries, engines — used at full scale in the Stage 1 backdrop's
+  own world and the boarding dive, at 3.6 scale under the Stage 3 track (`HullRunBackdrop.warship`), and destroyed in the ending
   (`destroy()` chains explosions and drifts the sections apart). Stage 1 depth:
   `PerspectiveBackdrop` renders its own 3D world (`own_world_3d` SubViewport) onto a screen quad under
-  the sky follower; zone changes are driven by stage time and the director's `boss_spawned`.
+  the sky follower; the warship approach runs on stage time (`approach_time`) and finishes early on the
+  director's `boss_spawned`. `SpacePlanets` builds the shared planet set (layouts `ORBIT`, `HULL_RUN`).
+- Boarding dive: `CampaignDirector._run_drop` drives the camera (`rig_override`, perspective during the
+  dive); `DropCinematic` owns the temporary dive world and restores the environment; `MangaFx`
+  (CanvasLayer 7, under StageUI) draws speed lines and impact frames. The mech's physics is paused while
+  it is placed along the dive path.
 - UI never owns gameplay state: HUD reads RunSession; TutorialCard reads input + Settings; StageUI is
   driven by the LevelDirector and boss signals.
 

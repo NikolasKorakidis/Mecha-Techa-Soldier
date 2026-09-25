@@ -4,9 +4,10 @@
 platformer, then into a motorcycle racing along the top of the exploding warship (3D chase view). The link between both halves is **Echo Shift** — decode an enemy's combat pattern (Burst, Arc,
 Guard) and carry it through the ship-to-mech transformation.
 
-**Status:** one seamless campaign, no scene switches. Stage 1 side-view shooter (Choir Engine), with the enemy
-warship cruising below in the background → the Kestrel dives onto it, transforms over its hull and the mech
-drops onto the roof → Stage 2 Mega Man X-style platformer through eight colour-zoned sections of the warship
+**Status:** one seamless campaign, no scene switches. Stage 1 side-view shooter against enemy starships (Choir
+Colossus mecha boss), the enemy warship creeping in from far away until you fly over its runway → the camera
+swings behind the Kestrel, it dives at the warship (manga speed lines), transforms mid-dive and the mech
+lands on the roof → Stage 2 Mega Man X-style platformer through eight colour-zoned sections of the warship
 (charge shot, appearing blocks, conveyors, Heart/Energy Tanks, secrets, Bulkhead Sentinel mid-boss, Reactor
 Core) → the roof blows out, the mech thrusts up, becomes the bike and the camera swings behind it → Stage 3
 3D chase-view run along the spine of the burning 3.6 km warship (fighters, turrets, trench run, pursuit

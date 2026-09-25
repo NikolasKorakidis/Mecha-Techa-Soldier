@@ -90,14 +90,17 @@ still planned (M2); drops are the first acquisition path.
 ### Enemy roster (space)
 | Enemy | Movement | Attack | Role |
 |---|---|---|---|
-| Drone | Sine drift | Straight shot | Basic fodder |
-| Needle | Fast straight rows | None (contact) | Formation bonus target |
-| Lancer | Swoop toward center and back | Diagonal pair | Lane pressure |
-| Gunpod | Enters, parks, leaves | Aimed 3-round burst (barrel tracks you) | Priority turret (Contra-style) |
-| Rammer | Approaches, telegraphs, locks on, charges | Body | Forces sidesteps |
-| Gunship (elite) | Parks | 5-way aimed fan | Drops BURST |
-| Tesla (elite) | Parks, wide bob | 5-round aimed burst | Drops ARC |
-| Warden (elite) | Parks | 12-way radial ring, alternating gaps | Drops GUARD |
+| Drone (Hornet fighter) | Sine drift | Straight shot | Basic fodder |
+| Needle (Stiletto interceptor) | Fast straight rows | None (contact) | Formation bonus target |
+| Lancer (twin-lance pod) | Swoop toward center and back | Diagonal pair | Lane pressure |
+| Gunpod (frigate) | Enters, parks, leaves | Aimed 3-round burst (turret tracks you) | Priority turret (Contra-style) |
+| Rammer (ram ship) | Approaches, telegraphs, locks on, charges | Body | Forces sidesteps |
+| Gunship (elite destroyer) | Parks | 5-way aimed fan | Drops BURST |
+| Tesla (elite arc cruiser) | Parks, wide bob | 5-round aimed burst | Drops ARC |
+| Warden (elite bulwark) | Parks | 12-way radial ring, alternating gaps | Drops GUARD |
+
+All space enemies are modelled as ships (hulls, cockpits, engines with flickering plumes) facing the player.
+Weapon drops are spread evenly through the stage (14 s, 31 s, 48 s, 65 s); echo ammo per pickup +10%.
 
 Every volley is preceded by a swelling telegraph flare. Whole formations destroyed award a
 **formation bonus**; one escapee voids it.
@@ -107,14 +110,17 @@ The whole run is one continuous world (`levels/campaign/campaign.tscn`): one cam
 stages. Score, echo weapon and SUPER energy carry across all three forms.
 - **Stage 1 — Orbital Riptide** (side-view shooter, ~80 s of waves) → **The Choir Engine**. G-Darius-style
   depth: a real 3D world renders behind the play plane (`PerspectiveBackdrop`, SubViewport) and the camera
-  flies through it — ringed planet, capital fleet and asteroids in open space → a space-station trench
-  mid-stage (modules, arches) → a sunset cloud sea with spires for the boss. Zones blend sky and fog presets.
-  Flat layers on top: capital-ship battle trading turbolaser fire, sun shafts. From ~16 s the real enemy
-  warship (`WarshipModel`) cruises below the flight line in the backdrop — the destination.
-- **Boarding run** (in-engine, letterboxed): the camera stays locked on the Kestrel while the backdrop
-  cuts to open space, speeds up, and the warship rises in below the flight line until its deck fills the
-  lower screen; the Kestrel races across, transforms above the roof and
-  the **mech drops onto the hull** with the rest of the ship spreading out behind it.
+  flies through one continuous deep-space flight: the same star system as Stage 3 (ringed gas giant, red
+  moon, the blue world, the sun — `SpacePlanets`, seen from another angle), asteroids and far capital ships.
+  The enemy warship (`WarshipModel`, runway lit down its spine) creeps in from the far distance over the
+  whole stage — eased so it is barely noticed at first — and by the boss you fly over its top.
+  Flat layers on top: capital-ship battle trading turbolaser fire, sun shafts.
+- **Boarding dive** (in-engine, letterboxed, `flight_time` long): the Kestrel eases to centre, a flash
+  swaps to the dive world (`DropCinematic`: warship far below, planets, space sky) and the camera orbits
+  from the side view to behind the ship, looking down at the warship. The Kestrel noses over and dives;
+  manga speed lines (`MangaFx`) build, an impact frame marks the **mid-dive transformation**, the camera
+  closes in on the falling mech, and a second impact frame cuts back to the side view as the
+  **mech lands on the roof deck**.
 - **Stage 2 — Warship Infiltration** (Mega Man X-style platformer): roof deck drop zone → entry hatch (a
   bulkhead + gantry block roof-running) → landing bay → pit run → electric corridor → tower climb → moving
   platforms over the reactor pit → crusher hall → **Bulkhead Sentinel** mid-boss room → elite guard +
@@ -200,7 +206,9 @@ erases enemy bullets and grants invulnerability while it fires.
   summons. A high ledge gives a better firing line but sits in the high-sweep lane.
 Both follow `.claude/rules/bosses.md`: explicit states, health floors so phases cannot be skipped, breaks
 that clear bullets and protect the player, no back-to-back attack repeats, slower first use.
-- **The Choir Engine** (420 HP): fan volleys, rotating spiral with safe lanes, drone summons; phase 2 adds
+- **The Choir Colossus** (`ChoirEngine`, 420 HP): a giant winged mecha — crimson/gunmetal armour, V-horned
+  head that tracks you, beam rifle, shield arm, blade wings, rotating halo and three orbiting funnel drones
+  (the "masks"), chest core as the weak point. Fan volleys, rotating spiral with safe lanes, drone summons; phase 2 adds
   telegraphed lightning lanes and aimed bursts; phase 3 adds the Null Chorus (inward ring → core flare →
   three radial rings with a gap). One mask shatters per break. (Overdrive Counter beam contest: pending M2.)
 - **Forge Dreadnought** (520 HP): phase 1 — destroy two tracking turrets while dodging broadside walls and
