@@ -57,11 +57,11 @@ death_effect = ExtResource("12_boom")
 script = ExtResource("9_model")
 
 [node name="EngineTrailUpper" type="CPUParticles3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.95, 0.43, -0.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.16, -0.3)
 script = ExtResource("10_trail")
 
 [node name="EngineTrailLower" type="CPUParticles3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.95, -0.43, -0.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.25, -0.11, 0.2)
 script = ExtResource("10_trail")
 
 [node name="DashMeter" type="MeshInstance3D" parent="."]
@@ -69,7 +69,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.35, 0)
 mesh = SubResource("Mesh_meter")
 
 [node name="Muzzle" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.95, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 0, 0)
 script = ExtResource("4_weapon")
 projectile_scene = ExtResource("8_shot")
 team = 1
@@ -82,7 +82,7 @@ cast_shadow = 0
 mesh = SubResource("Mesh_muzzle")
 
 [node name="Arsenal" type="Node3D" parent="." node_paths=PackedStringArray("base_weapon", "burst_weapon", "orb_weapon", "guard_orbs")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.95, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 0, 0)
 script = ExtResource("13_arsenal")
 base_weapon = NodePath("../Muzzle")
 burst_weapon = NodePath("BurstWeapon")
