@@ -7,6 +7,6 @@ script = ExtResource("1_data")
 id = &"burst"
 display_name = "BURST"
 module_color = Color(1, 0.55, 0.3, 1)
-ammo = 140
+ammo = 154
 fire_interval = 0.11
 damage = 1

@@ -7,6 +7,6 @@ script = ExtResource("1_data")
 id = &"guard"
 display_name = "GUARD"
 module_color = Color(1, 0.85, 0.35, 1)
-ammo = 180
+ammo = 198
 fire_interval = 0.1
 damage = 1

@@ -7,6 +7,6 @@ script = ExtResource("1_data")
 id = &"arc"
 display_name = "ARC"
 module_color = Color(0.7, 0.55, 1, 1)
-ammo = 110
+ammo = 121
 fire_interval = 0.14
 damage = 2
