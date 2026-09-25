@@ -8,6 +8,9 @@ extends Node3D
 ##   foreground (x1.25, z +6): dark girders and cable clumps passing in front of the action
 ## Only shown while the camera is inside the ship (the campaign flies past it from space).
 ## The sky itself comes from the campaign's space backdrop, seen through the windows.
+## Every section has its own colour zone (WarshipZones): tinted wall panels, pools of accent
+## light along the play plane, signature machinery (ZoneSetPieces) and a depth fog that tints
+## the far layers — while inside, the environment fog follows the camera's zone.
 
 @export var level_length: float = 330.0
 ## Camera X range in which the interior is drawn.
@@ -35,6 +38,9 @@ var _fans: Array[Node3D] = []
 var _coils: Array[StandardMaterial3D] = []
 var _time: float = 0.0
 var _rng := RandomNumberGenerator.new()
+var _zone_lights: Node3D
+var _env: Environment
+var _zone_mats: Dictionary = {}
 
 
 func _ready() -> void:
@@ -49,6 +55,11 @@ func _ready() -> void:
 	_build_wall()
 	_build_mid()
 	_build_foreground()
+	var pieces := ZoneSetPieces.new()
+	pieces.factor = MID_FACTOR
+	_mid.add_child(pieces)
+	_build_zone_lights()
+	_bind_environment()
 
 
 func _build_sky() -> void:
@@ -73,7 +84,8 @@ func _build_sky() -> void:
 func _build_wall() -> void:
 	var panel_a := ModelKit.toon(Color("0c1322"), 0.15, 0.9, 0.2)
 	var panel_b := ModelKit.toon(Color("101a2c"), 0.18, 0.85, 0.25)
-	var inset := ModelKit.toon(Color("15213a"), 0.25, 0.7, 0.35)
+	var inset_base := ModelKit.toon(Color("15213a"), 0.25, 0.7, 0.35)
+	var inset := inset_base
 	var rib := ModelKit.toon(Color("18233a"), 0.25, 0.7, 0.4)
 	var bolt := ModelKit.toon(Color("3a4866"), 0.4, 0.5, 0.6)
 	var frame := ModelKit.toon(Color("22304f"), 0.3, 0.6, 0.4)
@@ -86,7 +98,9 @@ func _build_wall() -> void:
 	while x < 400.0:
 		var cx := x + 3.0
 		var window := i % 4 == 1
-		var mat := panel_a if i % 2 == 0 else panel_b
+		var zone_x := cx / WALL_FACTOR
+		var mat := _zone_mat(panel_a if i % 2 == 0 else panel_b, zone_x)
+		inset = _zone_mat(inset_base, zone_x, 0.2)
 		if window:
 			ModelKit.box(_wall, Vector3(6.0, 15.0, 0.4), Vector3(cx, -4.5, z), mat)
 			ModelKit.box(_wall, Vector3(6.0, 12.0, 0.4), Vector3(cx, 16.0, z), mat)
@@ -118,7 +132,7 @@ func _build_wall() -> void:
 		ModelKit.box(_wall, Vector3(0.18, 34.0, 0.2), Vector3(x + 0.5, 5.0, z + 0.9), pipe)
 		ModelKit.box(_wall, Vector3(6.0, 0.6, 0.3), Vector3(cx, -2.2, z + 0.4), stripe)
 		if i % 2 == 0:
-			var lamp := ModelKit.emissive(Color("ff9f4a"), 1.0)
+			var lamp := ModelKit.emissive(WarshipZones.accent_at(zone_x), 1.0)
 			_lights.append(lamp)
 			ModelKit.box(_wall, Vector3(0.45, 0.2, 0.2), Vector3(x, 11.0, z + 0.9), lamp)
 		if i % 6 == 3:
@@ -134,6 +148,52 @@ func _build_wall() -> void:
 			fx += 9.0
 	for vx in range(-230, 400, 37):
 		ModelKit.cylinder(_wall, 0.45, 0.45, 0.08, Vector3(vx, 18.5, z + 1.5), flange, Vector3(90, 0, 0), 10)
+
+
+## Wall material tinted toward the zone accent (cached per zone).
+func _zone_mat(base: StandardMaterial3D, zone_x: float, amount: float = 0.14) -> StandardMaterial3D:
+	var key := "%d_%d_%d" % [base.get_instance_id(), WarshipZones.index_at(zone_x), int(amount * 100)]
+	if not _zone_mats.has(key):
+		var m := base.duplicate() as StandardMaterial3D
+		m.albedo_color = WarshipZones.tint(base.albedo_color, zone_x, amount)
+		_zone_mats[key] = m
+	return _zone_mats[key]
+
+
+## Pools of zone-coloured light between the back wall and the play plane.
+func _build_zone_lights() -> void:
+	_zone_lights = ModelKit.group(self, "ZoneLights")
+	var x := interior_x.x + 4.0
+	while x < interior_x.y:
+		for ly: float in [4.0, 15.0]:
+			var light := OmniLight3D.new()
+			light.position = Vector3(x, ly, -4.0)
+			light.light_color = WarshipZones.accent_at(x)
+			light.omni_range = 13.0
+			light.light_energy = 1.3 if ly < 10.0 else 0.8
+			light.omni_attenuation = 1.4
+			light.shadow_enabled = false
+			_zone_lights.add_child(light)
+		x += 11.0
+
+
+## The level's environment gets its own copy so the interior fog never leaks elsewhere.
+func _bind_environment() -> void:
+	var found := get_tree().root.find_children("*", "WorldEnvironment", true, false)
+	if found.is_empty():
+		return
+	var world_env := found[0] as WorldEnvironment
+	if world_env.environment == null:
+		return
+	_env = world_env.environment.duplicate() as Environment
+	world_env.environment = _env
+	_env.fog_mode = Environment.FOG_MODE_DEPTH
+	_env.fog_depth_begin = 33.0
+	_env.fog_depth_end = 48.0
+	_env.fog_depth_curve = 1.4
+	_env.fog_density = 0.85
+	_env.fog_sky_affect = 0.0
+	_env.fog_enabled = false
 
 
 func _screen(at: Vector3, color: Color) -> void:
@@ -250,6 +310,11 @@ func _process(delta: float) -> void:
 	var inside := cx > interior_x.x and cx < interior_x.y and cy < interior_max_y and _camera.projection == Camera3D.PROJECTION_ORTHOGONAL
 	_wall.visible = inside
 	_mid.visible = inside
+	_zone_lights.visible = inside
+	if _env:
+		_env.fog_enabled = inside
+		if inside:
+			_env.fog_light_color = WarshipZones.fog_at(cx)
 	# Locked arenas (mid-boss, boss) keep the fight view clear of foreground girders.
 	_fore.visible = inside and cx < fore_cutoff_x and not _camera.is_locked()
 	if _sky:

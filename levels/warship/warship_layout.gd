@@ -28,25 +28,34 @@ const SOLIDS := [
 	[-12.0, 44.0, 24.0, 2.0, false],
 	# 1. Landing bay
 	[-16.0, 0.0, 48.0, 8.0], [-18.0, 16.0, 3.0, 24.0],
-	# 2. Pit run
-	[35.0, 1.0, 4.0, 9.0], [43.0, 2.5, 4.0, 1.2], [51.0, 1.0, 4.0, 9.0],
+	# 2. Pit run: appearing blocks over the molten pit (see TIMED), a last pillar.
+	[55.0, 1.0, 2.6, 9.0],
 	[58.0, 0.0, 34.0, 8.0], [77.0, 2.5, 6.0, 2.5],
 	# 3. Electric corridor (low ceiling)
 	[92.0, 0.0, 34.0, 8.0], [92.0, 24.0, 34.0, 17.5, false],
-	# 4. Tower climb and high walkway
-	[126.0, 2.5, 6.0, 10.5], [134.0, 6.0, 4.0, 1.2], [140.0, 9.0, 27.0, 17.5],
+	# 4. Tower climb (the middle step crumbles, see CRUMBLES) and high walkway
+	[126.0, 2.5, 6.0, 10.5], [140.0, 9.0, 27.0, 17.5],
 	# 4b. Secret: wall-kick up the narrow shaft between two hanging blocks to the roof
 	# pocket (Heart Tank). Both blocks clear the walkway by 3.5 so the main path is untouched.
 	[150.5, 21.0, 1.5, 8.5, false], [154.6, 21.0, 4.4, 8.5],
 	# 5. Moving platforms over the reactor pit (landing ledge)
 	[190.0, 4.5, 10.0, 12.5],
-	# 6. Crusher hall
+	# 6. Crusher hall: conveyor strips (see CONVEYORS) drag you back under the crushers.
 	[200.0, 0.0, 46.0, 8.0], [200.0, 24.0, 46.0, 16.5, false],
 	# 7. Sentinel mid-boss room (246..270, sealed by MidBossZone), dash-jump gap, approach
 	[246.0, 0.0, 24.0, 8.0], [279.0, 0.0, 22.0, 8.0],
 	# 8. Boss arena
 	[301.0, 0.0, 30.0, 8.0], [312.0, 3.8, 5.0, 0.6], [329.0, 16.0, 4.0, 24.0],
 ]
+
+## Appearing blocks: [centre x, top y, width, offset] — on 1.8 s / off 1.4 s, staggered.
+const TIMED := [
+	[35.5, 0.5, 3.0, 0.0], [41.0, 2.0, 3.0, 0.8], [46.5, 3.2, 3.0, 1.6], [52.0, 2.0, 3.0, 2.4],
+]
+## Conveyor strips: [x start, width, speed] (floor top y = 0).
+const CONVEYORS := [[206.0, 12.0, -3.2], [226.0, 14.0, -3.2]]
+## Crumbling ledges: [centre x, top y, width].
+const CRUMBLES := [[136.0, 6.0, 4.0]]
 
 ## [x, y, travel_x, travel_y, period, width]
 const PLATFORMS := [
@@ -76,7 +85,7 @@ const ENEMIES := [
 
 ## [kind, x, y]
 const ITEMS := [
-	[ItemPickup.Kind.HEALTH, 45.0, 4.0],
+	[ItemPickup.Kind.HEALTH, 46.5, 4.8],
 	[ItemPickup.Kind.ENERGY, 123.0, 1.2],
 	[ItemPickup.Kind.HEALTH, 136.0, 7.6],
 	[ItemPickup.Kind.TANK, 186.0, 11.0],
@@ -110,6 +119,7 @@ const LIGHTS := [
 ]
 
 var blast_roof: StaticBody3D
+var _mat_cache: Dictionary = {}
 var mid_boss_zone: MidBossZone
 
 
@@ -122,7 +132,9 @@ func _ready() -> void:
 		return
 	var world := ModelKit.group(self, "World")
 	for s: Array in SOLIDS:
-		LevelKit.solid(world, s[0], s[1], s[2], s[3], s[4] if s.size() > 4 else true)
+		var trim: bool = s[4] if s.size() > 4 else true
+		var mats := _zone_mats(s[0] + s[2] * 0.5, trim, s[1] > 25.0)
+		LevelKit.solid(world, s[0], s[1], s[2], s[3], trim, mats[0], mats[1], mats[2])
 	LevelKit.stripes(world, 29.0, 0.02, 3.0)
 	LevelKit.stripes(world, 267.0, 0.02, 3.0)
 	for p: Array in PLATFORMS:
@@ -132,6 +144,26 @@ func _ready() -> void:
 		platform.period = p[4]
 		platform.position = Vector3(p[0], p[1], 0)
 		world.add_child(platform)
+	for t: Array in TIMED:
+		var block := TimedBlock.new()
+		block.width = t[2]
+		block.offset = t[3]
+		block.color = WarshipZones.accent_at(t[0])
+		block.position = Vector3(t[0], t[1] - 0.5, 0)
+		block.add_to_group(&"unsafe_ground")
+		world.add_child(block)
+	for c: Array in CONVEYORS:
+		var belt := ConveyorBelt.new()
+		belt.width = c[1]
+		belt.speed = c[2]
+		belt.position = Vector3(c[0] + c[1] * 0.5, 0.0, 0)
+		world.add_child(belt)
+	for c: Array in CRUMBLES:
+		var ledge := CrumblePlatform.new()
+		ledge.width = c[2]
+		ledge.position = Vector3(c[0], c[1] - 0.3, 0)
+		ledge.add_to_group(&"unsafe_ground")
+		world.add_child(ledge)
 	for h: Array in HAZARDS:
 		var hazard := Hazard.new()
 		hazard.kind = h[0]
@@ -170,6 +202,22 @@ func _ready() -> void:
 	_build_hatch()
 	_build_exterior_deck()
 	_build_ambience()
+
+
+## Hull body + edge-light materials for a block at x: the zone's accent lights the edges and
+## tints the plating. The exterior roof keeps the neutral hull colours.
+func _zone_mats(x: float, trim: bool, exterior: bool) -> Array:
+	if exterior:
+		return [null, null, null]
+	var zone := WarshipZones.index_at(x)
+	var key := "%d_%s" % [zone, trim]
+	if not _mat_cache.has(key):
+		var accent := WarshipZones.accent_at(x)
+		var base := Color("2a3656") if trim else Color("141b2e")
+		var hull := ModelKit.toon(base.lerp(accent * Color(0.28, 0.28, 0.28), 0.6), 0.4, 0.65, 0.45)
+		var trim_mat := ModelKit.toon(Color("6a7fae").lerp(accent, 0.45), 0.5, 0.45, 0.5)
+		_mat_cache[key] = [hull, ModelKit.emissive(accent, 1.8), trim_mat]
+	return _mat_cache[key]
 
 
 ## Blows the arena roof out (escape cinematic): debris burst, then the opening stays.
