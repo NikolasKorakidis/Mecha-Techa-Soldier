@@ -13,49 +13,65 @@ const K := HullObstacle.Kind
 
 @export var enemy_root: Node3D
 @export var start_x: float = 300.0
-@export var finish_x: float = 2700.0
+@export var finish_x: float = 3700.0
 
 ## Deck spans [x_start, x_end]; gaps between are open to the burning interior.
 const DECKS := [
-	[300.0, 700.0], [712.0, 980.0], [994.0, 1400.0], [1414.0, 1560.0], [1574.0, 1760.0], [1790.0, 2760.0],
+	[300.0, 790.0], [806.0, 1240.0], [1256.0, 1800.0], [1818.0, 2060.0], [2082.0, 2300.0],
+	[2330.0, 3100.0], [3118.0, 3400.0], [3420.0, 3760.0],
 ]
-const TRENCH := Vector2(1000.0, 1380.0)
+const TRENCH := Vector2(1300.0, 1780.0)
 const TRENCH_HEIGHT := 12.0
 
-## [kind, x, z, size] — size only for BLOCK (x, y, z) and FENCE (gap z in .z).
+## [kind, x, z, size] — size only for BLOCK (x, y, z) and FENCE (gap z in .z); SWEEPER uses z as phase.
 const OBSTACLES := [
-	# A — warm-up.
-	[K.BLOCK, 430.0, -4.5, Vector3(4, 2.4, 7)], [K.BLOCK, 480.0, 4.5, Vector3(4, 2.4, 7)], [K.WALL, 530.0, 0.0],
-	[K.VENT, 575.0, -4.0], [K.VENT, 590.0, 4.0], [K.FENCE, 640.0, 0.0, Vector3(0, 0, 5.0)],
-	[K.BLOCK, 680.0, -5.5, Vector3(4, 2.4, 6)], [K.BLOCK, 680.0, 5.5, Vector3(4, 2.4, 6)],
-	# B — blast field.
-	[K.WALL, 760.0, 0.0], [K.BLAST, 805.0, 0.0], [K.BLAST, 835.0, -5.0], [K.BLAST, 850.0, 5.0],
-	[K.FENCE, 900.0, 0.0, Vector3(0, 0, -5.0)], [K.VENT, 945.0, -6.0], [K.VENT, 945.0, 0.0], [K.VENT, 945.0, 6.0],
-	# C — trench run.
-	[K.BLOCK, 1060.0, 4.0, Vector3(4, 2.8, 9)], [K.BLOCK, 1120.0, -4.0, Vector3(4, 2.8, 9)], [K.BLOCK, 1180.0, 4.0, Vector3(4, 2.8, 9)],
-	[K.FENCE, 1250.0, 0.0, Vector3(0, 0, 0.0)], [K.WALL, 1330.0, 0.0], [K.FENCE, 1370.0, 0.0, Vector3(0, 0, 5.5)],
-	# D — burning deck.
-	[K.BLAST, 1440.0, -4.0], [K.BLAST, 1455.0, 4.0], [K.VENT, 1500.0, 0.0], [K.BLOCK, 1530.0, -5.0, Vector3(4, 2.4, 7)],
-	[K.PAD, 1552.0, 0.0], [K.REPAIR, 1610.0, 0.0], [K.BLAST, 1660.0, 0.0], [K.BLOCK, 1700.0, 5.0, Vector3(4, 2.4, 7)],
-	[K.PAD, 1754.0, 0.0],
-	# E — gunship chase.
-	[K.BLOCK, 1900.0, -5.0, Vector3(4, 2.4, 7)], [K.BLOCK, 2050.0, 5.0, Vector3(4, 2.4, 7)], [K.WALL, 2120.0, 0.0],
-	[K.BLOCK, 2200.0, 0.0, Vector3(4, 2.4, 6)], [K.WALL, 2300.0, 0.0], [K.REPAIR, 2350.0, 0.0],
-	[K.FENCE, 2420.0, 0.0, Vector3(0, 0, -5.0)], [K.FENCE, 2480.0, 0.0, Vector3(0, 0, 5.0)],
-	[K.BLAST, 2560.0, -4.0], [K.BLAST, 2580.0, 4.0],
+	# A — warm-up (300-790).
+	[K.BLOCK, 420.0, -4.5, Vector3(4, 2.4, 7)], [K.BLOCK, 460.0, 4.5, Vector3(4, 2.4, 7)], [K.WALL, 505.0, 0.0],
+	[K.VENT, 545.0, -4.0], [K.VENT, 560.0, 4.0], [K.FENCE, 600.0, 0.0, Vector3(0, 0, 5.0)],
+	[K.BLOCK, 640.0, -5.5, Vector3(4, 2.4, 6)], [K.BLOCK, 640.0, 5.5, Vector3(4, 2.4, 6)], [K.DEBRIS, 690.0, 0.0],
+	[K.WALL, 730.0, 0.0], [K.FENCE, 765.0, 0.0, Vector3(0, 0, -5.0)],
+	# B — blast field (806-1240).
+	[K.BLAST, 850.0, 0.0], [K.BLAST, 875.0, -5.0], [K.BLAST, 890.0, 5.0], [K.SWEEPER, 930.0, 0.0],
+	[K.DEBRIS, 965.0, -4.0], [K.DEBRIS, 985.0, 4.0], [K.FENCE, 1025.0, 0.0, Vector3(0, 0, 5.5)],
+	[K.VENT, 1065.0, -6.0], [K.VENT, 1065.0, 0.0], [K.VENT, 1065.0, 6.0], [K.WALL, 1110.0, 0.0],
+	[K.BLOCK, 1150.0, 0.0, Vector3(4, 2.4, 7)], [K.SWEEPER, 1190.0, 1.5], [K.DEBRIS, 1225.0, 0.0],
+	# C — trench run (1300-1780).
+	[K.BLOCK, 1340.0, 4.0, Vector3(4, 2.8, 9)], [K.BLOCK, 1390.0, -4.0, Vector3(4, 2.8, 9)], [K.SWEEPER, 1430.0, 0.0],
+	[K.BLOCK, 1470.0, 4.0, Vector3(4, 2.8, 9)], [K.FENCE, 1515.0, 0.0, Vector3(0, 0, 0.0)], [K.WALL, 1555.0, 0.0],
+	[K.BLOCK, 1595.0, -4.0, Vector3(4, 2.8, 9)], [K.FENCE, 1640.0, 0.0, Vector3(0, 0, -5.5)], [K.SWEEPER, 1680.0, 2.0],
+	[K.FENCE, 1725.0, 0.0, Vector3(0, 0, 5.5)], [K.WALL, 1765.0, 0.0],
+	# D — burning deck with gaps and pads (1818-2300).
+	[K.DEBRIS, 1850.0, -4.0], [K.BLAST, 1875.0, 4.0], [K.VENT, 1910.0, 0.0], [K.BLOCK, 1950.0, -5.0, Vector3(4, 2.4, 7)],
+	[K.DEBRIS, 1990.0, 3.0], [K.REPAIR, 2020.0, 0.0], [K.PAD, 2052.0, 0.0],
+	[K.BLAST, 2110.0, 0.0], [K.SWEEPER, 2150.0, 0.0], [K.DEBRIS, 2195.0, -4.0], [K.BLOCK, 2240.0, 5.0, Vector3(4, 2.4, 7)],
+	[K.PAD, 2292.0, 0.0],
+	# E — gunship chase (2330-3100).
+	[K.BLOCK, 2420.0, -5.0, Vector3(4, 2.4, 7)], [K.DEBRIS, 2470.0, 3.0], [K.WALL, 2520.0, 0.0],
+	[K.BLOCK, 2580.0, 5.0, Vector3(4, 2.4, 7)], [K.SWEEPER, 2640.0, 0.0], [K.REPAIR, 2690.0, 0.0],
+	[K.FENCE, 2740.0, 0.0, Vector3(0, 0, -5.0)], [K.DEBRIS, 2790.0, 0.0], [K.FENCE, 2840.0, 0.0, Vector3(0, 0, 5.0)],
+	[K.BLOCK, 2900.0, 0.0, Vector3(4, 2.4, 6)], [K.WALL, 2950.0, 0.0], [K.BLAST, 3000.0, -4.0], [K.BLAST, 3020.0, 4.0],
+	[K.SWEEPER, 3065.0, 1.0],
+	# F — collapse run: the ship tears apart around you (3118-3700).
+	[K.DEBRIS, 3150.0, -5.0], [K.DEBRIS, 3170.0, 5.0], [K.DEBRIS, 3190.0, 0.0], [K.WALL, 3225.0, 0.0],
+	[K.FENCE, 3265.0, 0.0, Vector3(0, 0, 0.0)], [K.BLAST, 3300.0, -4.5], [K.BLAST, 3315.0, 4.5], [K.SWEEPER, 3350.0, 0.0],
+	[K.DEBRIS, 3385.0, 0.0], [K.DEBRIS, 3460.0, -4.0], [K.BLOCK, 3500.0, 4.0, Vector3(4, 2.4, 8)],
+	[K.FENCE, 3540.0, 0.0, Vector3(0, 0, -5.5)], [K.DEBRIS, 3575.0, 4.0], [K.WALL, 3610.0, 0.0],
+	[K.DEBRIS, 3640.0, -3.0], [K.DEBRIS, 3660.0, 3.0],
 ]
 
 ## Orb lines: [x_start, z, count, arc_height]
 const ORBS := [
-	[360.0, 0.0, 6, 0.0], [505.0, 0.0, 5, 3.0], [700.0, 0.0, 6, 4.0], [870.0, -5.0, 5, 0.0],
-	[1020.0, -4.0, 6, 0.0], [1200.0, 0.0, 6, 0.0], [1400.0, 0.0, 6, 4.0], [1560.0, 0.0, 6, 5.0],
-	[1760.0, 0.0, 8, 7.0], [2150.0, 0.0, 6, 0.0], [2620.0, 0.0, 8, 0.0],
+	[340.0, 0.0, 6, 0.0], [480.0, 0.0, 5, 3.0], [786.0, 0.0, 6, 4.0], [940.0, -5.0, 5, 0.0],
+	[1236.0, 0.0, 6, 4.0], [1360.0, -4.0, 6, 0.0], [1540.0, 0.0, 6, 0.0], [1796.0, 0.0, 6, 5.0],
+	[2052.0, 0.0, 8, 7.0], [2292.0, 0.0, 8, 8.0], [2600.0, 0.0, 6, 0.0], [3096.0, 0.0, 6, 4.0],
+	[3398.0, 0.0, 6, 4.0], [3680.0, 0.0, 8, 0.0],
 ]
 
 ## Turrets: [x, z, y_offset]
 const TURRETS := [
-	[1040.0, -7.6, 5.0], [1100.0, 7.6, 5.0], [1160.0, -7.6, 5.0], [1230.0, 7.6, 5.0], [1300.0, -7.6, 5.0],
-	[1480.0, -8.0, 1.0], [1640.0, 8.0, 1.0], [2250.0, -8.0, 1.0],
+	[1340.0, -7.6, 5.0], [1400.0, 7.6, 5.0], [1460.0, -7.6, 5.0], [1520.0, 7.6, 5.0], [1580.0, -7.6, 5.0],
+	[1640.0, 7.6, 5.0], [1700.0, -7.6, 5.0], [920.0, -8.0, 1.0], [1960.0, 8.0, 1.0], [2560.0, -8.0, 1.0],
+	[2860.0, 8.0, 1.0], [3250.0, -8.0, 1.0], [3480.0, 8.0, 1.0],
 ]
 
 var _chase_lights: Array[StandardMaterial3D] = []
@@ -83,6 +99,9 @@ func _ready() -> void:
 		obstacle.deck_half_width = DECK_HALF
 		if o.size() > 3:
 			obstacle.size = o[3]
+		if o[0] == K.SWEEPER:
+			obstacle.offset = o[2]
+			obstacle.position.z = 0.0
 		add_child(obstacle)
 	for line: Array in ORBS:
 		for i in int(line[2]):
@@ -103,6 +122,11 @@ func recovery_point(x: float, _z: float = 0.0) -> Vector3:
 		if x < d[1] - 12.0:
 			return Vector3(maxf(x, d[0] + 6.0), DECK_Y + 0.6, 0.0)
 	return Vector3(x, DECK_Y + 0.6, 0.0)
+
+
+## X of the launch lip at the very front of the deck.
+func bow_x() -> float:
+	return finish_x + 45.0
 
 
 func deck_at(x: float) -> bool:
@@ -196,7 +220,7 @@ func _superstructure(node: Node3D, x: float, len: float, index: int) -> void:
 				_d(ModelKit.hex_x(node, 0.35, 6.0, Vector3(lx - 3.0, 1.2, z), hull, 8), 320.0)
 			_:
 				pass
-		if index % 3 == 1 and kind != 4:
+		if index % 2 == 1 and kind != 4:
 			var smoke_at := Vector3(lx, 4.0, z)
 			_embers(node, smoke_at)
 
@@ -237,7 +261,7 @@ func _build_trench() -> void:
 func _build_bow() -> void:
 	# The deck's end: a raised launch lip and a finish arch of lights.
 	var metal := ModelKit.hull(Color("3d4a66"))
-	var ramp := ModelKit.group(self, "Bow", Vector3(2745.0, DECK_Y, 0))
+	var ramp := ModelKit.group(self, "Bow", Vector3(bow_x(), DECK_Y, 0))
 	_d(ModelKit.prism(ramp, Vector3(12.0, 2.0, DECK_HALF * 2.0), Vector3(0, 1.0, 0), metal), 400.0)
 	var arch := ModelKit.group(self, "FinishArch", Vector3(finish_x, DECK_Y, 0))
 	for sgn: float in [-1.0, 1.0]:

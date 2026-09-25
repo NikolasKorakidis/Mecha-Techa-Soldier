@@ -29,18 +29,23 @@ const WAVE_DISTANCE := 150.0
 @export var finish_time: float = 5.5
 @export var respawn_delay: float = 1.3
 @export var clear_bonus: int = 30000
-@export var gunship_x: float = 1800.0
+@export var gunship_x: float = 2340.0
 @export_file("*.tscn") var restart_level: String = ""
 
 ## Chase camera framing.
-@export var chase_offset: Vector3 = Vector3(-9.5, 4.4, 0.0)
-@export var look_ahead: float = 16.0
-@export var chase_fov: float = 66.0
+@export var chase_offset: Vector3 = Vector3(-9.0, 4.0, 0.0)
+@export var look_ahead: float = 18.0
+@export var chase_fov: float = 70.0
+## Extra field of view at top speed (sense of speed).
+@export var speed_fov: float = 10.0
 
-## [trigger_x, count, elite]
+## [trigger_x, count, mode, elite] — mode: 0 dive, 1 overtake (from behind), 2 strafe.
 const WAVES := [
-	[360.0, 2, false], [520.0, 3, false], [720.0, 2, true], [880.0, 3, false], [1080.0, 2, false],
-	[1290.0, 3, false], [1470.0, 4, false], [1660.0, 2, true], [2480.0, 3, false], [2600.0, 2, true],
+	[340.0, 2, 0, false], [470.0, 2, 1, false], [600.0, 3, 0, false], [760.0, 2, 2, true],
+	[900.0, 3, 0, false], [1040.0, 2, 1, false], [1180.0, 3, 2, false], [1330.0, 3, 0, false],
+	[1480.0, 2, 1, true], [1620.0, 4, 0, false], [1860.0, 2, 2, false], [2000.0, 3, 0, false],
+	[2150.0, 2, 1, true], [2800.0, 3, 2, false], [3130.0, 3, 0, false], [3260.0, 2, 1, false],
+	[3420.0, 4, 0, true], [3560.0, 2, 2, false],
 ]
 
 var state: State = State.IDLE
@@ -154,7 +159,8 @@ func _update_camera(delta: float) -> void:
 	_cam_z = lerpf(_cam_z, p.z * 0.75, t)
 	_cam_roll = lerpf(_cam_roll, -vz * 0.012, t)
 	var boosting: bool = player.has_method(&"is_boosting") and player.call(&"is_boosting")
-	var target_fov := chase_fov + (8.0 if boosting else 0.0)
+	var speed_ratio := clampf((player.get(&"velocity").x - 40.0) / 20.0, 0.0, 1.0) if &"velocity" in player else 0.0
+	var target_fov := chase_fov + speed_fov * speed_ratio + (8.0 if boosting else 0.0)
 	camera.fov = lerpf(camera.fov, target_fov, t)
 	var pos := Vector3(p.x + chase_offset.x, maxf(p.y, HullTrack.DECK_Y) + chase_offset.y, _cam_z + chase_offset.z)
 	camera.global_position = pos
@@ -166,11 +172,19 @@ func _update_waves() -> void:
 	while _next_wave < WAVES.size() and player.global_position.x >= float(WAVES[_next_wave][0]):
 		var wave: Array = WAVES[_next_wave]
 		var count: int = wave[1]
+		var mode: int = wave[2]
 		for i in count:
 			var f := RunFighter.new()
-			f.elite = wave[2] and i == 0
+			f.elite = wave[3] and i == 0
+			f.mode = mode as RunFighter.Mode
 			var z := (float(i) - (count - 1) * 0.5) * 5.0
-			f.position = Vector3(player.global_position.x + WAVE_DISTANCE + i * 8.0, HullTrack.DECK_Y + 5.0 + (i % 2) * 2.5, z) - enemy_root.global_position
+			var pos := Vector3(player.global_position.x + WAVE_DISTANCE + i * 8.0, HullTrack.DECK_Y + 5.0 + (i % 2) * 2.5, z)
+			if mode == RunFighter.Mode.OVERTAKE:
+				pos = Vector3(player.global_position.x - 30.0 - i * 6.0, HullTrack.DECK_Y + 9.0 + i * 1.5, z * 1.4)
+			elif mode == RunFighter.Mode.STRAFE:
+				f.strafe_dir = 1.0 if i % 2 == 0 else -1.0
+				pos = Vector3(player.global_position.x + 70.0 + i * 10.0, HullTrack.DECK_Y + 4.5 + (i % 2) * 2.0, -f.strafe_dir * (24.0 + i * 5.0))
+			f.position = pos - enemy_root.global_position
 			enemy_root.add_child(f)
 		_next_wave += 1
 

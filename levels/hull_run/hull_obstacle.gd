@@ -7,8 +7,10 @@ extends Node3D
 ## FENCE: laser fence across the deck with one open gap — steer through (or boost).
 ## BLAST: marked zone that erupts when the bike gets close — get out of the ring.
 ## PAD: launches the bike.  ORB: score + SUPER charge.  REPAIR: +1 health.
+## DEBRIS: a burning hull chunk falls where its shadow ring glows — get out from under it.
+## SWEEPER: a low laser bar sweeping across half the deck — jump it or take the open side.
 
-enum Kind { BLOCK, WALL, VENT, FENCE, BLAST, PAD, ORB, REPAIR }
+enum Kind { BLOCK, WALL, VENT, FENCE, BLAST, PAD, ORB, REPAIR, DEBRIS, SWEEPER }
 
 @export var kind: Kind = Kind.BLOCK
 ## BLOCK size (x length, y height, z width); FENCE gap centre (z) in size.z.
@@ -30,6 +32,7 @@ var _flame: CPUParticles3D
 var _time: float = 0.0
 var _armed: bool = false
 var _used: bool = false
+var _chunk: Node3D
 
 
 func _ready() -> void:
@@ -96,6 +99,28 @@ func _ready() -> void:
 			ModelKit.cylinder(_visual, 1.2, 1.4, 0.3, Vector3(0, 0.15, 0), dark, Vector3.ZERO, 8)
 			_lamp = ModelKit.emissive(Palette.DANGER, 0.3)
 			ModelKit.sphere(_visual, 0.35, Vector3(0, 0.4, 0), _lamp)
+		Kind.DEBRIS:
+			_hitbox = _make_hitbox(Vector3(5.0, 4.0, 5.0), Vector3(0, 2.0, 0))
+			_set_live(false)
+			_glow = ModelKit.quad(_visual, Vector2.ONE * 5.5, Vector3(0, 0.08, 0), ModelKit.glow(Color(1.0, 0.45, 0.2), 0.0, ModelKit.GlowShape.RING), Vector3(-90, 0, 0))
+			_chunk = ModelKit.group(_visual, "Chunk", Vector3(0, 40.0, 0))
+			var hull := ModelKit.hull(Color("2a3450"), ArtStyle.OUTLINE_THIN, 0.3)
+			ModelKit.box(_chunk, Vector3(3.2, 1.4, 2.6), Vector3.ZERO, hull, Vector3(20, 35, 10))
+			ModelKit.box(_chunk, Vector3(1.8, 1.8, 1.4), Vector3(0.9, 0.6, 0.4), metal, Vector3(-15, 10, 30))
+			var burn := MeshInstance3D.new()
+			burn.mesh = QuadMesh.new()
+			burn.material_override = ModelKit.glow_billboard(Color(1.0, 0.5, 0.2), 1.8)
+			burn.scale = Vector3.ONE * 4.0
+			_chunk.add_child(burn)
+			_chunk.visible = false
+		Kind.SWEEPER:
+			_hitbox = _make_hitbox(Vector3(0.6, 1.0, deck_half_width), Vector3(0, 0.5, 0))
+			ModelKit.box(_visual, Vector3(0.9, 0.9, 0.9), Vector3(0, 0.45, -deck_half_width - 0.2), metal)
+			ModelKit.box(_visual, Vector3(0.9, 0.9, 0.9), Vector3(0, 0.45, deck_half_width + 0.2), metal)
+			_glow = ModelKit.quad(_visual, Vector2(deck_half_width, 1.2), Vector3(0, 0.5, 0), ModelKit.glow(Palette.DANGER, 1.4, ModelKit.GlowShape.STREAK), Vector3(0, 90, 0))
+			_lamp = ModelKit.emissive(Palette.DANGER, 3.0)
+			_chunk = ModelKit.group(_visual, "Bar")
+			ModelKit.box(_chunk, Vector3(0.12, 0.14, deck_half_width), Vector3(0, 0.5, 0), _lamp)
 		Kind.PAD:
 			_trigger = _make_trigger(Vector3(3.0, 1.2, 4.0), Vector3(0, 0.6, 0))
 			ModelKit.box(_visual, Vector3(3.2, 0.25, 4.4), Vector3(0, 0.12, 0), metal)
@@ -127,6 +152,13 @@ func _physics_process(delta: float) -> void:
 			_flame.emitting = live
 		Kind.BLAST:
 			_update_blast(delta)
+		Kind.DEBRIS:
+			_update_debris()
+		Kind.SWEEPER:
+			var z := sin(_time * 2.6 + offset) * deck_half_width * 0.5
+			_hitbox.position.z = z
+			_chunk.position.z = z
+			_glow.position.z = z
 		Kind.ORB, Kind.REPAIR:
 			_visual.position.y = sin(_time * 4.0 + position.x) * 0.2
 			_visual.rotation.y += delta * 2.0
@@ -152,6 +184,29 @@ func _update_blast(_delta: float) -> void:
 		Explosion3D.spawn(get_tree(), global_position + Vector3(randf_range(-1.5, 1.5), 3.0, randf_range(-1.5, 1.5)), 1.4)
 		get_tree().create_timer(0.3, false).timeout.connect(func() -> void: _set_live(false))
 	(_glow.material_override as ShaderMaterial).set_shader_parameter(&"energy", energy if not _used else 0.0)
+
+
+func _update_debris() -> void:
+	var player := Players.find(get_tree())
+	if not _armed:
+		if player and global_position.x - player.global_position.x < 75.0 and global_position.x > player.global_position.x:
+			_armed = true
+			_time = 0.0
+			_chunk.visible = true
+		return
+	const FALL := 1.0
+	if _time < FALL:
+		var k := _time / FALL
+		_chunk.position.y = 40.0 * (1.0 - k * k)
+		_chunk.rotation += Vector3(0.05, 0.08, 0.03)
+		(_glow.material_override as ShaderMaterial).set_shader_parameter(&"energy", 0.6 + 1.4 * k)
+	elif not _used:
+		_used = true
+		_chunk.visible = false
+		(_glow.material_override as ShaderMaterial).set_shader_parameter(&"energy", 0.0)
+		_set_live(true)
+		Explosion3D.spawn(get_tree(), global_position + Vector3(0, 1.0, 0), 3.0, 0.3)
+		get_tree().create_timer(0.25, false).timeout.connect(func() -> void: _set_live(false))
 
 
 func _set_live(value: bool) -> void:

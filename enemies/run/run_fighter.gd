@@ -1,11 +1,18 @@
 class_name RunFighter
 extends RunEnemy
-## "Talon" interceptor: dives in from far ahead, weaving, and strafes the bike on the way.
-## Nose points -X (toward the bike). Flies at `speed` toward the bike while the bike closes in.
+## "Talon" interceptor. Nose points -X (toward the bike).
+## DIVE: comes in from far ahead, weaving, firing on the way.
+## OVERTAKE: screams past overhead from behind the camera, then turns into a DIVE ahead.
+## STRAFE: holds station ahead of the bike and sweeps across the deck, firing.
+
+enum Mode { DIVE, OVERTAKE, STRAFE }
 
 @export var speed: float = 16.0
 @export var weave: Vector2 = Vector2(4.0, 1.5)
 @export var elite: bool = false
+@export var mode: Mode = Mode.DIVE
+## STRAFE: lateral direction (+1 / -1).
+@export var strafe_dir: float = 1.0
 
 var _base: Vector3
 var _phase: float = 0.0
@@ -45,11 +52,38 @@ func _build_model() -> void:
 		model.scale = Vector3.ONE * 1.3
 
 
-func _move(delta: float, _player: Node3D) -> void:
+func _move(delta: float, player: Node3D) -> void:
 	_phase += delta
-	_base.x -= speed * delta
-	position = Vector3(_base.x, _base.y + sin(_phase * 1.7) * weave.y, _base.z + sin(_phase * 1.1) * weave.x)
-	model.rotation.x = cos(_phase * 1.1) * 0.6
+	var px := player.global_position.x if player else _base.x
+	var pvx: float = player.get(&"velocity").x if player and &"velocity" in player else 0.0
+	match mode:
+		Mode.OVERTAKE:
+			_base.x += (pvx + 45.0) * delta
+			model.rotation.z = -0.25
+			if _base.x > px + 75.0:
+				mode = Mode.DIVE
+				model.rotation.z = 0.0
+		Mode.STRAFE:
+			_base.x = lerpf(_base.x, px + 55.0, clampf(delta * 2.0, 0.0, 1.0))
+			_base.z += strafe_dir * 22.0 * delta
+			model.rotation.x = -strafe_dir * 0.7
+			if absf(_base.z) > 40.0:
+				queue_free()
+		_:
+			_base.x -= speed * delta
+	var w := 0.0 if mode == Mode.STRAFE else 1.0
+	position = Vector3(_base.x, _base.y + sin(_phase * 1.7) * weave.y, _base.z + sin(_phase * 1.1) * weave.x * w)
+	if mode == Mode.DIVE:
+		model.rotation.x = cos(_phase * 1.1) * 0.6
+
+
+func _physics_process(delta: float) -> void:
+	# Overtakers start behind the bike: never cull them before they pass.
+	if mode == Mode.OVERTAKE:
+		_time += delta
+		_move(delta, Players.find(get_tree()))
+		return
+	super._physics_process(delta)
 
 
 func _fire(player: Node3D) -> void:

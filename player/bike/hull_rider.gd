@@ -51,6 +51,10 @@ var _gun_side: float = 1.0
 var _roll: float = 0.0
 var _roll_spin: float = 0.0
 var _last_safe: Vector3 = Vector3.ZERO
+var _lock_target: Node3D
+var _reticle: MeshInstance3D
+var _muzzle_flash: MeshInstance3D
+var _flash_energy: float = 0.0
 
 
 func _ready() -> void:
@@ -71,6 +75,18 @@ func _ready() -> void:
 	ram.set_physics_process(true)
 	ram.set_deferred(&"monitoring", false)
 	_last_safe = global_position
+	# Muzzle flash and a lock-on reticle that frames the enemy the guns are bending toward.
+	_muzzle_flash = MeshInstance3D.new()
+	_muzzle_flash.mesh = QuadMesh.new()
+	_muzzle_flash.material_override = ModelKit.glow_billboard(Palette.PLAYER_ENERGY.lerp(Color.WHITE, 0.4), 0.0)
+	_muzzle_flash.scale = Vector3.ONE * 1.6
+	muzzle.add_child(_muzzle_flash)
+	_reticle = MeshInstance3D.new()
+	_reticle.mesh = QuadMesh.new()
+	_reticle.material_override = ModelKit.glow_billboard(Palette.UI_GOLD, 0.0, ModelKit.GlowShape.RING)
+	_reticle.top_level = true
+	_reticle.scale = Vector3.ONE * 4.5
+	add_child(_reticle)
 
 
 func _physics_process(delta: float) -> void:
@@ -174,6 +190,7 @@ func tick(delta: float, input: MechInput) -> void:
 		_fall_into_gap()
 	_update_invulnerability()
 	_update_visuals(delta)
+	_update_lock(delta)
 
 
 ## Jump pads call this.
@@ -201,24 +218,27 @@ func _fire() -> void:
 	var from := muzzle.global_position + Vector3(0, 0, 0.35 * _gun_side)
 	_gun_side = -_gun_side
 	var aim := _assist_direction(from, tuning.assist_angle * (2.2 if echo == EchoModules.ARC else 1.0))
+	# Bolts inherit the bike's speed so they always pull away from it.
+	var carry := Vector3(velocity.x, 0, 0)
 	match echo:
 		EchoModules.BURST:
 			for k in 5:
 				var spread := deg_to_rad((k - 2) * 7.0)
-				Bolt3D.fire(get_tree(), Teams.Team.PLAYER, 1, from, aim.rotated(Vector3.UP, spread) * tuning.bolt_speed, Color("ffb454"), 0.3)
+				Bolt3D.fire(get_tree(), Teams.Team.PLAYER, 1, from, aim.rotated(Vector3.UP, spread) * tuning.bolt_speed + carry, Color("ffb454"), 0.3)
 			interval *= 2.2
 			RunSession.consume_echo_ammo(1)
 		EchoModules.ARC:
-			Bolt3D.fire(get_tree(), Teams.Team.PLAYER, 2, from, aim * tuning.bolt_speed * 1.2, Color("9f8bff"), 0.35)
+			Bolt3D.fire(get_tree(), Teams.Team.PLAYER, 2, from, aim * tuning.bolt_speed * 1.2 + carry, Color("9f8bff"), 0.35)
 			RunSession.consume_echo_ammo(1)
 		EchoModules.GUARD:
 			for side: float in [-1.0, 1.0]:
-				Bolt3D.fire(get_tree(), Teams.Team.PLAYER, 2, from + Vector3(0, 0, 0.6 * side), aim * tuning.bolt_speed, Color("7dffb2"), 0.5)
+				Bolt3D.fire(get_tree(), Teams.Team.PLAYER, 2, from + Vector3(0, 0, 0.6 * side), aim * tuning.bolt_speed + carry, Color("7dffb2"), 0.5)
 			interval *= 1.4
 			RunSession.consume_echo_ammo(1)
 		_:
-			Bolt3D.fire(get_tree(), Teams.Team.PLAYER, 1, from, aim * tuning.bolt_speed, Palette.PLAYER_ENERGY, 0.3)
+			Bolt3D.fire(get_tree(), Teams.Team.PLAYER, 1, from, aim * tuning.bolt_speed + carry, Palette.PLAYER_ENERGY, 0.3)
 	shots_fired += 1
+	_flash_energy = 2.4
 	_fire_cooldown = interval
 	model.shoot_kick()
 
@@ -240,6 +260,7 @@ func _assist_direction(from: Vector3, angle_deg: float) -> Vector3:
 		if dir.dot(Vector3.RIGHT) >= cos_limit:
 			best = dir
 			best_d = d
+			_lock_target = enemy
 	return best
 
 
@@ -344,6 +365,20 @@ func get_debug_lines() -> PackedStringArray:
 
 func _update_invulnerability() -> void:
 	health.invulnerable = _invulnerable_left > 0.0 or state in [State.DISABLED, State.CINEMATIC, State.SUPER]
+
+
+func _update_lock(delta: float) -> void:
+	_lock_target = null
+	_assist_direction(muzzle.global_position, tuning.assist_angle)
+	var mat := _reticle.material_override as ShaderMaterial
+	if is_instance_valid(_lock_target):
+		_reticle.global_position = _lock_target.global_position
+		_reticle.rotation.z += delta * 3.0
+		mat.set_shader_parameter(&"energy", 1.4)
+	else:
+		mat.set_shader_parameter(&"energy", 0.0)
+	_flash_energy = maxf(0.0, _flash_energy - delta * 22.0)
+	(_muzzle_flash.material_override as ShaderMaterial).set_shader_parameter(&"energy", _flash_energy)
 
 
 func _update_visuals(delta: float) -> void:

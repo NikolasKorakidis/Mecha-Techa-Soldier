@@ -78,10 +78,10 @@ func test_wall_hurts_unless_jumped() -> void:
 func test_gap_fall_recovers_on_the_next_deck() -> void:
 	await _setup()
 	var hp := rider.health.current
-	rider.global_position = Vector3(705.0, HullTrack.DECK_Y - 12.0, 3.0)
+	rider.global_position = Vector3(798.0, HullTrack.DECK_Y - 12.0, 3.0)
 	rider.tick(DT, MechInput.new())
 	assert_eq(rider.health.current, hp - 1, "gap costs one HP")
-	assert_true(rider.global_position.x >= 712.0 and rider.global_position.y > HullTrack.DECK_Y, "placed on the next deck")
+	assert_true(rider.global_position.x >= 806.0 and rider.global_position.y > HullTrack.DECK_Y, "placed on the next deck")
 
 
 func test_bolts_destroy_fighters() -> void:

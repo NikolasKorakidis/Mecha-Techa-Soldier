@@ -12,8 +12,8 @@ const BOLT_COLOR := Color(1.0, 0.25, 0.5)
 @export var max_health: int = 2
 @export var score_value: int = 250
 @export var hurt_size: Vector3 = Vector3(3.0, 2.0, 3.0)
-@export var fire_interval: float = 1.6
-@export var bolt_speed: float = 55.0
+@export var fire_interval: float = 1.25
+@export var bolt_speed: float = 78.0
 @export var fire_range: Vector2 = Vector2(22.0, 120.0)
 @export var death_size: float = 1.6
 

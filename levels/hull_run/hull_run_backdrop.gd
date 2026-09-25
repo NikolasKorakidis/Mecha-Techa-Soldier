@@ -181,8 +181,12 @@ func _process(delta: float) -> void:
 		_volley()
 	_blast_timer -= delta
 	if _blast_timer <= 0.0 and player:
-		_blast_timer = _rng.randf_range(0.35, 0.9)
+		# The ship is coming apart: blasts get denser the closer you are to the bow.
+		var collapse := clampf((px - 2900.0) / 600.0, 0.0, 1.0)
+		_blast_timer = _rng.randf_range(0.14, 0.4) * (1.0 - 0.5 * collapse)
 		_hull_explosion(px)
+		if _rng.randf() < 0.35 + 0.4 * collapse:
+			_deck_edge_blast(px)
 
 
 ## Turbolaser exchange between two capital ships (or into the warship).
@@ -212,6 +216,14 @@ func _volley() -> void:
 			if is_instance_valid(bolt):
 				Explosion3D.spawn(get_tree(), bolt.global_position, 6.0)
 				bolt.queue_free())
+
+
+## A blast right at the deck rail next to or just ahead of the bike (visual, shakes the camera).
+func _deck_edge_blast(px: float) -> void:
+	var side := -1.0 if _rng.randf() < 0.5 else 1.0
+	var at := Vector3(px + _rng.randf_range(8.0, 60.0), HullTrack.DECK_Y + _rng.randf_range(0.5, 3.0), side * _rng.randf_range(9.5, 13.0))
+	Explosion3D.spawn(get_tree(), at, _rng.randf_range(2.0, 3.5), 0.12)
+	Explosion3D.spawn(get_tree(), at + Vector3(_rng.randf_range(-2, 2), _rng.randf_range(2, 5), side * 2.0), 1.4)
 
 
 ## Explosions tearing through the warship's hull beside and ahead of the bike.
