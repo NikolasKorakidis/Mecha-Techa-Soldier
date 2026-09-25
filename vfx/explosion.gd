@@ -1,6 +1,7 @@
 class_name Explosion
 extends Node3D
-## One-shot explosion: core flash, fireball, sparks, tumbling debris and a shockwave.
+## One-shot explosion: core flash, a procedural fireball cooling into rolling smoke, sparks,
+## tumbling debris, a shockwave and a light flash on nearby hulls.
 ## Built in code so `size` scales every layer; frees itself when done.
 
 @export var size: float = 1.0
@@ -9,13 +10,14 @@ extends Node3D
 @export var debris_color: Color = Color("3b1726")
 ## Camera trauma on spawn; negative = derive from size (see docs/art-direction.md).
 @export var trauma: float = -1.0
-@export var lifetime: float = 1.6
+@export var lifetime: float = 2.6
 
 
 func _ready() -> void:
 	AudioService.play_explosion(size)
 	_flash()
 	_fireball()
+	Fireball.light_flash(self, size)
 	_sparks()
 	_debris()
 	_shockwave()
@@ -46,14 +48,8 @@ func _flash() -> void:
 
 
 func _fireball() -> void:
-	var p := _emitter(22, 0.85, ModelKit.glow(Color.WHITE, 2.0 * lerpf(0.55, 1.0, ArtStyle.flash_scale())))
-	(p.mesh as QuadMesh).size = Vector2.ONE * 1.7 * size
-	p.initial_velocity_min = 1.0 * size
-	p.initial_velocity_max = 4.5 * size
-	p.damping_min = 4.0
-	p.damping_max = 6.0
-	p.scale_amount_curve = _curve([Vector2(0, 0.6), Vector2(0.3, 1.0), Vector2(1, 0.2)])
-	p.color_ramp = _gradient([Color(1, 0.95, 0.8), fire_color, Color(0.6, 0.12, 0.08, 0.6), Color(0.1, 0.02, 0.05, 0.0)])
+	Fireball.emitter(self, Fireball.fire_material(), 12, 0.95, 4.5 * size, Vector2(1.1, 2.0) * size, 0.6, 0.25 * size)
+	Fireball.emitter(self, Fireball.smoke_material(), 8, 2.0, 2.2 * size, Vector2(1.6, 2.8) * size, 1.4, 0.4 * size)
 
 
 func _sparks() -> void:

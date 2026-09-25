@@ -1,7 +1,7 @@
 class_name Explosion3D
 extends Node3D
-## Camera-facing explosion for the 3D chase view: white core flash, billowing fireball,
-## streaking sparks, dark smoke and a shockwave ring. Every layer is billboarded so it reads
+## Camera-facing explosion for the 3D chase view: white core flash, a procedural fireball
+## cooling into rolling smoke, streaking sparks, a shockwave ring and a light flash. Every layer is billboarded so it reads
 ## from any angle (side-view Explosion uses flat quads). Frees itself.
 
 @export var size: float = 1.0
@@ -12,8 +12,6 @@ var _age: float = 0.0
 var _flash: MeshInstance3D
 var _ring: MeshInstance3D
 
-static var _fire_mat: StandardMaterial3D
-static var _smoke_mat: StandardMaterial3D
 static var _spark_mat: StandardMaterial3D
 
 
@@ -47,9 +45,11 @@ func _ready() -> void:
 	_ring.material_override = ModelKit.glow_billboard(fire_color, 1.2, ModelKit.GlowShape.RING)
 	_ring.scale = Vector3.ONE * size
 	add_child(_ring)
-	_burst(_fire_mat, 22, 0.9, 5.0 * size, Vector2(0.9, 2.2) * size, 0.0, 0.85)
-	_burst(_smoke_mat, 10, 1.8, 2.5 * size, Vector2(1.2, 2.6) * size, 2.0, 0.4)
-	_burst(_spark_mat, 18, 0.7, 16.0 * size, Vector2(0.12, 0.25) * size, -12.0, 1.0)
+	Fireball.emitter(self, Fireball.fire_material(), 12, 1.0, 5.0 * size, Vector2(1.2, 2.4) * size, 0.8, 0.3 * size)
+	Fireball.emitter(self, Fireball.smoke_material(), 8, 2.1, 2.5 * size, Vector2(1.6, 3.0) * size, 2.0, 0.5 * size)
+	_burst(_spark_mat, 18, 0.7, 16.0 * size, Vector2(0.04, 0.1) * size, -12.0, 1.0)
+	if size >= 1.0:
+		Fireball.light_flash(self, size)
 	var camera := GameplayCamera.find(get_tree())
 	if camera and trauma > 0.0:
 		camera.add_trauma(trauma)
@@ -82,11 +82,9 @@ func _burst(mat: Material, amount: int, life: float, speed: float, scale_range: 
 
 
 static func _ensure_materials() -> void:
-	if _fire_mat:
+	if _spark_mat:
 		return
-	_fire_mat = _particle_material(Color(1.0, 0.6, 0.2), BaseMaterial3D.BLEND_MODE_ADD)
-	_smoke_mat = _particle_material(Color(0.12, 0.1, 0.12, 0.7), BaseMaterial3D.BLEND_MODE_MIX)
-	_spark_mat = _particle_material(Color(1.0, 0.9, 0.6), BaseMaterial3D.BLEND_MODE_ADD)
+	_spark_mat = _particle_material(Color(1.0, 0.68, 0.32), BaseMaterial3D.BLEND_MODE_ADD)
 
 
 static func _particle_material(color: Color, blend: BaseMaterial3D.BlendMode) -> StandardMaterial3D:
@@ -128,5 +126,5 @@ func _process(delta: float) -> void:
 	(_flash.material_override as ShaderMaterial).set_shader_parameter(&"energy", 2.0 * (1.0 - f) * ArtStyle.flash_scale())
 	_ring.scale = Vector3.ONE * size * (1.0 + _age * 5.0)
 	(_ring.material_override as ShaderMaterial).set_shader_parameter(&"energy", maxf(0.0, 0.8 - _age * 2.6))
-	if _age > 2.2:
+	if _age > 2.6:
 		queue_free()

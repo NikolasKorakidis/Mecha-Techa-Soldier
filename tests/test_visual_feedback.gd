@@ -45,8 +45,8 @@ func test_explosion_spawns_at_position_shakes_and_frees() -> void:
 	assert_true(boom != null, "explosion spawned")
 	assert_eq(boom.global_position, Vector3(3, 2, 0), "at requested position")
 	assert_true(camera.trauma > 0.0, "explosion adds trauma")
-	boom.lifetime = 0.1
-	await get_tree().create_timer(boom.lifetime + 1.7).timeout
+	# The free timer starts in _ready with the configured lifetime (smoke needs it to clear).
+	await get_tree().create_timer(boom.lifetime + 0.3).timeout
 	assert_false(is_instance_valid(boom), "explosion frees itself")
 
 
