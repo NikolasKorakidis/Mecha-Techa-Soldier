@@ -44,3 +44,12 @@ func test_rapid_fire_is_throttled() -> void:
 	for i in 10:
 		AudioService.play(&"shot_player")
 	assert_eq((AudioService._next_voice - voice_before + AudioService.VOICES) % AudioService.VOICES, 1, "ten shots in one frame use one voice")
+
+
+func test_engine_loop_loops_and_stops() -> void:
+	var engine := AudioService.start_loop(&"bike_engine")
+	assert_true(engine != null, "loop player created")
+	assert_eq((engine.stream as AudioStreamWAV).loop_mode, AudioStreamWAV.LOOP_FORWARD, "engine hum loops")
+	AudioService.stop_loop(engine)
+	await wait_process_frames(2)
+	assert_false(is_instance_valid(engine), "stopped loop player is freed")

@@ -10,9 +10,10 @@ from synth import write_wav  # noqa: E402
 from tracks import TRACKS  # noqa: E402
 from sfx import SFX  # noqa: E402
 from nes import NES_SFX, NES_TRACKS  # noqa: E402
+from sfx_v2 import SFX_V2  # noqa: E402
 
 TRACKS = {**TRACKS, **NES_TRACKS}
-SFX = {**SFX, **NES_SFX}
+SFX = {**SFX, **SFX_V2, **NES_SFX}
 
 only = set(sys.argv[1:])
 for name, fn in TRACKS.items():

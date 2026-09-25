@@ -13,17 +13,22 @@ const SFX := [
 	&"dash", &"land", &"heavy_land", &"pickup", &"weapon_get", &"checkpoint", &"ui_move", &"ui_confirm",
 	&"ui_back", &"warning", &"charge", &"beam", &"transform", &"boost", &"door",
 	&"retro_shot", &"retro_boom", &"retro_hit", &"retro_power", &"retro_1up",
+	&"wall_jump", &"mech_step", &"whoosh", &"bike_crash", &"bike_land", &"bike_engine", &"boss_roar",
+	&"boss_break",
 ]
+## Effects that loop while a caller holds them (start_loop / stop_loop).
+const LOOPS := [&"bike_engine"]
 ## Minimum seconds between two plays of the same effect (rapid fire, many explosions).
 const MIN_GAP := {
 	&"shot_player": 0.07, &"laser": 0.06, &"shot_enemy": 0.05, &"hit": 0.045, &"armor_ping": 0.12,
 	&"explosion_small": 0.06, &"explosion_large": 0.1, &"explosion_huge": 0.25, &"pickup": 0.05,
-	&"ui_move": 0.03, &"land": 0.1, &"dash": 0.1, &"retro_shot": 0.07, &"retro_hit": 0.05, &"retro_boom": 0.08,
+	&"ui_move": 0.03, &"land": 0.1, &"dash": 0.1, &"mech_step": 0.12, &"bike_crash": 0.4, &"bike_land": 0.15, &"retro_shot": 0.07, &"retro_hit": 0.05, &"retro_boom": 0.08,
 }
 ## Per-effect trim so the mix sits right (dB).
 const TRIM := {
-	&"shot_player": -9.0, &"laser": -10.0, &"shot_enemy": -8.0, &"hit": -6.0, &"explosion_small": -4.0,
-	&"ui_move": -8.0, &"pickup": -5.0, &"land": -4.0, &"armor_ping": -8.0, &"retro_shot": -9.0, &"retro_hit": -6.0,
+	&"shot_player": -5.0, &"laser": -6.0, &"shot_enemy": -5.0, &"hit": -3.0, &"explosion_small": -2.0,
+	&"ui_move": -8.0, &"pickup": -2.0, &"land": -2.0, &"armor_ping": -4.0, &"retro_shot": -9.0, &"retro_hit": -6.0,
+	&"mech_step": -3.0,
 }
 const VOICES := 24
 const MUSIC_BASE_DB := -7.0
@@ -59,6 +64,12 @@ func _ready() -> void:
 		_music_streams[id] = _load(MUSIC_DIR % id)
 	for id: StringName in SFX:
 		_sfx_streams[id] = _load(SFX_DIR % id)
+	for id: StringName in LOOPS:
+		var wav := _sfx_streams[id] as AudioStreamWAV
+		if wav:
+			wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+			wav.loop_begin = 0
+			wav.loop_end = int(wav.get_length() * wav.mix_rate)
 	_music_a = _player(&"Music")
 	_music_b = _player(&"Music")
 	_jingle = _player(&"Music")
@@ -104,6 +115,27 @@ func play(id: StringName, volume_db: float = 0.0, pitch_jitter: float = 0.05) ->
 	voice.pitch_scale = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
 	if not _silent:
 		voice.play()
+
+
+## Starts a looping effect on its own player (engine hums); the caller adjusts its pitch and
+## volume and hands it back to stop_loop().
+func start_loop(id: StringName, volume_db: float = 0.0) -> AudioStreamPlayer:
+	var stream: AudioStream = _sfx_streams.get(id)
+	if stream == null or id not in LOOPS:
+		push_error("AudioService: '%s' is not a loop." % id)
+		return null
+	var player := _player(&"SFX")
+	player.stream = stream
+	player.volume_db = volume_db + float(TRIM.get(id, 0.0))
+	if not _silent:
+		player.play()
+	return player
+
+
+func stop_loop(player: AudioStreamPlayer) -> void:
+	if is_instance_valid(player):
+		player.stop()
+		player.queue_free()
 
 
 ## Explosion sound matched to an effect's visual size.
