@@ -111,8 +111,9 @@ stages. Score, echo weapon and SUPER energy carry across all three forms.
   mid-stage (modules, arches) → a sunset cloud sea with spires for the boss. Zones blend sky and fog presets.
   Flat layers on top: capital-ship battle trading turbolaser fire, sun shafts. From ~16 s the real enemy
   warship (`WarshipModel`) cruises below the flight line in the backdrop — the destination.
-- **Boarding run** (in-engine, letterboxed): the backdrop cuts to open space and its camera dives toward the
-  warship below until its deck fills the lower screen; the Kestrel races across, transforms above the roof and
+- **Boarding run** (in-engine, letterboxed): the camera stays locked on the Kestrel while the backdrop
+  cuts to open space, speeds up, and the warship rises in below the flight line until its deck fills the
+  lower screen; the Kestrel races across, transforms above the roof and
   the **mech drops onto the hull** with the rest of the ship spreading out behind it.
 - **Stage 2 — Warship Infiltration** (Mega Man X-style platformer): roof deck drop zone → entry hatch (a
   bulkhead + gantry block roof-running) → landing bay → pit run → electric corridor → tower climb → moving
@@ -126,12 +127,14 @@ stages. Score, echo weapon and SUPER energy carry across all three forms.
   foundry with vats pouring into the pit, electric-blue corridor with arcing tesla coils, teal lift shaft
   with moving counterweights, reactor column with spinning rings, red alarm hall with pistons, gold security
   bulkhead with the emblem, violet core approach. Each tints the walls and platforms, lights the play plane
-  with accent pools and sets the depth-fog colour of the far layers. Plus the parallax back wall (windows,
+  with accent pools and sets the depth-fog colour of the far layers. A secondary colour per zone drives neon
+  bands, light strips, coloured light shafts and the big sector signs ("SECTOR 02 // FOUNDRY"); the key and
+  rim lights shift toward the zone colours while inside. Plus the parallax back wall (windows,
   pipes, screens, fans, beacons, generators), mid-layer pillars/catwalks, foreground girders, steam, sparks.
 - **Escape** (in-engine): slow motion, the arena roof blows out, the mech thrusts up to the top hull, turns into
   the bike, and the camera swings from the side view to a chase view behind it (ortho → matched-FOV
   perspective → orbit).
-- **Stage 3 — Hull Run** (3D, camera behind the bike, ~65–75 s at 42–60 u/s): warm-up → blast field →
+- **Stage 3 — Hull Run** (3D, camera behind the bike, ~50–55 s at 56–80 u/s): warm-up → blast field →
   **trench run** (walls with turrets) → burning deck with jump pads → **pursuit gunship** mini boss →
   **collapse run** (debris rains, the deck blows apart around you) → the bow. Explosions erupt along the
   route the whole way and intensify toward the bow. You ride the spine of the 3.6 km warship itself
@@ -162,7 +165,7 @@ Pickups: health capsule (+2), energy cell (+1 SUPER segment), **Heart Tank** (+1
 full refill), **Energy Tank** (SUPER fully charged).
 
 ### Bike (Stage 3, 3D)
-Rides forward on its own (42 → 60 u/s ramp), steer across the 18-wide deck, hold down to brake. Jump + double
+Rides forward on its own (56 → 80 u/s ramp), steer across the 18-wide deck, hold down to brake. Jump + double
 jump over walls and gaps, **boost** (Dash): speed + i-frames + ram, and steering while boosting does a
 sidestep roll. Hold fire for fast twin cannons (bolts inherit the bike's speed) with aim assist and a gold
 lock-on reticle on the assisted target; echo weapons carry over (BURST 5-way fan,
