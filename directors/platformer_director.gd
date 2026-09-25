@@ -26,7 +26,7 @@ enum State { IDLE, INTRO, PLAY, BOSS_WARNING, BOSS, ESCAPE, DONE }
 @export var boss_gate: Node3D
 @export var boss_trigger_x: float = 1e9
 @export var camera_limits: Rect2 = Rect2()
-@export var camera_size: float = 15.0
+@export var camera_size: float = 13.5
 @export var kill_y: float = -10.0
 @export var respawn_delay: float = 1.4
 @export var intro_time: float = 2.4

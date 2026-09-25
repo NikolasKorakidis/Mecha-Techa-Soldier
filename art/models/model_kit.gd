@@ -119,8 +119,8 @@ static func sphere(parent: Node3D, radius: float, pos: Vector3, mat: Material, s
 	var mesh := SphereMesh.new()
 	mesh.radius = radius
 	mesh.height = radius * 2.0
-	mesh.radial_segments = 16
-	mesh.rings = 8
+	mesh.radial_segments = 24
+	mesh.rings = 12
 	var node := _add(parent, mesh, pos, mat, Vector3.ZERO)
 	node.scale = scale
 	return node

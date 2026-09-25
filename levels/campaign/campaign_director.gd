@@ -166,7 +166,7 @@ func _run_drop() -> void:
 	perspective_backdrop.set_boarding()
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	camera.rotation = Vector3.ZERO
-	camera.size = 15.0
+	camera.size = 13.5
 	camera.near = saved_near
 	camera.far = saved_far
 	mech.rotation = Vector3.ZERO
