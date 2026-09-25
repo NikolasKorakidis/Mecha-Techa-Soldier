@@ -1,6 +1,6 @@
 extends Node3D
-## Minimal title card: the Kestrel over the Orbital Riptide backdrop, logo, and a start prompt.
-## Main listens for `start_requested`; no gameplay runs here.
+## Title screen: the cinematic 3D shot (TitleBackdrop) under the logo, menu and start prompt.
+## The logo, tagline and menu animate in. Main listens for `start_requested`; no gameplay here.
 
 signal start_requested
 ## Stage select: 1 = shooter, 2 = warship, 3 = hull run. Main starts the campaign there.
@@ -15,8 +15,9 @@ var _stage_menu: VBoxContainer
 var _stage_first: UiMenuButton
 var _start: UiMenuButton
 var _time: float = 0.0
-
-@onready var _ship: Node3D = %Kestrel
+var _logo: Label
+var _sub: Label
+var _rule: ColorRect
 
 
 func _ready() -> void:
@@ -30,33 +31,47 @@ func _ready() -> void:
 	ui.add_child(root)
 	var column := VBoxContainer.new()
 	column.set_anchors_preset(Control.PRESET_FULL_RECT)
-	column.anchor_left = 0.08
-	column.anchor_top = 0.2
-	column.anchor_right = 0.5
+	column.anchor_left = 0.07
+	column.anchor_top = 0.16
+	column.anchor_right = 0.6
 	column.add_theme_constant_override(&"separation", 6)
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(column)
-	var logo := UiStyle.label("SHIFT//WING", 132, Palette.PLAYER_PRIMARY)
-	column.add_child(logo)
-	var sub := UiStyle.label("ECHOES OF KHARON", 34, Palette.UI_GOLD)
-	column.add_child(sub)
+	_logo = Label.new()
+	_logo.text = "SHIFT//WING"
+	UiStyle.style_title(_logo, 132, Palette.PLAYER_PRIMARY, 12)
+	column.add_child(_logo)
+	_rule = ColorRect.new()
+	_rule.custom_minimum_size = Vector2(760, 4)
+	_rule.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_rule.color = Palette.PLAYER_PRIMARY
+	_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_child(_rule)
+	_sub = Label.new()
+	_sub.text = "ECHOES OF KHARON"
+	var sub_font := FontVariation.new()
+	sub_font.base_font = UiStyle.BOLD_FONT
+	sub_font.spacing_glyph = 14
+	_sub.add_theme_font_override(&"font", sub_font)
+	UiStyle.style_label(_sub, 36, Palette.UI_GOLD)
+	column.add_child(_sub)
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 60)
+	spacer.custom_minimum_size = Vector2(0, 70)
 	column.add_child(spacer)
 	_menu = VBoxContainer.new()
 	_menu.add_theme_constant_override(&"separation", 10)
 	_menu.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	column.add_child(_menu)
 	_start = UiMenuButton.new()
-	_start.text = "Start"
+	_start.text = "START"
 	_start.pressed.connect(func() -> void: start_requested.emit())
 	_menu.add_child(_start)
 	var select := UiMenuButton.new()
-	select.text = "Select Stage"
+	select.text = "SELECT STAGE"
 	select.pressed.connect(_open_stage_select)
 	_menu.add_child(select)
 	var options := UiMenuButton.new()
-	options.text = "Options"
+	options.text = "OPTIONS"
 	options.pressed.connect(_open_options)
 	_menu.add_child(options)
 	_stage_menu = VBoxContainer.new()
@@ -66,13 +81,13 @@ func _ready() -> void:
 	column.add_child(_stage_menu)
 	for i in STAGES.size():
 		var button := UiMenuButton.new()
-		button.text = STAGES[i]
+		button.text = STAGES[i].to_upper()
 		button.pressed.connect(func() -> void: stage_requested.emit(i + 1))
 		_stage_menu.add_child(button)
 		if i == 0:
 			_stage_first = button
 	var back := UiMenuButton.new()
-	back.text = "Back"
+	back.text = "BACK"
 	back.pressed.connect(_close_stage_select)
 	_stage_menu.add_child(back)
 	_options = OptionsPanel.new()
@@ -86,14 +101,46 @@ func _ready() -> void:
 	_prompt.offset_top = -110
 	_prompt.offset_bottom = -70
 	root.add_child(_prompt)
+	var credit := UiStyle.label("v1.0   ·   © 2026 SHIFT//WING", ArtStyle.FONT_CAPTION, Color(Palette.UI_MUTED_TEXT, 0.7))
+	credit.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	credit.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	credit.offset_left = -620
+	credit.offset_top = -56
+	credit.offset_right = -40
+	credit.offset_bottom = -24
+	root.add_child(credit)
 	_start.grab_focus.call_deferred()
+	_animate_in()
+
+
+## Logo slides in with a flash of glow, the rule wipes across, the tagline types on, the menu
+## items drop in one after another.
+func _animate_in() -> void:
+	if Settings.reduced_motion:
+		return
+	_logo.modulate.a = 0.0
+	_logo.position.x = -60.0
+	_rule.scale.x = 0.0
+	_sub.visible_ratio = 0.0
+	var buttons := _menu.get_children()
+	for b in buttons:
+		(b as Control).modulate.a = 0.0
+	_prompt.visible = false
+	var tween := create_tween().set_parallel()
+	tween.tween_property(_logo, "modulate:a", 1.0, 0.6).set_delay(0.3)
+	tween.tween_property(_logo, "position:x", 0.0, 0.9).set_delay(0.3).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_rule, "scale:x", 1.0, 0.7).set_delay(0.8).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_sub, "visible_ratio", 1.0, 0.8).set_delay(1.0)
+	for i in buttons.size():
+		tween.tween_property(buttons[i], "modulate:a", 1.0, 0.35).set_delay(1.5 + i * 0.12)
+	tween.chain().tween_callback(func() -> void: _prompt.visible = true)
 
 
 func _process(delta: float) -> void:
 	_time += delta
-	if _ship:
-		_ship.position.y = -1.0 + sin(_time * 1.3) * 0.35
-		_ship.rotation.x = sin(_time * 0.9) * 0.12
+	if _logo and not Settings.reduced_motion:
+		# The logo glow breathes.
+		_logo.add_theme_color_override(&"font_shadow_color", Color(Palette.PLAYER_ENERGY, 0.55 + 0.25 * sin(_time * 1.6)))
 	if not Settings.reduced_motion:
 		_prompt.modulate.a = 0.55 + 0.45 * sin(_time * 3.0)
 
