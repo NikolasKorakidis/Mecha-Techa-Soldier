@@ -360,10 +360,25 @@ func _build_reactor_housing() -> void:
 	var housing := ModelKit.group(self, "ReactorHousing", Vector3(323.5, 3.6, -4.0))
 	var dark := LevelKit.material(&"hull_dark")
 	var trim := LevelKit.material(&"trim")
-	ModelKit.cylinder(housing, 4.2, 4.2, 1.0, Vector3.ZERO, dark, Vector3(90, 0, 0), 12)
-	ModelKit.cylinder(housing, 3.2, 3.2, 1.2, Vector3(0, 0, 0.2), trim, Vector3(90, 0, 0), 12)
+	# Recessed socket: a deep dark well with a glowing energy rim, a heavy outer ring and
+	# radial struts with lamps — the reactor boss hangs in front of it.
+	ModelKit.cylinder(housing, 4.6, 4.6, 0.6, Vector3(0, 0, -0.4), dark, Vector3(90, 0, 0), 48)
+	ModelKit.cylinder(housing, 3.9, 3.9, 0.62, Vector3(0, 0, -0.39), ModelKit.emissive(Color("4a1d2a"), 1.2), Vector3(90, 0, 0), 48)
+	ModelKit.cylinder(housing, 3.6, 3.6, 0.64, Vector3(0, 0, -0.38), ModelKit.toon(Color("0a0d18"), 0.1, 0.9, 0.1), Vector3(90, 0, 0), 48)
+	var rim := MeshInstance3D.new()
+	var torus := TorusMesh.new()
+	torus.inner_radius = 4.5
+	torus.outer_radius = 5.3
+	torus.rings = 64
+	torus.ring_segments = 10
+	rim.mesh = torus
+	rim.material_override = trim
+	rim.rotation_degrees = Vector3(90, 0, 0)
+	housing.add_child(rim)
+	var lamp := ModelKit.emissive(Color("ff6a4a"), 2.0)
 	for angle in range(0, 360, 45):
-		var dir := Vector2.from_angle(deg_to_rad(angle))
-		ModelKit.box(housing, Vector3(0.7, 3.0, 0.8), Vector3(dir.x * 5.2, dir.y * 5.2, 0), dark, Vector3(0, 0, angle - 90))
+		var dir := Vector2.from_angle(deg_to_rad(angle + 22.5))
+		ModelKit.box(housing, Vector3(0.8, 2.6, 1.0), Vector3(dir.x * 6.0, dir.y * 6.0, 0), dark, Vector3(0, 0, angle + 22.5 - 90))
+		ModelKit.box(housing, Vector3(0.2, 0.2, 0.2), Vector3(dir.x * 5.3, dir.y * 5.3, 0.55), lamp)
 	ModelKit.box(housing, Vector3(2.0, 12.0, 1.0), Vector3(0, 10.0, -0.5), dark)
 	ModelKit.box(housing, Vector3(2.0, 6.0, 1.0), Vector3(0, -7.0, -0.5), dark)

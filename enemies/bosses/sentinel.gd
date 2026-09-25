@@ -169,30 +169,66 @@ func _camera_shake(amount: float) -> void:
 		_camera.add_trauma(amount)
 
 
-## Heavy biped: squat armoured torso, shoulder cannon, single sensor eye, digitigrade legs.
+## Heavy biped (~3.6 tall, faces -X): armoured crimson/gunmetal hull turned three-quarters to
+## the camera, a hunched head with a mono-eye rail, a shoulder cannon, a shield pauldron, pistoned
+## digitigrade legs with clawed feet, glowing vents and a reactor pack on its back.
 func _build_model() -> void:
 	_model = ModelKit.group(self, "Model")
-	var armor := ModelKit.hull(Color("5a4660"))
-	var armor_thin := ModelKit.hull(Color("5a4660"), ArtStyle.OUTLINE_THIN)
-	var dark := ModelKit.hull(EnemyModel.METAL, ArtStyle.OUTLINE_THIN, 0.3)
+	var rig := ModelKit.group(_model, "Rig")
+	rig.rotation.y = 0.4
+	var t := ArtStyle.OUTLINE_THIN
+	var armor := ModelKit.hull(Color("b8323c"), ArtStyle.OUTLINE_THICK, 0.3)
+	var armor_thin := ModelKit.hull(Color("b8323c"), t, 0.3)
+	var steel := ModelKit.hull(Color("565c74"), t, 0.4)
+	var dark := ModelKit.hull(Color("262a3a"), t, 0.3)
 	var gold := ModelKit.glossy(Palette.ECHO_GOLD)
-	ModelKit.with_outline(gold, ArtStyle.OUTLINE_THIN)
+	ModelKit.with_outline(gold, t)
+	var vent := ModelKit.emissive(Color("ff7a3a"), 2.4)
 	_eye_mat = ModelKit.emissive(EnemyModel.SENSOR, 3.0)
 	for i in 2:
-		var z := 0.45 if i == 0 else -0.45
-		var hip := ModelKit.group(_model, "Leg", Vector3(0.0, 1.8, z))
-		ModelKit.box(hip, Vector3(0.55, 1.0, 0.45), Vector3(0.1, -0.5, 0), armor_thin, Vector3(0, 0, -15))
-		ModelKit.box(hip, Vector3(0.4, 1.0, 0.4), Vector3(0.05, -1.3, 0), dark, Vector3(0, 0, 12))
-		ModelKit.box(hip, Vector3(1.0, 0.25, 0.55), Vector3(-0.1, -1.72, 0), armor_thin)
+		var z := 0.5 if i == 0 else -0.5
+		var hip := ModelKit.group(rig, "Leg", Vector3(0.1, 1.85, z))
+		ModelKit.sphere(hip, 0.28, Vector3.ZERO, dark)
+		# Thigh angled back, knee forward, shin angled back to the ankle (digitigrade).
+		ModelKit.box(hip, Vector3(0.6, 0.95, 0.5), Vector3(0.18, -0.42, 0), armor_thin, Vector3(0, 0, -22))
+		ModelKit.box(hip, Vector3(0.1, 0.7, 0.52), Vector3(-0.1, -0.4, 0), gold, Vector3(0, 0, -22))
+		ModelKit.sphere(hip, 0.22, Vector3(0.36, -0.88, 0), steel)
+		ModelKit.box(hip, Vector3(0.42, 0.9, 0.42), Vector3(0.22, -1.28, 0), steel, Vector3(0, 0, 18))
+		ModelKit.cylinder(hip, 0.06, 0.06, 0.9, Vector3(0.45, -1.25, 0.24 * signf(z)), dark, Vector3(0, 0, 18), 8)
+		ModelKit.box(hip, Vector3(0.22, 0.5, 0.44), Vector3(0.42, -1.3, 0), armor_thin, Vector3(0, 0, 18))
+		# Clawed foot.
+		ModelKit.box(hip, Vector3(1.1, 0.22, 0.6), Vector3(-0.05, -1.73, 0), dark)
+		for c in 2:
+			ModelKit.prism(hip, Vector3(0.2, 0.36, 0.18), Vector3(-0.64, -1.74, (c - 0.5) * 0.3), steel, Vector3(0, 0, 90))
 		_legs.append(hip)
-	var torso := ModelKit.group(_model, "Torso", Vector3(0, 2.5, 0))
-	ModelKit.box(torso, Vector3(2.0, 1.5, 1.5), Vector3.ZERO, armor)
-	ModelKit.box(torso, Vector3(1.4, 0.3, 1.6), Vector3(0, 0.8, 0), gold)
-	ModelKit.box(torso, Vector3(0.6, 0.9, 1.2), Vector3(0.9, -0.6, 0), dark)
-	# Sensor visor on the front (-X).
-	ModelKit.box(torso, Vector3(0.1, 0.3, 0.9), Vector3(-1.02, 0.25, 0), _eye_mat)
-	ModelKit.quad(torso, Vector2.ONE * 1.2, Vector3(-1.05, 0.25, 0.5), ModelKit.glow(EnemyModel.SENSOR, 1.2))
+	var torso := ModelKit.group(rig, "Torso", Vector3(0, 2.55, 0))
+	ModelKit.box(torso, Vector3(1.9, 1.3, 1.5), Vector3(0.05, 0, 0), armor)
+	ModelKit.prism(torso, Vector3(0.5, 1.1, 1.46), Vector3(-1.05, -0.05, 0), armor_thin, Vector3(0, 0, 90))
+	ModelKit.box(torso, Vector3(1.94, 0.24, 1.54), Vector3(0.05, -0.6, 0), dark)
+	ModelKit.box(torso, Vector3(1.2, 0.2, 1.56), Vector3(0.1, 0.7, 0), gold)
+	for k in 4:
+		ModelKit.box(torso, Vector3(0.06, 0.5, 0.05), Vector3(-0.3 + k * 0.2, -0.1, 0.77), vent)
+	# Reactor pack on the back with exhaust stacks.
+	ModelKit.box(torso, Vector3(0.7, 1.1, 1.1), Vector3(1.2, 0.1, 0), steel)
+	for k in 2:
+		ModelKit.cylinder(torso, 0.14, 0.16, 0.7, Vector3(1.35, 0.9, (k - 0.5) * 0.6), dark, Vector3.ZERO, 10)
+		ModelKit.cylinder(torso, 0.1, 0.1, 0.02, Vector3(1.35, 1.26, (k - 0.5) * 0.6), vent, Vector3.ZERO, 10)
+	# Hunched head: armoured brow over a sensor rail, jaw guard.
+	var head := ModelKit.group(torso, "Head", Vector3(-0.8, 0.55, 0))
+	ModelKit.box(head, Vector3(0.8, 0.5, 0.9), Vector3.ZERO, steel)
+	ModelKit.prism(head, Vector3(0.3, 0.3, 0.92), Vector3(-0.5, 0.12, 0), armor_thin, Vector3(0, 0, 90))
+	ModelKit.box(head, Vector3(0.12, 0.14, 0.8), Vector3(-0.45, -0.05, 0), dark)
+	ModelKit.box(head, Vector3(0.1, 0.1, 0.7), Vector3(-0.5, -0.05, 0), _eye_mat)
+	ModelKit.quad(head, Vector2.ONE * 1.3, Vector3(-0.55, -0.05, 0.55), ModelKit.glow(EnemyModel.SENSOR, 1.2))
+	ModelKit.box(head, Vector3(0.5, 0.2, 0.7), Vector3(-0.15, -0.32, 0), armor_thin)
+	# Shoulder cannon (camera side) on a turret mount; shield pauldron on the far side.
+	ModelKit.sphere(torso, 0.42, Vector3(0.1, 0.6, 0.85), steel)
 	_cannon = ModelKit.group(torso, "Cannon", Vector3(0, 0.6, 0.95))
-	ModelKit.hex_x(_cannon, 0.3, 1.8, Vector3(-0.6, 0, 0), armor_thin, 6)
-	ModelKit.hex_x(_cannon, 0.34, 0.2, Vector3(-1.5, 0, 0), gold, 6)
-	ModelKit.box(_model, Vector3(1.6, 0.6, 0.3), Vector3(0.3, 2.3, -0.9), dark)
+	_cannon.rotation.y = -0.4
+	ModelKit.box(_cannon, Vector3(0.9, 0.5, 0.5), Vector3(-0.1, 0, 0), armor_thin)
+	ModelKit.hex_x(_cannon, 0.22, 1.6, Vector3(-0.9, 0.05, 0.08), steel, 10)
+	ModelKit.hex_x(_cannon, 0.18, 1.6, Vector3(-0.9, -0.12, -0.12), dark, 10)
+	ModelKit.hex_x(_cannon, 0.3, 0.22, Vector3(-1.7, 0.0, 0), gold, 10)
+	ModelKit.cylinder(_cannon, 0.14, 0.14, 0.02, Vector3(-1.82, 0.0, 0), vent, Vector3(0, 0, 90), 10)
+	ModelKit.box(torso, Vector3(1.2, 1.0, 0.25), Vector3(0.1, 0.25, -0.95), armor, Vector3(0, 0, -8))
+	ModelKit.box(torso, Vector3(1.0, 0.1, 0.27), Vector3(0.1, -0.15, -0.96), gold, Vector3(0, 0, -8))
