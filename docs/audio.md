@@ -1,4 +1,4 @@
-# SHIFT//WING — Audio
+# Echoes of Kharon: Definite Space Saga — Audio
 
 All music and sound effects are **generated from code** (`tools/audio/`), so every note is original and
 license-clean for Steam/commercial use. Style target: serious mecha epic in a 16-bit (SNES, 32 kHz) palette —

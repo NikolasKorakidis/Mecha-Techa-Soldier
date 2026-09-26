@@ -1,4 +1,4 @@
-# SHIFT//WING — Architecture
+# Echoes of Kharon: Definite Space Saga — Architecture
 
 ## Principles
 - Composition over deep inheritance: actors are thin coordinators over components.

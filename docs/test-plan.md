@@ -1,4 +1,4 @@
-# SHIFT//WING — Test Plan
+# Echoes of Kharon: Definite Space Saga — Test Plan
 
 ## Automated checks (`tests/`)
 Run with `$GODOT --headless --path . --script res://tests/run_tests.gd` (see `docs/local-setup.md`).

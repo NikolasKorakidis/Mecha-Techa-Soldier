@@ -1,4 +1,4 @@
-# SHIFT//WING — Art Direction: "chunk-tech arcade"
+# Echoes of Kharon: Definite Space Saga — Art Direction: "chunk-tech arcade"
 
 Colorful, clean, chunky and readable. Big recognizable silhouettes, beveled-looking planes, toy-like
 clarity. Dark navy space so gameplay colors dominate. Original shapes only — no imitation of any existing

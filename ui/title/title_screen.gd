@@ -38,17 +38,17 @@ func _ready() -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(column)
 	_logo = Label.new()
-	_logo.text = "SHIFT//WING"
-	UiStyle.style_title(_logo, 132, Palette.PLAYER_PRIMARY, 12)
+	_logo.text = "ECHOES OF KHARON"
+	UiStyle.style_title(_logo, 92, Palette.PLAYER_PRIMARY, 8)
 	column.add_child(_logo)
 	_rule = ColorRect.new()
-	_rule.custom_minimum_size = Vector2(760, 4)
+	_rule.custom_minimum_size = Vector2(1220, 4)
 	_rule.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_rule.color = Palette.PLAYER_PRIMARY
 	_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_rule)
 	_sub = Label.new()
-	_sub.text = "ECHOES OF KHARON"
+	_sub.text = "DEFINITE SPACE SAGA"
 	var sub_font := FontVariation.new()
 	sub_font.base_font = UiStyle.BOLD_FONT
 	sub_font.spacing_glyph = 14
@@ -101,7 +101,7 @@ func _ready() -> void:
 	_prompt.offset_top = -110
 	_prompt.offset_bottom = -70
 	root.add_child(_prompt)
-	var credit := UiStyle.label("v1.0   ·   © 2026 SHIFT//WING", ArtStyle.FONT_CAPTION, Color(Palette.UI_MUTED_TEXT, 0.7))
+	var credit := UiStyle.label("v1.0   ·   © 2026 ECHOES OF KHARON", ArtStyle.FONT_CAPTION, Color(Palette.UI_MUTED_TEXT, 0.7))
 	credit.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	credit.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	credit.offset_left = -620

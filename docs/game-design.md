@@ -1,6 +1,6 @@
-# SHIFT//WING — Game Design
+# Echoes of Kharon: Definite Space Saga — Game Design
 
-Working title: **SHIFT//WING: Echoes of Kharon** (production label only — trademark search required
+Title: **Echoes of Kharon - Definite Space Saga** (production label only — trademark search required
 before public release; alternatives: Echoframe, Wingbreaker, Nova Chassis, Starforge Shift, Project Kestrel).
 
 ## High concept

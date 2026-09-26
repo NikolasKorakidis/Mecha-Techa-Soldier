@@ -26,7 +26,7 @@ func _init() -> void:
 	_rect.material = _mat
 	add_child(_rect)
 	_logo = Label.new()
-	_logo.text = "SHIFT//WING"
+	_logo.text = "ECHOES OF KHARON"
 	_logo.set_anchors_preset(Control.PRESET_CENTER)
 	_logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

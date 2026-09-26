@@ -1,4 +1,4 @@
-# SHIFT//WING repository instructions
+# Echoes of Kharon: Definite Space Saga repository instructions
 
 ## Product
 Build a 10–15 minute Godot 4 vertical slice with two modes:

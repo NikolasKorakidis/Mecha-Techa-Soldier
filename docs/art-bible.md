@@ -1,4 +1,4 @@
-# SHIFT//WING — Art Bible
+# Echoes of Kharon: Definite Space Saga — Art Bible
 
 Style name: **chunk-tech diorama** — toy-like clarity, original shapes, no imitation of any commercial
 character design.

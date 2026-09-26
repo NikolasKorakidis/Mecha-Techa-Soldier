@@ -1,4 +1,4 @@
-# SHIFT//WING
+# Echoes of Kharon: Definite Space Saga
 
 2.5D vertical slice in Godot 4.7: a horizontal space shooter that transforms into a Mega Man X-style mech
 platformer, then into a motorcycle racing along the top of the exploding warship (3D chase view). The link between both halves is **Echo Shift** — decode an enemy's combat pattern (Burst, Arc,
