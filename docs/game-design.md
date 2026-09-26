@@ -73,7 +73,9 @@ Built ahead of the M2–M4 order at the user's request. Where it differs from th
 describes what is actually in the game.
 
 ### Weapon drops (echo acquisition, v1)
-Elite carriers (gold-white pulsing core with a concentric ring) drop a **weapon core** when destroyed.
+Elite carriers (gold-white pulsing core with a concentric ring) drop a **weapon core** when destroyed:
+a faceted crystal in the module's colour inside an energy shell, two gold gyro rings and the module's
+initial (B / A / G).
 Flying into it installs that echo weapon for a fixed number of shots; the HUD shows `NAME ×ammo`
 (red when low). At zero ammo the ship reverts to the base gun. A new core replaces the current weapon.
 Dying drops the weapon (Contra rule). The weapon carries between stages.
@@ -192,8 +194,10 @@ Guard (mono-eye trooper, Sniper Joe-style: front shield blocks shots, drops it o
 slowly so jumping over opens its back), Swooper (bat drone with flapping wings; hangs from the ceiling, dives
 at you, climbs back), Elite Walker (drops BURST). Legs walk with real movement. All telegraph before firing.
 
-Pickups: health capsule (+2), energy cell (+1 SUPER segment), **Heart Tank** (+1 max health for the run,
-full refill), **Energy Tank** (SUPER fully charged).
+Pickups: health capsule (+2; white capsule, green glass with glowing crosses), energy cell (+1 SUPER segment;
+violet-banded hex cell), **Heart Tank** (+1 max health for the run, full refill; gold-capped glass tank with a
+glowing heart), **Energy Tank** (SUPER fully charged; white canister, violet window, "E"). All sit upright in a
+fresnel energy shell so the silhouette holds while they spin.
 
 ### Bike (Stage 3, 3D)
 Look: an enclosed light-cycle superbike — one narrow white shell with blue fenders over hubless glowing wheels

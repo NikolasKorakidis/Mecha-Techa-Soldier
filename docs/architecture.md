@@ -181,6 +181,11 @@ Main
 - Bloom discipline (checked in Forward+ via software Vulkan): `EnvironmentBinder.apply_tight_glow()` limits glow to
   the small mip levels with a luminance cap on every environment; the additive glow shaders cap brightness
   (hue-preserving); HIGH uses 2x MSAA + SMAA (4x MSAA turned sub-pixel slivers into fireflies).
+- Colour space: any material that uses vertex or MultiMesh instance colours as albedo sets
+  `vertex_color_is_srgb = true`. Forward+ otherwise reads them as linear and washes them out (the warship
+  plating went pale lavender); Compatibility outputs sRGB, so it is unaffected either way.
+- Pickup visuals live in model scripts (`EchoCoreModel`, `ItemCapsuleModel`); `EchoPickup` / `ItemPickup`
+  keep behaviour only. `fresnel_shell.gdshader` (`ModelKit.fresnel_shell()`) draws the additive energy shells.
 - Typography: Chakra Petch (UI, project default font) and Orbitron (titles; `UiStyle.style_title()` adds
   letter spacing, outline and a coloured glow), both SIL OFL (`assets/fonts/OFL-*.txt`). StageUI title
   cards: skewed plate slam-in with accent rails and auto-fitted text, WARNING with scrolling hazard bands
