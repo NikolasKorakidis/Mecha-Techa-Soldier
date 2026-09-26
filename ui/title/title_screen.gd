@@ -23,7 +23,7 @@ var _rule: ColorRect
 func _ready() -> void:
 	AudioService.play_music(&"title")
 	var ui := CanvasLayer.new()
-	ui.layer = 5
+	ui.layer = 6
 	add_child(ui)
 	var root := Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)

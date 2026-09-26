@@ -1,12 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://main/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://ui/hud/hud.tscn" id="2_hud"]
-[ext_resource type="Shader" path="res://art/shaders/vignette.gdshader" id="3_vignette"]
+[ext_resource type="Script" path="res://ui/post/film_finish.gd" id="3_finish"]
 [ext_resource type="Script" path="res://ui/pause/pause_menu.gd" id="4_pause"]
-
-[sub_resource type="ShaderMaterial" id="Mat_vignette"]
-shader = ExtResource("3_vignette")
 
 [node name="Main" type="Node"]
 process_mode = 3
@@ -23,7 +20,7 @@ process_mode = 1
 layer = 5
 
 [node name="Vignette" type="ColorRect" parent="PostLayer"]
-material = SubResource("Mat_vignette")
+script = ExtResource("3_finish")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
