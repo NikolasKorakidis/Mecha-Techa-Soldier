@@ -32,20 +32,10 @@ func _ready() -> void:
 
 func _build_visual() -> void:
 	var data := EchoModules.get_data(echo_id)
-	var color := data.module_color if data else Color.WHITE
-	_visual = Node3D.new()
-	add_child(_visual)
-	ModelKit.quad(_visual, Vector2.ONE * 2.6, Vector3(0, 0, -0.2), ModelKit.glow(color, 1.2))
-	ModelKit.quad(_visual, Vector2.ONE * 2.2, Vector3(0, 0, 0.1), ModelKit.glow(Color("ffe08a"), 1.6, ModelKit.GlowShape.RING))
-	var gem := ModelKit.box(_visual, Vector3.ONE * 0.6, Vector3.ZERO, ModelKit.emissive(color, 2.5), Vector3(45, 45, 0))
-	gem.name = "Gem"
-	var label := Label3D.new()
-	label.text = (data.display_name if data else "?").substr(0, 1)
-	label.font_size = 96
-	label.pixel_size = 0.007
-	label.outline_size = 16
-	label.position = Vector3(0, 0, 0.6)
-	_visual.add_child(label)
+	var core := EchoCoreModel.new()
+	add_child(core)
+	core.setup(data.module_color if data else Color.WHITE, (data.display_name if data else "?").substr(0, 1))
+	_visual = core
 
 
 func _physics_process(delta: float) -> void:
@@ -65,7 +55,6 @@ func _physics_process(delta: float) -> void:
 		position.x -= drift_speed * delta
 		position.y += sin(_time * 3.0) * 0.8 * delta
 	if _visual:
-		_visual.get_node(^"Gem").rotation.y += delta * 3.0
 		# Blink out during the last two seconds.
 		_visual.visible = lifetime > 2.0 or fmod(lifetime, 0.2) > 0.1
 

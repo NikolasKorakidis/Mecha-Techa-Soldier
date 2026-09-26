@@ -24,30 +24,17 @@ func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 	_visual = ModelKit.group(self, "Visual")
 	var color := Palette.HEALTH_GREEN if kind in [Kind.HEALTH, Kind.HEART] else Palette.RESONANCE_VIOLET
-	ModelKit.quad(_visual, Vector2.ONE * (2.6 if kind in [Kind.HEART, Kind.TANK] else 1.6), Vector3(0, 0, -0.2), ModelKit.glow(color, 1.0))
-	if kind == Kind.HEART:
-		# Heart Tank: gold-framed capsule with a glowing heart core.
-		var gold := ModelKit.glossy(Palette.PLAYER_GOLD)
-		ModelKit.with_outline(gold, ArtStyle.OUTLINE_THIN)
-		ModelKit.box(_visual, Vector3(0.8, 1.0, 0.6), Vector3.ZERO, gold)
-		ModelKit.sphere(_visual, 0.26, Vector3(-0.1, 0.08, 0.32), ModelKit.emissive(color, 3.0))
-		ModelKit.sphere(_visual, 0.26, Vector3(0.1, 0.08, 0.32), ModelKit.emissive(color, 3.0))
-		ModelKit.prism(_visual, Vector3(0.52, 0.34, 0.2), Vector3(0, -0.14, 0.32), ModelKit.emissive(color, 3.0), Vector3(0, 0, 180))
-	elif kind == Kind.TANK:
-		ModelKit.hex_x(_visual, 0.42, 0.9, Vector3.ZERO, ModelKit.hull(Palette.PLAYER_SECONDARY, ArtStyle.OUTLINE_THIN), 8)
-		ModelKit.box(_visual, Vector3(0.5, 0.5, 0.9), Vector3.ZERO, ModelKit.emissive(color, 3.0))
-		var label := Label3D.new()
-		label.text = "E"
-		label.font_size = 64
-		label.pixel_size = 0.01
-		label.position = Vector3(0, 0, 0.5)
-		_visual.add_child(label)
-	elif kind == Kind.HEALTH:
-		ModelKit.hex_x(_visual, 0.26, 0.8, Vector3.ZERO, ModelKit.hull(Palette.PLAYER_PRIMARY, ArtStyle.OUTLINE_THIN), 8)
-		ModelKit.box(_visual, Vector3(0.34, 0.12, 0.6), Vector3(0, 0, 0.1), ModelKit.emissive(color, 2.2))
-		ModelKit.box(_visual, Vector3(0.12, 0.34, 0.6), Vector3(0, 0, 0.1), ModelKit.emissive(color, 2.2))
-	else:
-		ModelKit.box(_visual, Vector3.ONE * 0.5, Vector3.ZERO, ModelKit.emissive(color, 2.4), Vector3(45, 0, 45))
+	var model := ItemCapsuleModel.new()
+	_visual.add_child(model)
+	match kind:
+		Kind.HEALTH:
+			model.build_medkit(color)
+		Kind.ENERGY:
+			model.build_cell(color)
+		Kind.HEART:
+			model.build_heart_tank(color)
+		Kind.TANK:
+			model.build_energy_tank(color)
 
 
 func _physics_process(delta: float) -> void:
