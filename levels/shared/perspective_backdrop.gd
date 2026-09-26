@@ -150,7 +150,8 @@ func _build_viewport() -> void:
 	_viewport.size = _render_size()
 	_viewport.own_world_3d = true
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	_viewport.msaa_3d = Viewport.MSAA_4X if Settings.high_graphics else Viewport.MSAA_2X
+	_viewport.msaa_3d = Viewport.MSAA_2X
+	_viewport.screen_space_aa = Viewport.SCREEN_SPACE_AA_SMAA if Settings.high_graphics else Viewport.SCREEN_SPACE_AA_DISABLED
 	_viewport.use_debanding = true
 	add_child(_viewport)
 	get_viewport().size_changed.connect(func() -> void: _viewport.size = _render_size())
@@ -172,6 +173,7 @@ func _build_viewport() -> void:
 	_env.glow_bloom = 0.04
 	_env.glow_hdr_threshold = 1.1
 	_env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SCREEN
+	EnvironmentBinder.apply_tight_glow(_env)
 	world_env.environment = _env
 	_viewport.add_child(world_env)
 	var sun := DirectionalLight3D.new()
@@ -239,19 +241,19 @@ func _spawn_rocks(x: float) -> void:
 ## Fine dust and ice glinting past the camera: the sense of speed at every depth.
 func _build_dust() -> void:
 	var quad := QuadMesh.new()
-	quad.size = Vector2(0.35, 0.35)
+	quad.size = Vector2(0.14, 0.14)
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.mesh = quad
 	mm.instance_count = 320
 	_dust = MultiMeshInstance3D.new()
 	_dust.multimesh = mm
-	_dust.material_override = ModelKit.glow_billboard(Color(0.7, 0.8, 1.0), 0.9)
+	_dust.material_override = ModelKit.glow_billboard(Color(0.7, 0.8, 1.0), 0.45)
 	_dust.custom_aabb = AABB(Vector3(-1e5, -1e4, -1e4), Vector3(2e5, 2e4, 2e4))
 	_viewport.add_child(_dust)
 	_dust_pos.resize(mm.instance_count)
 	for i in mm.instance_count:
-		_dust_pos[i] = Vector3(_rng.randf_range(-60, 160), _rng.randf_range(-45, 35), _rng.randf_range(-8, -140))
+		_dust_pos[i] = Vector3(_rng.randf_range(-60, 160), _rng.randf_range(-45, 35), _rng.randf_range(-22, -140))
 		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * _rng.randf_range(0.5, 1.6)), _dust_pos[i]))
 
 

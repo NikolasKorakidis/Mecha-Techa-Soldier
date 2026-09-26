@@ -64,7 +64,7 @@ static func emitter(parent: Node3D, material: Material, amount: int, life: float
 static func light_flash(parent: Node3D, size: float) -> void:
 	var light := OmniLight3D.new()
 	light.light_color = Color(1.0, 0.62, 0.3)
-	light.light_energy = 3.0 * ArtStyle.flash_scale()
+	light.light_energy = 1.6 * ArtStyle.flash_scale()
 	light.omni_range = 5.0 * size + 3.0
 	light.shadow_enabled = false
 	parent.add_child(light)

@@ -5,6 +5,7 @@ render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabl
 
 uniform vec4 tint : source_color = vec4(0.3, 0.8, 1.0, 1.0);
 uniform float energy = 1.5;
+uniform float max_brightness = 1.3;
 // 0 = radial blob, 1 = streak (bright head at UV.x = 1), 2 = ring, 3 = flame cone (UV.y along length)
 uniform int shape = 0;
 uniform float ring_radius = 0.8;
@@ -22,5 +23,10 @@ void fragment() {
 	} else {
 		a = pow(clamp(1.0 - UV.y, 0.0, 1.0), 1.6);
 	}
-	ALBEDO = tint.rgb * COLOR.rgb * energy * a * tint.a * COLOR.a;
+	vec3 c = tint.rgb * COLOR.rgb * energy * a * tint.a * COLOR.a;
+	// Hue-preserving cap: Forward+ adds in HDR, where stacked glows would tonemap to white and
+	// bloom into bars; the Compatibility renderer clamps each quad at 1.0. Cap near that, with a
+	// little headroom so the brightest cores still bloom softly.
+	float peak = max(max(c.r, c.g), max(c.b, 1e-4));
+	ALBEDO = c * min(1.0, max_brightness / peak);
 }

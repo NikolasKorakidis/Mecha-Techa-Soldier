@@ -121,10 +121,10 @@ func _ready() -> void:
 		for p in 6:
 			var a := TAU * p / 6.0
 			ModelKit.box(engine, Vector3(0.14, 0.05, 0.02), Vector3(-0.7, cos(a) * 0.2, sin(a) * 0.2), metal, Vector3(rad_to_deg(a), 0, 0))
-		var nozzle := ModelKit.emissive(Palette.PLAYER_ENERGY, 2.6)
+		var nozzle := ModelKit.emissive(Palette.PLAYER_ENERGY, 1.8)
 		_nozzles.append(nozzle)
 		ModelKit.cylinder(engine, 0.17, 0.17, 0.03, Vector3(-0.68, 0.0, 0.0), nozzle, Vector3(0, 0, 90), 12)
-		var flame_material := ModelKit.glow(Palette.PLAYER_ENERGY.lerp(Color.WHITE, 0.25), 2.2, ModelKit.GlowShape.STREAK)
+		var flame_material := ModelKit.glow(Palette.PLAYER_ENERGY.lerp(Color.WHITE, 0.1), 1.4, ModelKit.GlowShape.STREAK)
 		_flame_materials.append(flame_material)
 		var flame := ModelKit.quad(engine, Vector2(1.0, 0.34), Vector3(-1.2, 0.0, 0.02), flame_material)
 		_flames.append(flame)
@@ -202,7 +202,7 @@ func _process(delta: float) -> void:
 		var flame := _flames[i]
 		flame.scale = Vector3(length, 0.8 + 0.2 * flicker, 1.0)
 		flame.position.x = -0.72 - length * 0.5
-		_nozzles[i].emission_energy_multiplier = (0.6 if cut else 2.6)
+		_nozzles[i].emission_energy_multiplier = (0.5 if cut else 1.8)
 	# Nav lights blink in turn.
 	for i in _nav_lights.size():
 		_nav_lights[i].emission_energy_multiplier = 4.0 if fmod(_time + i * 0.5, 1.0) < 0.12 else 0.8

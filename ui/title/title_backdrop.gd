@@ -30,9 +30,9 @@ func _ready() -> void:
 	add_child(kestrel)
 	var engine_light := OmniLight3D.new()
 	engine_light.light_color = Palette.PLAYER_ENERGY
-	engine_light.light_energy = 2.0
-	engine_light.omni_range = 4.0
-	engine_light.position = Vector3(-2.4, 0.0, 0.0)
+	engine_light.light_energy = 0.5
+	engine_light.omni_range = 2.5
+	engine_light.position = Vector3(-2.8, 0.0, -0.3)
 	kestrel.add_child(engine_light)
 	_warship = WarshipModel.new()
 	_warship.runway = true
@@ -80,9 +80,9 @@ func _setup_environment() -> void:
 	env.ambient_light_color = Color(0.45, 0.52, 0.8)
 	env.ambient_light_energy = 0.7
 	env.glow_enabled = true
-	env.glow_intensity = 0.8
-	env.glow_bloom = 0.05
-	env.glow_hdr_threshold = 1.0
+	env.glow_intensity = 0.6
+	env.glow_bloom = 0.02
+	env.glow_hdr_threshold = 1.25
 	env.fog_enabled = false
 	world_environment.environment = env
 

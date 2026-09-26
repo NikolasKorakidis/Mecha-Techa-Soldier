@@ -9,7 +9,7 @@ extends CPUParticles3D
 func _ready() -> void:
 	var quad := QuadMesh.new()
 	quad.size = Vector2.ONE * mote_size
-	quad.material = ModelKit.glow(Color.WHITE, 1.3)
+	quad.material = ModelKit.glow(Color.WHITE, 0.8)
 	mesh = quad
 	local_coords = false
 	amount = 28
