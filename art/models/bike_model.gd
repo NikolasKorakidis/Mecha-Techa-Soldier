@@ -43,14 +43,16 @@ func _ready() -> void:
 	var energy := ModelKit.emissive(Palette.PLAYER_ENERGY, 2.6)
 	var tail_red := ModelKit.emissive(Color("ff3548"), 3.0)
 	var glass := StandardMaterial3D.new()
-	glass.albedo_color = Color(0.05, 0.08, 0.12)
+	glass.albedo_color = Color(0.04, 0.1, 0.16)
 	glass.metallic = 0.7
 	glass.roughness = 0.08
 	glass.emission_enabled = true
-	glass.emission = Palette.PLAYER_GOLD.darkened(0.4)
-	glass.emission_energy_multiplier = 0.35
+	# Cyan like the Kestrel canopy: a warm tint read as a bare head from the chase camera.
+	glass.emission = Color(0.15, 0.45, 0.65)
+	glass.emission_energy_multiplier = 0.45
 	glass.rim_enabled = true
 	glass.rim = 0.8
+	glass.rim_tint = 0.2
 	ModelKit.with_outline(glass, t)
 
 	# Hubless wheels: slim tyre with tread blocks (so the spin reads), metal rim, glowing inner ring.
@@ -88,6 +90,8 @@ func _ready() -> void:
 	var canopy := ModelKit.group(_body, "Canopy", Vector3(0.3, 0.22, 0))
 	ModelKit.sphere(canopy, 0.22, Vector3.ZERO, glass, Vector3(2.4, 0.7, 0.85))
 	ModelKit.box(canopy, Vector3(0.9, 0.04, 0.3), Vector3(-0.05, -0.1, 0), gold)
+	# Frame spine over the glass so the dome reads as a cockpit from behind.
+	ModelKit.box(canopy, Vector3(0.6, 0.03, 0.035), Vector3(0.0, 0.14, 0), gold)
 
 	# Fairing: pointed nose, headlight, running lights and the nose gun (ex-arm cannon).
 	_fairing = ModelKit.group(_body, "Fairing", Vector3(1.15, -0.05, 0))
