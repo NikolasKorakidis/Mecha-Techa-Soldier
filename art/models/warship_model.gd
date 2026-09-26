@@ -67,6 +67,9 @@ func _ready() -> void:
 	_cool_mat = ModelKit.emissive(Color("9fe4ff"), 1.8)
 	_tint_mat = _mat(Color.WHITE, 0.3)
 	_tint_mat.vertex_color_use_as_albedo = true
+	# PLATE_TONES are sRGB; without this Forward+ reads them as linear and washes the armour out
+	# to pale lavender (Compatibility outputs sRGB, so it already matched).
+	_tint_mat.vertex_color_is_srgb = true
 	for i in SECTION_BOUNDS.size() - 1:
 		var section := ModelKit.group(self, "Section%d" % i)
 		sections.append(section)
