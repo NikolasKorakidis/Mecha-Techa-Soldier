@@ -81,8 +81,11 @@ func _setup_environment() -> void:
 	env.ambient_light_energy = 0.7
 	env.glow_enabled = true
 	env.glow_intensity = 0.6
-	env.glow_bloom = 0.02
-	env.glow_hdr_threshold = 1.25
+	# The white hull fills the frame here: keep it under the bloom threshold (only emissives and
+	# engines glow) and skip the blanket bloom, or Forward+ haloes the wings.
+	env.glow_bloom = 0.0
+	env.glow_hdr_threshold = 1.6
+	EnvironmentBinder.apply_tight_glow(env)
 	env.fog_enabled = false
 	world_environment.environment = env
 
