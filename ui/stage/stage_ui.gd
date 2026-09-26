@@ -341,7 +341,9 @@ func _build_boss_card(root: Control) -> void:
 	_boss_card_plate = Panel.new()
 	_boss_card_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_boss_card_plate.size = Vector2(BOSS_CARD_WIDTH, 128)
-	_boss_card_plate.position = Vector2(-BOSS_CARD_WIDTH, 1080.0 - 320.0)
+	# Lower-left, above the TutorialCard's low band (and below its high one) so a pending hint
+	# never collides with the name.
+	_boss_card_plate.position = Vector2(-BOSS_CARD_WIDTH, 1080.0 - 430.0)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.03, 0.01, 0.02, 0.86)
 	style.skew = Vector2(0.28, 0)
