@@ -154,7 +154,8 @@ func show_warning(duration: float) -> void:
 	_warning_left = duration
 
 
-## Boss name card (Mega Man X-style): slides in from the right under the WARNING, holds, leaves.
+## Boss name card (Mega Man X-style): slides in from the left above the boss bar, holds, leaves
+## (the boss itself enters on the right, so the card never covers it).
 func show_boss_card(boss_name: String, tagline: String = "GUARDIAN-CLASS WAR MACHINE") -> void:
 	_boss_card_name.text = boss_name
 	_fit_font(_boss_card_name, boss_name, BOSS_CARD_WIDTH - 110.0, 52)
@@ -163,8 +164,8 @@ func show_boss_card(boss_name: String, tagline: String = "GUARDIAN-CLASS WAR MAC
 		_boss_card_tween.kill()
 	_boss_card.visible = true
 	_boss_card.modulate.a = 1.0
-	var home := 1920.0 - BOSS_CARD_WIDTH - 90.0
-	_boss_card_plate.position.x = 1920.0 + 40.0
+	var home := 110.0
+	_boss_card_plate.position.x = -BOSS_CARD_WIDTH - 60.0
 	_boss_card_tween = create_tween()
 	_boss_card_tween.tween_property(_boss_card_plate, "position:x", home, 0.4).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	_boss_card_tween.tween_interval(2.6)
@@ -340,11 +341,11 @@ func _build_boss_card(root: Control) -> void:
 	_boss_card_plate = Panel.new()
 	_boss_card_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_boss_card_plate.size = Vector2(BOSS_CARD_WIDTH, 128)
-	_boss_card_plate.position = Vector2(1920, 1080.0 * 0.6)
+	_boss_card_plate.position = Vector2(-BOSS_CARD_WIDTH, 1080.0 - 320.0)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.03, 0.01, 0.02, 0.86)
-	style.skew = Vector2(-0.28, 0)
-	style.border_width_right = 10
+	style.skew = Vector2(0.28, 0)
+	style.border_width_left = 10
 	style.border_width_bottom = 3
 	style.border_color = WARNING_RED
 	style.shadow_color = Color(0, 0, 0, 0.45)

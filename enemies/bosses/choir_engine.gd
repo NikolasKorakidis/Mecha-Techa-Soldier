@@ -191,7 +191,7 @@ func _animate(delta: float) -> void:
 func _build_model() -> void:
 	var model := Node3D.new()
 	model.name = "Model"
-	model.scale = Vector3.ONE * 1.35
+	model.scale = Vector3.ONE * 1.25
 	add_child(model)
 	var metal := ModelKit.hull(Color("2b2638"), ArtStyle.OUTLINE_THICK, 0.5)
 	var metal_thin := ModelKit.hull(Color("2b2638"), ArtStyle.OUTLINE_THIN, 0.5)
