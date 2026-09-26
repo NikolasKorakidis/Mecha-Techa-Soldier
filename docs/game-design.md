@@ -105,6 +105,17 @@ Weapon drops are spread evenly through the stage (14 s, 31 s, 48 s, 65 s); echo 
 Every volley is preceded by a swelling telegraph flare. Whole formations destroyed award a
 **formation bonus**; one escapee voids it.
 
+### Presentation
+- **Title screen**: a perspective 3D shot — the Kestrel close to camera in a slow orbit, the enemy warship and
+  escorts gliding below, asteroids and dust streaming under the space sky. The Orbitron logo, rule and tagline
+  animate in; menu plates drop in one by one.
+- **Transitions**: every menu level change plays a mecha shutter wipe (slanted plates with glowing edges sweep in,
+  the logo holds while the next level mounts, plates sweep out the far side).
+- **Title cards**: stage banners slam in on a skewed plate with accent rails; WARNING gets scrolling hazard bands;
+  each boss gets a name card. Typography: Chakra Petch (UI) and Orbitron (titles).
+- **Finish**: explosions are procedural fireballs that cool into rolling smoke and light nearby hulls; desktop adds
+  edge chromatic aberration, film grain, a vignette and a hurt pulse under the HUD.
+
 ### Stage structure (campaign v3 — seamless)
 The whole run is one continuous world (`levels/campaign/campaign.tscn`): one camera, one sky, no loading between
 stages. Score, echo weapon and SUPER energy carry across all three forms.
@@ -185,6 +196,9 @@ Pickups: health capsule (+2), energy cell (+1 SUPER segment), **Heart Tank** (+1
 full refill), **Energy Tank** (SUPER fully charged).
 
 ### Bike (Stage 3, 3D)
+Look: an enclosed light-cycle superbike — one narrow white shell with blue fenders over hubless glowing wheels
+(tread blocks show the spin), full-length energy lines, glass canopy, pointed nose with headlight and gun, swept
+winglets, and a tail with a wide red light bar and twin thrusters that read from the chase camera.
 Rides forward on its own (56 → 80 u/s ramp), steer across the 18-wide deck, hold down to brake. Jump + double
 jump over walls and gaps, **boost** (Dash): speed + i-frames + ram, and steering while boosting does a
 sidestep roll. Hold fire for fast twin cannons (bolts inherit the bike's speed) with aim assist and a gold
@@ -241,7 +255,10 @@ Echo and Special; aim is always forward (no twin-stick); rumble optional, modera
 ## Level 1 — Orbital Riptide (6–7 min)
 Setting: the broken Kharon Ring around a blue gas giant. Strong parallax (fast wreckage, slow ring,
 near-static planet). Warm orange enemy cores against teal space and violet shadows. Player ship
-**Kestrel**: broad white-and-blue silhouette, central gold canopy, two oversized wing blocks.
+**Kestrel**: a hero interceptor shown in a 2.5D three-quarter view (its model rig is tilted toward the camera so
+swept delta wings, canopy and dorsal armour read from the side view): long nose with a red-tipped probe, glass
+canopy in a gold frame, canards, intakes and energy trim, the echo core in a gold ring, twin nacelles with petal
+nozzles, canted twin fins, blinking nav lights.
 
 | Beat | Time | Content | Teaching goal |
 |---|---|---|---|

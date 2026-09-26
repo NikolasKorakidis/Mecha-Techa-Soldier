@@ -35,6 +35,7 @@ Each `tests/test_*.gd` extends `TestCase`; every `test_*` method runs on a fresh
 | Mech: held jump ≈ 3.7u, tap lower, double jump once, coyote, dash distance, wall jump, SUPER gating, pit recovery | `test_mech_player.gd` | ✅ |
 | Audio: all tracks/SFX load, music loops, crossfade state, volume options drive buses, rapid-fire throttle | `test_audio.gd` | ✅ |
 | Hull run: chase camera behind in perspective, auto-ride + steering limits, wall hurts / jump clears, gap recovery, bolts kill fighters, gunship + finish, gap clearability | `test_hull_run.gd` | ✅ |
+| Transitions: change_level wipes, runs `prepare` right before the swap, mounts the level and opens again; ignores requests while running | `test_transitions.gd` | ✅ |
 | Campaign: Start → campaign; shooter phase; boarding dive transforms ship → mech on the roof without a scene change; resume at Stage 2 → escape → bike + 3D camera + roof blown; resume at Stage 3 → ending | `test_campaign_flow.gd` | ✅ |
 | Stage 2 upgrades: appearing-block rhythm is clearable without falling, Heart/Energy Tanks, charge shot pierces, shield guard front block + back window, swooper dive/return, secret shaft reaches the Heart Tank, Sentinel room seals / resets on death / opens on victory | `test_stage2_upgrades.gd` | ✅ |
 | Stage 4 (8-bit): NES-sized nearest-filtered screen, 3D off/on, playfield clamp, shots per weapon level, carrier capsule → power-up, damage + respawn at full health, fortress terrain solid, boss core only hurt when open → clear, campaign resumes at STAGE 4 | `test_retro_stage.gd` | ✅ |

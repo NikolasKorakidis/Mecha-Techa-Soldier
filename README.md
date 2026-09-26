@@ -5,7 +5,9 @@ platformer, then into a motorcycle racing along the top of the exploding warship
 Guard) and carry it through the ship-to-mech transformation.
 
 **Status:** one seamless campaign, no scene switches. Space is drawn by a per-pixel sky shader (nebula,
-galactic band, and the star system's planets ray-traced as perfect spheres). Stage 1 side-view shooter against
+galactic band, and the star system's planets ray-traced as perfect spheres). Cinematic 3D title screen, mecha
+shutter-wipe transitions, Orbitron/Chakra Petch typography with slam-in title cards, procedural fire-and-smoke
+explosions, a desktop film finish, and 48 kHz stereo studio sound effects with room reverb. Stage 1 side-view shooter against
 enemy starships (Choir Colossus mecha boss), the enemy warship creeping in from far away until you fly over its runway → the camera
 swings behind the Kestrel, it dives at the warship (manga speed lines), transforms mid-dive and the mech
 lands on the roof → Stage 2 Mega Man X-style platformer through eight colour-zoned sections of the warship, with windows

@@ -173,6 +173,14 @@ Main
   (CanvasLayer 14, `shutter_wipe.gdshader`) sweeps slanted armour plates in, `prepare` runs (reset /
   restore the run) right before the swap, the level mounts behind the plates, then they sweep out. Headless
   runs (tests, CI, boot check) swap instantly; `go_to()` always swaps immediately.
+- VFX: `Fireball` (vfx/fireball.gd) emits `fireball.gdshader` puffs — particle colour encodes age (R) and a
+  per-particle random (G); the shader erodes each puff with noise and cools it from white-hot to alpha-blended
+  smoke — plus a short OmniLight flash; both `Explosion` and `Explosion3D` use it.
+- Desktop finish: `FilmFinish` (PostLayer under the HUD) uses `film_finish.gdshader` on Forward+ (edge chromatic
+  aberration, grain, vignette, hurt pulse from RunSession's health signal) and the plain vignette on the web.
+- Bloom discipline (checked in Forward+ via software Vulkan): `EnvironmentBinder.apply_tight_glow()` limits glow to
+  the small mip levels with a luminance cap on every environment; the additive glow shaders cap brightness
+  (hue-preserving); HIGH uses 2x MSAA + SMAA (4x MSAA turned sub-pixel slivers into fireflies).
 - Typography: Chakra Petch (UI, project default font) and Orbitron (titles; `UiStyle.style_title()` adds
   letter spacing, outline and a coloured glow), both SIL OFL (`assets/fonts/OFL-*.txt`). StageUI title
   cards: skewed plate slam-in with accent rails and auto-fitted text, WARNING with scrolling hazard bands
